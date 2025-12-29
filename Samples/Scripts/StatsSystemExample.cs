@@ -1,63 +1,96 @@
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples
-{
+namespace Spellbound.Stats.Samples {
     /// <summary>
-    ///     Demonstrates basic stat registration and modifier creation.
-    ///     This is the foundation - we register stats once at startup, then reference them by ID.
+    /// Demonstrates basic stat registration and modifier creation.
+    /// This is the foundation - we register stats once at startup, then reference them by ID.
     /// </summary>
-    public class StatSystemExample : MonoBehaviour
-    {
-        private void Start()
-        {
+    public class StatSystemExample : MonoBehaviour {
+        private StatContainer _exampleRaceOrClassOne;
+        private StatContainer _exampleRaceOrClassTwo;
+
+        private void Awake() {
+            // This is the baseline stats that will be found in your game. Go absolutely nuts here.
             InitializeStats();
-            CreateSomeModifiers();
+        }
+        
+        private void Start() {
+            // This is an example of how you might implement class or a race with unique base stats.
+            CreatePlayerOneStats();
+            CreatePlayerTwoStats();
+            
+            // These are the modifiers that will be found in your game.
+            CreateModifiers();
+            
+            Debug.Log($"Player one base stats created: {_exampleRaceOrClassOne.GetBaseStatList()}");
+            Debug.Log($"Player two base stats created: {_exampleRaceOrClassTwo.GetBaseStatList()}");
+
+            ComparePlayerStats();
         }
 
         /// <summary>
-        ///     Register all stats we'll use in our game.
-        ///     Call this once at startup - registration is idempotent so it's safe to call multiple times.
+        /// Register all stats we'll use in our game.
         /// </summary>
-        private void InitializeStats()
-        {
-            // Core combat stats
-            var physDmg = StatRegistry.Register("physical_damage");
-            var fireDmg = StatRegistry.Register("fire_damage");
-            var attackSpeed = StatRegistry.Register("attack_speed");
-
-            // Defensive stats
-            var maxLife = StatRegistry.Register("max_life");
-            var fireRes = StatRegistry.Register("fire_resistance");
-
-            Debug.Log($"Registered {physDmg} as physical_damage");
-            Debug.Log($"Can lookup later: {StatRegistry.GetId("physical_damage")}");
+        private void InitializeStats() {
+            StatRegistry.Register("max_life");
+            StatRegistry.Register("max_mana");
+            StatRegistry.Register("max_stamina");
+        }
+        
+        private void CreatePlayerOneStats() {
+            _exampleRaceOrClassOne = new StatContainer();
+            
+            // Retrieve the stat that you wish to establish a base with.
+            var maxLifeId = StatRegistry.GetId("max_life");
+            var maxManaId = StatRegistry.GetId("max_mana");
+            var maxStaminaId = StatRegistry.GetId("max_stamina");
+            
+            _exampleRaceOrClassOne.SetBase(maxLifeId, 100f);
+            _exampleRaceOrClassOne.SetBase(maxManaId, 20f);
+            _exampleRaceOrClassOne.SetBase(maxStaminaId, 20f);
+        }
+        
+        private void CreatePlayerTwoStats() {
+            _exampleRaceOrClassTwo = new StatContainer();
+            
+            // Retrieve the stat that you wish to establish a base with.
+            var maxLifeId = StatRegistry.GetId("max_life");
+            var maxManaId = StatRegistry.GetId("max_mana");
+            var maxStaminaId = StatRegistry.GetId("max_stamina");
+            
+            _exampleRaceOrClassTwo.SetBase(maxLifeId, 100f);
+            _exampleRaceOrClassTwo.SetBase(maxManaId, 10f);
+            _exampleRaceOrClassTwo.SetBase(maxStaminaId, 20f);
+        }
+        
+        private void CreateModifiers() {
+            var maxLifeId = StatRegistry.GetId("max_life");
+            
+            var moreLifeModifier = new StatModifier(maxLifeId, ModifierType.More, 2f);
+            var increasedLifeModifier = new StatModifier(maxLifeId, ModifierType.Increased, 2f);
+            
+            // Player one stat modifiers
+            _exampleRaceOrClassOne.AddModifier(moreLifeModifier);
+            
+            // Player two stat modifiers
+            _exampleRaceOrClassTwo.AddModifier(increasedLifeModifier);
         }
 
         /// <summary>
-        ///     Example of creating different modifier types.
-        ///     In a real game, these would come from items, passives, buffs, etc.
+        /// Simple Debug Log comparison of changes.
         /// </summary>
-        private void CreateSomeModifiers()
-        {
-            var physDmgId = StatRegistry.GetId("physical_damage");
-            var attackSpeedId = StatRegistry.GetId("attack_speed");
-
-            // Flat modifier: "+10 to physical damage"
-            var flatMod = new StatModifier(physDmgId, ModifierType.Flat, 10f);
-
-            // Increased modifier: "30% increased physical damage"
-            var increasedMod = new StatModifier(physDmgId, ModifierType.Increased, 30f);
-
-            // More modifier: "40% more attack speed"
-            var moreMod = new StatModifier(attackSpeedId, ModifierType.More, 40f);
-
-            Debug.Log($"Created flat modifier: +{flatMod.Value} to {StatRegistry.GetName(flatMod.StatId)}");
-            Debug.Log(
-                $"Created increased modifier: {increasedMod.Value}% increased {StatRegistry.GetName(increasedMod.StatId)}");
-            Debug.Log($"Created more modifier: {moreMod.Value}% more {StatRegistry.GetName(moreMod.StatId)}");
-
-            // TODO: We don't have a container to hold these yet or a calculator to apply them
-            // That's our next step!
+        private void ComparePlayerStats() {
+            var healthId = StatRegistry.GetId("max_life");
+        
+            Debug.Log("=== Player One ===");
+            Debug.Log(_exampleRaceOrClassOne.GetCalculatedStatList());
+            Debug.Log("=== Player One Health Analysis ===");
+            Debug.Log(_exampleRaceOrClassOne.GetModifierAnalysis(healthId));
+            
+            Debug.Log("=== Player Two ===");
+            Debug.Log(_exampleRaceOrClassTwo.GetCalculatedStatList());
+            Debug.Log("=== Player Two Health Analysis ===");
+            Debug.Log(_exampleRaceOrClassTwo.GetModifierAnalysis(healthId));
         }
     }
 }
