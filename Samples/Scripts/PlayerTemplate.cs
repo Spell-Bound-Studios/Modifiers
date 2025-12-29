@@ -7,7 +7,7 @@ namespace Spellbound.Stats.Samples {
     /// Represents a player character that aggregates modifiers from various sources.
     /// This is a sample implementation - your game might structure this differently.
     /// </summary>
-    public class PlayerTemplate : IModifiable, IHasStats {
+    public class PlayerTemplate : IModifiable, IStats {
         public string Name { get; set; }
         public HashSet<int> Tags { get; private set; }
         public StatContainer Stats { get; private set; }

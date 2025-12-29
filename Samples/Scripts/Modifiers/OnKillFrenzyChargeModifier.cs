@@ -20,21 +20,33 @@ namespace Spellbound.Stats.Samples {
         }
 
         public void Apply(IModifiable target) {
-            // Check if target has matching tags
             if (!HasMatchingTags(target))
                 return;
 
-            // Subscribe to OnKill event if the skill has it
-            if (target is not FireballSkill fireball) 
+            if (target is not Skill skill) {
+                Debug.LogError("Attempting to modify something that is not a skill but requires it to be.");
                 return;
-
-            fireball.OnKill += HandleKill;
-            Debug.Log($"OnKillFrenzyCharge modifier applied to {fireball.Name}");
+            }
+            
+            var projectile = skill.GetBehaviour<ProjectileBehaviour>();
+            
+            if (projectile == null) {
+                projectile = new ProjectileBehaviour();
+                skill.AddBehaviour(projectile);
+            }
+            
+            projectile.OnKill += HandleKill;
+            Debug.Log($"OnKillFrenzyCharge modifier applied to {skill.Name}");
         }
 
         public void Remove(IModifiable target) {
-            if (target is FireballSkill fireball)
-                fireball.OnKill -= HandleKill;
+            if (target is not Skill skill || !skill.HasBehaviour<ProjectileBehaviour>()) {
+                Debug.LogError("Attempting to remove a behaviour from something that does not contain that behaviour.");
+                return;
+            }
+
+            var projectile = skill.GetBehaviour<ProjectileBehaviour>();
+            projectile.OnKill -= HandleKill;
         }
 
         private void HandleKill(KillContext context) {

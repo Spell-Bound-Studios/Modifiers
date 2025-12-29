@@ -24,13 +24,13 @@ namespace Spellbound.Stats {
                 return;
 
             // Apply to target's stats if it has a stat container
-            if (target is IHasStats hasStats) {
+            if (target is IStats hasStats) {
                 hasStats.Stats.AddModifier(_statModifier);
             }
         }
 
         public void Remove(IModifiable target) {
-            if (target is IHasStats hasStats) {
+            if (target is IStats hasStats) {
                 hasStats.Stats.RemoveModifiersFromSource(_statModifier.SourceId);
             }
         }
