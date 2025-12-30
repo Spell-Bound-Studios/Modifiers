@@ -32,14 +32,21 @@ namespace Spellbound.Stats.Samples {
             SimulateCombat();
         }
 
+        /// <summary>
+        /// Initializes the StatRegistry and the TagRegistry.
+        /// </summary>
+        /// <remarks>
+        /// Intended to be a small helper method to co-locate all stats. I would imagine that these are derived from a
+        /// scriptable object in the users implementation or in a game manager or on the player, etc.
+        /// </remarks>
         private void InitializeRegistries() {
-            // Player stats
+            // Player specific stats
             StatRegistry.Register("strength");
             StatRegistry.Register("intelligence");
             StatRegistry.Register("max_life");
             StatRegistry.Register("max_mana");
             
-            // Skill stats
+            // Skill specific stats
             StatRegistry.Register("base_damage");
             StatRegistry.Register("cast_time");
             StatRegistry.Register("mana_cost");
@@ -54,6 +61,13 @@ namespace Spellbound.Stats.Samples {
             Debug.Log("=== REGISTRIES INITIALIZED ===\n");
         }
 
+        /// <summary>
+        /// Registers all skills in the example scene.
+        /// </summary>
+        /// <remarks>
+        /// Similar with RegisterStats - I imagine that this is in some Awake() method somewhere and just rips through
+        /// all skills that the user creates in their game.
+        /// </remarks>
         private void RegisterSkills() {
             SkillRegistry.Register<FireballSkill>();
         }
@@ -61,9 +75,12 @@ namespace Spellbound.Stats.Samples {
         /// <summary>
         /// Create two players with identical base stats.
         /// </summary>
+        /// <remarks>
+        /// I wanted to show how two different players with the same stats could essentially have different fireballs.
+        /// </remarks>
         private void CreatePlayers() {
-            _playerOne = new PlayerTemplate("Player One");
-            _playerTwo = new PlayerTemplate("Player Two");
+            _playerOne = new PlayerTemplate("PlayerOne");
+            _playerTwo = new PlayerTemplate("PlayerTwo");
 
             // Identical base stats
             foreach (var player in new[] { _playerOne, _playerTwo }) {
@@ -85,7 +102,11 @@ namespace Spellbound.Stats.Samples {
         private void ApplyPlayerModifiers() {
             foreach (var player in new[] { _playerOne, _playerTwo }) {
                 // Modifier 1: +15 Intelligence (flat)
+                
+                // Create the source (passive, item, buff, etc.)
                 var intSource = new SimpleModifierSource(1001, "+15 Intelligence");
+                
+                // Add the thing that this source does (add a value, multiply a value, overrides a value, etc.)
                 intSource.AddModifier(new NumericModifier(
                     modifierId: 1,
                     requiredTags: new HashSet<int>(),
@@ -96,6 +117,8 @@ namespace Spellbound.Stats.Samples {
                         sourceId: 1001
                     )
                 ));
+                
+                // How does the source get to the players stats? AddModifierSource();
                 player.AddModifierSource(intSource);
 
                 // Modifier 2: 40% increased Spell Damage (global - affects ALL spells)

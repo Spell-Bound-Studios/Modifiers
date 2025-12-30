@@ -8,6 +8,7 @@ namespace Spellbound.Stats.Samples {
     /// In a real game, this would be items, passives, buffs, etc.
     /// </summary>
     public class SimpleModifierSource : IModifierSource {
+        // This is interface bound.
         public int SourceId { get; }
         public string Description { get; }
 
@@ -18,10 +19,12 @@ namespace Spellbound.Stats.Samples {
             Description = description;
         }
 
+        // This is example code.
         public void AddModifier(IModifier modifier) {
             _modifiers.Add(modifier);
         }
 
+        // This is interface bound.
         public IEnumerable<IModifier> GetModifiers() => _modifiers;
     }
 }
