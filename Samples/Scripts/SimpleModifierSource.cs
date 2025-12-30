@@ -4,22 +4,20 @@ using System.Collections.Generic;
 
 namespace Spellbound.Stats.Samples {
     /// <summary>
-    /// Represents a passive skill tree node that grants modifiers.
+    /// Simple modifier source for demonstration.
+    /// In a real game, this would be items, passives, buffs, etc.
     /// </summary>
-    public class PassiveNode : IModifierSource {
+    public class SimpleModifierSource : IModifierSource {
         public int SourceId { get; }
-        public string Name { get; }
+        public string Description { get; }
 
         private readonly List<IModifier> _modifiers = new();
 
-        public PassiveNode(int sourceId, string name) {
+        public SimpleModifierSource(int sourceId, string description) {
             SourceId = sourceId;
-            Name = name;
+            Description = description;
         }
 
-        /// <summary>
-        /// Add a modifier that this passive grants.
-        /// </summary>
         public void AddModifier(IModifier modifier) {
             _modifiers.Add(modifier);
         }

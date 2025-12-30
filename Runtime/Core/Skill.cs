@@ -37,18 +37,7 @@ namespace Spellbound.Stats {
             foreach (var modifier in modifiers)
                 modifier.Apply(this);
         }
-        
-        public virtual void Cast(object caster, object target) {
-            Execute();
-        }
 
-        /// <summary>
-        /// Execute all behaviours with the given context.
-        /// </summary>
-        protected virtual void Execute() {
-            foreach (var behaviour in _behaviours.Values) {
-                behaviour.Execute();
-            }
-        }
+        public abstract void Execute();
     }
 }

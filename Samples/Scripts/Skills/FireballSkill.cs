@@ -1,5 +1,7 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
+using UnityEngine;
+
 namespace Spellbound.Stats.Samples {
     /// <summary>
     /// Sample implementation of Fireball skill from Path of Exile.
@@ -33,13 +35,20 @@ namespace Spellbound.Stats.Samples {
             Stats.SetBase(StatRegistry.GetId("mana_cost"), 10f);
             Stats.SetBase(StatRegistry.GetId("crit_chance"), 7f);
         }
-        
-        public void Cast() {
-            
-        }
 
         public float GetDamage() {
             return Stats.GetValue(StatRegistry.GetId("base_damage"));
+        }
+
+        public override void Execute() {
+            var damage = GetDamage();
+            Debug.Log($"Fireball will deal {damage:F2} damage!");
+
+            if (!HasBehaviour<ProjectileBehaviour>()) 
+                return;
+
+            var proj = GetBehaviour<ProjectileBehaviour>();
+            Debug.Log($"Firing {proj.ProjectileCount} projectiles at {proj.ProjectileSpeed} speed");
         }
     }
 }

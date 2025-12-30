@@ -1,55 +1,82 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Spellbound.Stats {
     /// <summary>
     /// Central registry for skill types.
-    /// Allows skills to be registered and instantiated by name.
+    /// Symmetric to StatRegistry - maps skill names to IDs and provides factory functions.
     /// </summary>
     public static class SkillRegistry {
-        private static readonly Dictionary<string, Type> SkillTypes = new();
-    
+        private static readonly Dictionary<string, int> NameToId = new();
+        private static readonly Dictionary<int, string> IDToName = new();
+        private static readonly Dictionary<int, Func<Skill>> Factories = new();
+        private static int _nextId;
+
         /// <summary>
-        /// Register a skill type by name.
+        /// Register a skill type. Name is extracted from the skill's constructor.
+        /// Idempotent - safe to call multiple times.
         /// </summary>
-        public static void Register<T>(string skillName) where T : Skill, new() {
-            if (SkillTypes.ContainsKey(skillName)) {
-                UnityEngine.Debug.LogWarning($"Skill '{skillName}' is already registered. Overwriting.");
-            }
-            
-            SkillTypes[skillName] = typeof(T);
-        }
-    
-        /// <summary>
-        /// Create a skill instance without specifying the type.
-        /// </summary>
-        public static Skill Create(string skillName) {
-            if (SkillTypes.TryGetValue(skillName, out var type)) {
-                return (Skill)Activator.CreateInstance(type);
-            }
-            
-            throw new KeyNotFoundException($"Skill '{skillName}' not registered");
+        public static int Register<T>() where T : Skill, new() {
+            var instance = new T();
+            var skillName = instance.Name;
+
+            if (NameToId.TryGetValue(skillName, out var existingId))
+                return existingId;
+
+            var id = _nextId++;
+            NameToId[skillName] = id;
+            IDToName[id] = skillName;
+            Factories[id] = () => new T();
+
+            return id;
         }
 
         /// <summary>
-        /// Check if a skill is registered.
+        /// Get the ID for a registered skill.
         /// </summary>
-        public static bool IsRegistered(string skillName) {
-            return SkillTypes.ContainsKey(skillName);
+        public static int GetId(string skillName) {
+            return NameToId.TryGetValue(skillName, out var id) 
+                    ? id 
+                    : throw new KeyNotFoundException($"Skill '{skillName}' not registered");
         }
+
+        /// <summary>
+        /// Try to get the ID for a skill.
+        /// </summary>
+        public static bool TryGetId(string skillName, out int id) => NameToId.TryGetValue(skillName, out id);
+
+        /// <summary>
+        /// Get the name for a skill ID.
+        /// </summary>
+        public static string GetName(int id) => IDToName[id];
+
+        /// <summary>
+        /// Create a new instance of a registered skill by ID.
+        /// </summary>
+        public static Skill Create(int skillId) {
+            return Factories.TryGetValue(skillId, out var factory) 
+                    ? factory() 
+                    : throw new KeyNotFoundException($"Skill ID '{skillId}' not registered");
+        }
+
+        /// <summary>
+        /// Create a new instance of a registered skill by name.
+        /// </summary>
+        public static Skill Create(string skillName) => Create(GetId(skillName));
 
         /// <summary>
         /// Get all registered skill names.
         /// </summary>
-        public static IEnumerable<string> GetAllSkillNames() => SkillTypes.Keys;
+        public static IEnumerable<string> GetAllSkillNames() => NameToId.Keys;
 
         /// <summary>
         /// Clear all registered skills (useful for testing).
         /// </summary>
         public static void Clear() {
-            SkillTypes.Clear();
+            NameToId.Clear();
+            IDToName.Clear();
+            Factories.Clear();
+            _nextId = 0;
         }
     }
 }

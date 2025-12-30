@@ -1,7 +1,0 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
-
-namespace Spellbound.Stats.Samples {
-    public struct KillContext {
-        public object Target;
-    }
-}

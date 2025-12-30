@@ -12,7 +12,7 @@ namespace Spellbound.Stats.Samples {
         public int ModifierId { get; }
         public HashSet<int> RequiredTags { get; }
 
-        private int _frenzyCharges = 0;
+        private int _frenzyChargesGranted = 1;
 
         public OnKillFrenzyChargeModifier(int modifierId, HashSet<int> requiredTags) {
             ModifierId = modifierId;
@@ -49,9 +49,8 @@ namespace Spellbound.Stats.Samples {
             projectile.OnKill -= HandleKill;
         }
 
-        private void HandleKill(KillContext context) {
-            _frenzyCharges++;
-            Debug.Log($"Gained Frenzy Charge! Total: {_frenzyCharges}");
+        private void HandleKill(object context) {
+            Debug.Log($"Gained Frenzy Charge! Total: {_frenzyChargesGranted}");
         }
 
         private bool HasMatchingTags(IModifiable target) {
