@@ -29,9 +29,8 @@ namespace Spellbound.Stats {
             return default;
         }
         
-        public bool HasBehaviour<T>() where T : IBehaviour {
-            return _behaviours.ContainsKey(typeof(T));
-        }
+        public bool HasBehaviour<T>() where T : IBehaviour => _behaviours.ContainsKey(typeof(T));
+        
         
         public void ApplyModifiers(IEnumerable<IModifier> modifiers) {
             foreach (var modifier in modifiers)

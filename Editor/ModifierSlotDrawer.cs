@@ -7,6 +7,10 @@ using UnityEngine;
 using System.Collections.Generic;
 
 namespace Spellbound.Stats.Editor {
+    /// <summary>
+    /// Custom property drawer for ModifierSlot.
+    /// Displays a dropdown of available ModifierDefinitions and shows value previews.
+    /// </summary>
     [CustomPropertyDrawer(typeof(ModifierSlot))]
     public class ModifierSlotDrawer : PropertyDrawer {
         private const float Padding = 4f;
@@ -40,10 +44,10 @@ namespace Spellbound.Stats.Editor {
             var rollTypeRect = new Rect(position.x, position.y, position.width, LineHeight);
             EditorGUI.PropertyField(rollTypeRect, rollTypeProp, new GUIContent("Roll Type"));
 
-            // Line 3: Value preview
+            // Line 3: Value preview - pass the roll type
             position.y += LineHeight + Spacing;
             var previewRect = new Rect(position.x, position.y, position.width, LineHeight);
-            DrawValuePreview(previewRect, selectedModifier, rollTypeProp.enumValueIndex);
+            DrawValuePreview(previewRect, selectedModifier, (ModifierRollType)rollTypeProp.enumValueIndex);
 
             EditorGUI.EndProperty();
         }
@@ -62,16 +66,17 @@ namespace Spellbound.Stats.Editor {
 
             EditorGUI.BeginChangeCheck();
             var newIndex = EditorGUI.Popup(rect, "Modifier", currentIndex, allModifiers);
-            
-            if (EditorGUI.EndChangeCheck()) {
-                modifierNameProp.stringValue = allModifiers[newIndex];
-                modifierNameProp.serializedObject.ApplyModifiedProperties();
-            }
+
+            if (!EditorGUI.EndChangeCheck()) 
+                return allModifiers[newIndex];
+
+            modifierNameProp.stringValue = allModifiers[newIndex];
+            modifierNameProp.serializedObject.ApplyModifiedProperties();
 
             return allModifiers[newIndex];
         }
 
-        private static void DrawValuePreview(Rect rect, string modifierName, int rollTypeIndex) {
+        private static void DrawValuePreview(Rect rect, string modifierName, ModifierRollType rollType) {
             if (string.IsNullOrEmpty(modifierName)) {
                 EditorGUI.LabelField(rect, "Values", "Select a modifier");
                 return;
@@ -84,14 +89,15 @@ namespace Spellbound.Stats.Editor {
                 return;
             }
 
-            var rollType = (RollType)rollTypeIndex;
-            var valueText = rollType == RollType.Fixed
-                    ? $"{definition.FixedValue}"
-                    : $"{definition.MinValue} - {definition.MaxValue}";
-
-            EditorGUI.LabelField(rect, "Values", valueText);
+            // Call GetValuePreview with the roll type
+            var preview = definition.GetValuePreview(rollType);
+            EditorGUI.LabelField(rect, "Values", preview);
         }
 
+        /// <summary>
+        /// Find all ModifierDefinition subclasses via reflection.
+        /// Cached for performance.
+        /// </summary>
         private static string[] GetAllModifierTypes() {
             if (_cachedModifierNames != null)
                 return _cachedModifierNames;
@@ -117,6 +123,9 @@ namespace Spellbound.Stats.Editor {
             return _cachedModifierNames;
         }
 
+        /// <summary>
+        /// Create a ModifierDefinition instance by its DisplayName.
+        /// </summary>
         private static ModifierDefinition CreateModifierDefinitionByName(string displayName) {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             
@@ -138,6 +147,9 @@ namespace Spellbound.Stats.Editor {
             return null;
         }
         
+        /// <summary>
+        /// Clear cache when scripts recompile.
+        /// </summary>
         [UnityEditor.Callbacks.DidReloadScripts]
         private static void OnScriptsReloaded() {
             _cachedModifierNames = null;

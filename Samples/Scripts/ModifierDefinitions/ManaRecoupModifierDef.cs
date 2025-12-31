@@ -1,25 +1,32 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
-using System.Collections.Generic;
-
 namespace Spellbound.Stats.Samples {
+    /// <summary>
+    /// Example modifier definition that grants mana recoup.
+    /// Demonstrates a simple single-modifier definition with configurable roll range.
+    /// </summary>
     public class ManaRecoupModifierDef : ModifierDefinition {
         public override string DisplayName => "Mana Recoup";
-        public override float FixedValue => 3f;
-        public override float MinValue => 1f;
-        public override float MaxValue => 5f;
-    
-        public override IModifier CreateModifier(float value, int sourceId) {
-            return new NumericModifier(
-                modifierId: DisplayName.GetHashCode(),
-                requiredTags: new HashSet<int>(),
-                statModifier: new StatModifier(
-                    StatRegistry.GetId("mana_recoup"),
-                    ModifierType.Flat,
-                    value,
-                    sourceId
-                )
-            );
+        
+        protected override ModifierTemplate[] GetTemplates() {
+            return new[] {
+                new ModifierTemplate {
+                    FixedValue = 5f,
+                    MinValue = 1f,
+                    MaxValue = 5f,
+                    Description = "Mana Recoup",
+                    CreateModifier = (value, sourceId) => new NumericModifier(
+                        modifierId: DisplayName.GetHashCode(),
+                        requiredTags: null,
+                        statModifier: new StatModifier(
+                            StatRegistry.GetId("mana_recoup"),
+                            ModifierType.Flat,
+                            value,
+                            sourceId
+                        )
+                    )
+                }
+            };
         }
     }
 }

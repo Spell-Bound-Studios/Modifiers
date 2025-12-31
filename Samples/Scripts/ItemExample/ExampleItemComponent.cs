@@ -24,11 +24,13 @@ namespace Spellbound.Stats.Samples {
         /// <summary>
         /// Get all modifiers from this item's slots.
         /// Call this when the item is equipped.
+        /// Note: Each slot can create MULTIPLE modifiers.
         /// </summary>
         public IEnumerable<IModifier> GetModifiers() {
             foreach (var slot in modifierSlots) {
-                if (!string.IsNullOrEmpty(slot.modifierName)) {
-                    yield return slot.CreateModifier(GetInstanceID());
+                // Each slot can create 1 or more modifiers
+                foreach (var modifier in slot.CreateModifiers(GetInstanceID())) {
+                    yield return modifier;
                 }
             }
         }
