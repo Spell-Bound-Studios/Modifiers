@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 using System.Collections.Generic;
 
@@ -27,4 +27,4 @@ namespace Spellbound.Stats.Samples {
         // This is interface bound.
         public IEnumerable<IModifier> GetModifiers() => _modifiers;
     }
-}
+}*/

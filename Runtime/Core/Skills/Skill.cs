@@ -5,14 +5,19 @@ using System.Collections.Generic;
 
 namespace Spellbound.Stats {
     /// <summary>
-    /// Base class for all skills.
-    /// Skills have stats that can be modified and tags that determine which modifiers apply.
+    /// Runtime instance of a skill with mutable stats, tags, and behaviours.
+    /// Created from a Skill ObjectPreset, then modified by player build.
     /// </summary>
-    public abstract class Skill : IModifiable, IStats {
-        public string Name { get; protected set; }
-        public HashSet<int> Tags { get; protected set; } = new();
-        public StatContainer Stats { get; protected set; } = new();
+    public class Skill : ICanBeModified, IStats {
+        public string Name { get; set; }
+        public HashSet<int> Tags { get; set; } = new();
+        public StatContainer Stats { get; set; } = new();
+        
         private readonly Dictionary<Type, IBehaviour> _behaviours = new();
+
+        public Skill(string name) {
+            Name = name;
+        }
 
         public void AddBehaviour<T>(T behaviour) where T : IBehaviour {
             _behaviours[typeof(T)] = behaviour;
@@ -23,20 +28,9 @@ namespace Spellbound.Stats {
         }
         
         public T GetBehaviour<T>() where T : IBehaviour {
-            if (_behaviours.TryGetValue(typeof(T), out var behaviour))
-                return (T)behaviour;
-            
-            return default;
+            return _behaviours.TryGetValue(typeof(T), out var behaviour) ? (T)behaviour : default;
         }
         
         public bool HasBehaviour<T>() where T : IBehaviour => _behaviours.ContainsKey(typeof(T));
-        
-        
-        public void ApplyModifiers(IEnumerable<IModifier> modifiers) {
-            foreach (var modifier in modifiers)
-                modifier.Apply(this);
-        }
-
-        public abstract void Execute();
     }
 }

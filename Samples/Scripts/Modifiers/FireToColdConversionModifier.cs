@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +16,7 @@ namespace Spellbound.Stats.Samples {
             _conversionPercent = conversionPercent;
         }
 
-        public void Apply(IModifiable target) {
+        public void Apply(ICanBeModified target) {
             if (!HasMatchingTags(target))
                 return;
 
@@ -39,7 +39,7 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"Added {_conversionPercent}% Fire to Cold conversion to {skill.Name}");
         }
 
-        public void Remove(IModifiable target) {
+        public void Remove(ICanBeModified target) {
             if (target is not Skill skill) 
                 return;
 
@@ -47,7 +47,7 @@ namespace Spellbound.Stats.Samples {
             skill.Tags.Remove(TagRegistry.GetId("Cold"));
         }
 
-        private bool HasMatchingTags(IModifiable target) {
+        private bool HasMatchingTags(ICanBeModified target) {
             if (RequiredTags.Count == 0)
                 return true;
 
@@ -59,4 +59,4 @@ namespace Spellbound.Stats.Samples {
             return false;
         }
     }
-}
+}*/

@@ -5,26 +5,22 @@ using System.Collections.Generic;
 
 namespace Spellbound.Stats {
     /// <summary>
-    /// Implement this if you want to create a custom modifier type.
-    /// Modifiers can change stats, add behaviours, or modify entity capabilities.
+    /// The atomic primitive for a modifier.
+    /// Implement this if you want to create a custom modifier.
+    /// Defines what it means to be a modification that can be applied/removed
     /// </summary>
     /// <example>
     /// NumericModifier (changes stats), OnKillModifier (adds on-kill effects), ConversionModifier (converts damage types)
     /// </example>
     /// <remarks>
     /// This is a primitive component of this entire architecture. It's very important to remember that IModifier
-    /// represents a single modification... and the ModifierDefinition represents a collection of modifications.
+    /// represents a single modification.
     /// </remarks>
     public interface IModifier {
         /// <summary>
         /// Unique identifier for this modifier instance.
+        /// Used to track individual modifiers for stacking rules and granular removal.
         /// </summary>
-        /// <remarks>
-        /// The intention behind this ID is to differentiate between the two modifiers on something. This tells us
-        /// which mod belongs to which IModifier. Imagine you allowed your game to have hybrid modifier definitions that
-        /// grant 7 strength and 7 armor and then another modifier definition of 10 strength... then you go to remove one
-        /// how do you know which one to remove?
-        /// </remarks>
         int ModifierId { get; }
 
         /// <summary>
@@ -41,12 +37,12 @@ namespace Spellbound.Stats {
         /// Apply this modifier to a target entity.
         /// Should check if target's tags match RequiredTags.
         /// </summary>
-        void Apply(IModifiable target);
+        void Apply(ICanBeModified target);
 
         /// <summary>
         /// Remove this modifier from a target entity.
         /// Called when the modifier source is removed.
         /// </summary>
-        void Remove(IModifiable target);
+        void Remove(ICanBeModified target);
     }
 }

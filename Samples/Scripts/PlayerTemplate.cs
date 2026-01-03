@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 using System.Collections.Generic;
 
@@ -7,7 +7,7 @@ namespace Spellbound.Stats.Samples {
     /// Represents a player character that aggregates modifiers from various sources.
     /// This is a sample implementation - your game might structure this differently.
     /// </summary>
-    public class PlayerTemplate : IModifiable, IStats {
+    public class PlayerTemplate : ICanBeModified, IStats {
         public string Name { get; set; }
         public HashSet<int> Tags { get; private set; }
         public StatContainer Stats { get; private set; }
@@ -45,4 +45,4 @@ namespace Spellbound.Stats.Samples {
             }
         }
     }
-}
+}*/

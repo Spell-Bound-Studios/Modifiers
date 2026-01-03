@@ -1,17 +1,18 @@
 ﻿namespace Spellbound.Stats {
+    /// <summary>
+    /// This is a data transfer object so that we can easily modify our stat container without passing in a long tuple.
+    /// </summary>
     public readonly struct StatModifier {
-        public readonly int StatId;        // What?
-        public readonly ModifierType Type; // How?
-        public readonly float Value;       // Amount?
-        public readonly int SourceId;      // Who or where it came from???
-        public readonly ulong TagMask;     // Conditional
+        public readonly int StatId;
+        public readonly ModifierType Type;
+        public readonly float Value;
+        public readonly int SourceId;
 
-        public StatModifier(int statId, ModifierType type, float value, int sourceId = 0, ulong tagMask = 0) {
+        public StatModifier(int statId, ModifierType type, float value, int sourceId = 0) {
             StatId = statId;
             Type = type;
             Value = value;
             SourceId = sourceId;
-            TagMask = tagMask;
         }
     }
 }

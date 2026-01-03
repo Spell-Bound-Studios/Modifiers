@@ -1,69 +1,94 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
+#nullable enable
+using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
+using Spellbound.Stats.Attributes;
+using UnityEngine;
 
 namespace Spellbound.Stats {
     /// <summary>
-    /// A reference implementation of IModifier that changes numerical stats.
-    /// Use this as a template for creating your own numeric modifiers.
+    /// A configurable numeric modifier that can be set up in the inspector or created at runtime.
     /// </summary>
     /// <example>
-    /// "Create a modifier that adds +10 to strength and has no conditional tags"
-    /// var strengthMod = new NumericModifier(
-    ///     modifierId: 1,
-    ///     requiredTags: null, // No tag requirements
-    ///     statModifier: new StatModifier(
-    ///         StatRegistry.GetId("strength"),
-    ///         ModifierType.Flat,
-    ///         10f,
-    ///         sourceId: itemId
-    ///     )
-    /// );
+    /// Inspector Usage:
+    /// 1. Add NumericModifier to ModifierModule
+    /// 2. Configure: statId, modifierType, value, tags
+    /// 3. sourceId is set automatically when item instance is created
     /// 
-    /// "Create a modifier that increases fire damage by 30% (conditional)"
-    /// var fireMod = new NumericModifier(
-    ///     modifierId: 2,
-    ///     requiredTags: new HashSet&lt;int&gt; { TagRegistry.GetId("Fire") }, // Tag requirement
-    ///     statModifier: new StatModifier(
-    ///         StatRegistry.GetId("base_damage"),
-    ///         ModifierType.Increased,
-    ///         30f,
-    ///         sourceId: passiveId
-    ///     )
+    /// Runtime Usage:
+    /// var mod = new NumericModifier(
+    ///     id: 1,
+    ///     stat: StatRegistry.GetId("strength"),
+    ///     type: ModifierType.Flat,
+    ///     val: 10f,
+    ///     tags: null,
+    ///     source: itemInstanceId
     /// );
     /// </example>
     /// <remarks>
-    /// This is technically game logic, but I wanted to include it in the base package since I think that 99% of users
-    /// will want this type of modifier. So please feel free to use or write your own based on your needs and use this
-    /// as a reference on how to construct. 
+    /// We chose to include this in the library because we believe that 99% of users will just end up creating this
+    /// first anyway. Please feel free to use or create your own with this as a model for numeric stat modification. 
     /// </remarks>
+    [Serializable]
     public class NumericModifier : IModifier {
-        public int ModifierId { get; }
-        public HashSet<int> RequiredTags { get; }
+        [Tooltip("Unique identifier for this modifier instance")]
+        [SerializeField] private int modifierId;
         
-        private readonly StatModifier _statModifier;
+        [Tooltip("Which stat to modify")]
+        [SerializeField] [StatId] private int statId;
+        
+        [Tooltip("How to modify")]
+        [SerializeField] private ModifierType modifierType;
+        
+        [Tooltip("Amount to modify")]
+        [SerializeField] private float value;
+        
+        [Tooltip("Conditions that must be met")]
+        public HashSet<int>? RequiredTags { get; }
 
-        public NumericModifier(int modifierId, [CanBeNull] HashSet<int> requiredTags, StatModifier statModifier) {
-            ModifierId = modifierId;
-            RequiredTags = requiredTags;
-            _statModifier = statModifier;
+        public int ModifierId => modifierId;
+        private int _sourceId;
+
+        /// <summary>
+        /// Empty constructor for Unity serialization.
+        /// Call Initialize() before applying.
+        /// </summary>
+        public NumericModifier() { }
+        
+        /// <summary>
+        /// Full constructor for runtime creation.
+        /// </summary>
+        public NumericModifier(int id, int stat, ModifierType type, float val, HashSet<int>? tags, int source) {
+            modifierId = id;
+            statId = stat;
+            modifierType = type;
+            value = val;
+            RequiredTags = tags;
+            _sourceId = source;
         }
-
-        public void Apply(IModifiable target) {
-            // Builtin API call to check/compare tags. If RequiredTags is null then no requirements are necessary and
-            // this should be able to apply.
+        
+        /// <summary>
+        /// Initialize the sourceId for inspector-created modifiers.
+        /// </summary>
+        public void Initialize(int sourceId) => _sourceId = sourceId;
+        
+        public void Apply(ICanBeModified target) {
             if (!SbModifier.ShouldModifierApply(RequiredTags, target))
                 return;
-
-            // Apply to target's stats if it has a stat container
-            if (target is IStats hasStats)
-                hasStats.Stats.AddModifier(_statModifier);
+            
+            if (target is not IStats hasStats)
+                return;
+            
+            var statModifier = new StatModifier(statId, modifierType, value, _sourceId);
+            hasStats.Stats.AddModifier(statModifier);
         }
-
-        public void Remove(IModifiable target) {
-            if (target is IStats hasStats)
-                hasStats.Stats.RemoveModifiersFromSource(_statModifier.SourceId);
+        
+        public void Remove(ICanBeModified target) {
+            if (target is not IStats hasStats)
+                return;
+            
+            hasStats.Stats.RemoveModifiersFromSource(_sourceId);
         }
     }
 }

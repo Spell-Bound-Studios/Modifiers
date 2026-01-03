@@ -2,8 +2,8 @@
 
 namespace Spellbound.Stats {
     /// <summary>
-    /// Implement this if you want something to have a stat container that can be modified.
-    /// Typically used alongside IModifiable - both together enable numeric stat modifications.
+    /// Implement this if you want something to have a stat container.
+    /// Having IStats alone does NOT imply modifiability.
     /// </summary>
     /// <example>
     /// Characters, Skills, Items

@@ -18,7 +18,7 @@ namespace Spellbound.Stats {
         /// <example>
         /// if (!ModifierUtility.ShouldApply(RequiredTags, target)) return;
         /// </example>
-        public static bool ShouldModifierApply(HashSet<int>? requiredTags, IModifiable target) {
+        public static bool ShouldModifierApply(HashSet<int>? requiredTags, ICanBeModified target) {
             // Null or empty = applies to everything
             if (requiredTags == null || requiredTags.Count == 0)
                 return true;

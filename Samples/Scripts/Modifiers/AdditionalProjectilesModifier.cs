@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +16,7 @@ namespace Spellbound.Stats.Samples {
             _additionalProjectiles = additionalProjectiles;
         }
 
-        public void Apply(IModifiable target) {
+        public void Apply(ICanBeModified target) {
             if (!HasMatchingKeywords(target))
                 return;
 
@@ -28,7 +28,7 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"Added {_additionalProjectiles} projectiles to {skill.Name}. Total: {projectile.ProjectileCount}");
         }
 
-        public void Remove(IModifiable target) {
+        public void Remove(ICanBeModified target) {
             if (target is not Skill skill || !skill.HasBehaviour<ProjectileBehaviour>()) 
                 return;
 
@@ -36,7 +36,7 @@ namespace Spellbound.Stats.Samples {
             projectile.ProjectileCount -= _additionalProjectiles;
         }
 
-        private bool HasMatchingKeywords(IModifiable target) {
+        private bool HasMatchingKeywords(ICanBeModified target) {
             if (RequiredTags.Count == 0)
                 return true;
 
@@ -48,4 +48,4 @@ namespace Spellbound.Stats.Samples {
             return false;
         }
     }
-}
+}*/

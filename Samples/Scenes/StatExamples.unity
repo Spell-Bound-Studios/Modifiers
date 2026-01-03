@@ -119,50 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &122956750
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 122956752}
-  - component: {fileID: 122956751}
-  m_Layer: 0
-  m_Name: StatContainer
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &122956751
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 122956750}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99c49c6936d1ec54b90110bc89bdec18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.StatSystemExample
---- !u!4 &122956752
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 122956750}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &751812709
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,7 +246,7 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &1994354883
+--- !u!1 &1669441490
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -298,41 +254,41 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1994354885}
-  - component: {fileID: 1994354884}
+  - component: {fileID: 1669441492}
+  - component: {fileID: 1669441491}
   m_Layer: 0
-  m_Name: SomeItem
+  m_Name: StatsManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1994354884
+--- !u!114 &1669441491
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1994354883}
+  m_GameObject: {fileID: 1669441490}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9bc1c611140434b87d6b8c476717da8, type: 3}
+  m_Script: {fileID: 11500000, guid: a83642ab2cd246cfbbfb6dd55d8ececb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.ExampleItemComponent
-  itemName: Berserker Rage Helm
-  modifierSlots:
-  - modifierName: 
-    rollType: 0
---- !u!4 &1994354885
+  m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatsManager
+  registries:
+  - {fileID: 11400000, guid: 2fd4f4e640b0cd24f99a13fe74499f99, type: 2}
+  - {fileID: 11400000, guid: 58a298581cb79e24991ccac18c0d62a4, type: 2}
+  verbose: 1
+--- !u!4 &1669441492
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1994354883}
+  m_GameObject: {fileID: 1669441490}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: -0}
+  m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -481,5 +437,4 @@ SceneRoots:
   m_Roots:
   - {fileID: 1995933975}
   - {fileID: 751812711}
-  - {fileID: 122956752}
-  - {fileID: 1994354885}
+  - {fileID: 1669441492}

@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 namespace Spellbound.Stats.Samples {
     /// <summary>
@@ -29,4 +29,4 @@ namespace Spellbound.Stats.Samples {
             };
         }
     }
-}
+}*/

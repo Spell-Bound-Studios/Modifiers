@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,7 +19,7 @@ namespace Spellbound.Stats.Samples {
             RequiredTags = requiredTags;
         }
 
-        public void Apply(IModifiable target) {
+        public void Apply(ICanBeModified target) {
             if (!HasMatchingTags(target))
                 return;
 
@@ -39,7 +39,7 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"OnKillFrenzyCharge modifier applied to {skill.Name}");
         }
 
-        public void Remove(IModifiable target) {
+        public void Remove(ICanBeModified target) {
             if (target is not Skill skill || !skill.HasBehaviour<ProjectileBehaviour>()) {
                 Debug.LogError("Attempting to remove a behaviour from something that does not contain that behaviour.");
                 return;
@@ -53,7 +53,7 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"Gained Frenzy Charge! Total: {_frenzyChargesGranted}");
         }
 
-        private bool HasMatchingTags(IModifiable target) {
+        private bool HasMatchingTags(ICanBeModified target) {
             if (RequiredTags.Count == 0)
                 return true;
 
@@ -65,4 +65,4 @@ namespace Spellbound.Stats.Samples {
             return false;
         }
     }
-}
+}*/

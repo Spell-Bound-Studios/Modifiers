@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 using UnityEngine;
 
@@ -36,9 +36,7 @@ namespace Spellbound.Stats.Samples {
             Stats.SetBase(StatRegistry.GetId("crit_chance"), 7f);
         }
 
-        public float GetDamage() {
-            return Stats.GetValue(StatRegistry.GetId("base_damage"));
-        }
+        public float GetDamage() => Stats.GetValue(StatRegistry.GetId("base_damage"));
 
         public override void Execute() {
             var damage = GetDamage();
@@ -51,4 +49,4 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"Firing {proj.ProjectileCount} projectiles at {proj.ProjectileSpeed} speed");
         }
     }
-}
+}*/

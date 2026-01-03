@@ -4,14 +4,13 @@ using System.Collections.Generic;
 
 namespace Spellbound.Stats {
     /// <summary>
-    /// Implement this if you want something to be able to receive modifiers.
+    /// Implement this if you want something to be able to receive modifiers - it simply marks it as being modifiable.
     /// Tags determine which modifiers are applicable to this entity.
     /// </summary>
     /// <example>
-    /// A players stats can be modified and should therefore implement the IModifiable. The interface will be leveraged
-    /// to check if the target has matching tags before it attempts to modify them.
+    /// Skills, Characters, Items - anything that modifiers can affect.
     /// </example>
-    public interface IModifiable {
+    public interface ICanBeModified {
         /// <summary>
         /// Tags that determine which modifiers affect this entity.
         /// Stored as integer IDs registered in TagRegistry.

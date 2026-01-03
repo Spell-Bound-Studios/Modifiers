@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿/*// Copyright 2025 Spellbound Studio Inc.
 
 using UnityEngine;
 using System.Collections.Generic;
@@ -43,4 +43,4 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"Equipped {itemName} with {modifierSlots.Count} modifiers");
         }
     }
-}
+}*/

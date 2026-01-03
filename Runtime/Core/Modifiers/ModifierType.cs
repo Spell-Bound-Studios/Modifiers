@@ -8,26 +8,34 @@ namespace Spellbound.Stats {
     public enum ModifierType : byte {
         /// <summary>
         /// Flat addition to base value. Applied first in calculation order.
-        /// Example: "+10 to Strength"
         /// </summary>
+        /// <example>
+        /// "+10 to Strength"
+        /// </example>
         Flat = 0,
 
         /// <summary>
         /// Percentage increase, additive with other Increased modifiers.
-        /// Example: "30% increased Physical Damage" + "20% increased Physical Damage" = 50% total
         /// </summary>
+        /// <example>
+        /// "30% increased Physical Damage" + "20% increased Physical Damage" = 50% total
+        /// </example>
         Increased = 1,
 
         /// <summary>
         /// Percentage multiplier, multiplicative with other More modifiers.
-        /// Example: "40% more Attack Speed" then "30% more Attack Speed" = 1.4 * 1.3 = 82% total
         /// </summary>
+        /// <example>
+        /// "40% more Attack Speed" then "30% more Attack Speed" = 1.4 * 1.3 = 82% total
+        /// </example>
         More = 2,
 
         /// <summary>
         /// Overrides the final calculated value. Use sparingly for special cases.
-        /// Example: "Set maximum Life to 1" (for certain unique mechanics)
         /// </summary>
+        /// <example>
+        /// "Set maximum Life to 1" (for certain unique mechanics)
+        /// </example>
         Override = 3
     }
 }
