@@ -21,15 +21,12 @@ namespace Spellbound.Stats {
             Name = name;
         }
 
-        public void AddBehaviour<T>(T behaviour) where T : IBehaviour => _behaviours[typeof(T)] = behaviour;
-        
+        public void AddBehaviour(IBehaviour behaviour) => _behaviours[behaviour.GetType()] = behaviour;
         public void RemoveBehaviour<T>() where T : IBehaviour => _behaviours.Remove(typeof(T));
-        
         public T GetBehaviour<T>() where T : IBehaviour =>
                 _behaviours.TryGetValue(typeof(T), out var behaviour) 
                     ? (T)behaviour 
                     : default;
-        
         public bool HasBehaviour<T>() where T : IBehaviour => _behaviours.ContainsKey(typeof(T));
     }
 }

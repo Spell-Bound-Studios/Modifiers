@@ -119,6 +119,51 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &236781737
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 236781738}
+  - component: {fileID: 236781739}
+  m_Layer: 0
+  m_Name: FireballExample
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &236781738
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236781737}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &236781739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236781737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b59950b64334677ac666a65d72efeb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.FireballTest
+  fireballSkill: {fileID: 11400000, guid: aed0f6a64c4907a4288e8e62d0936142, type: 2}
 --- !u!1 &751812709
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,8 +322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatsManager
   registries:
   - {fileID: 11400000, guid: 2fd4f4e640b0cd24f99a13fe74499f99, type: 2}
-  - {fileID: 11400000, guid: 58a298581cb79e24991ccac18c0d62a4, type: 2}
-  verbose: 1
+  verbose: 0
 --- !u!4 &1669441492
 Transform:
   m_ObjectHideFlags: 0
@@ -438,3 +482,4 @@ SceneRoots:
   - {fileID: 1995933975}
   - {fileID: 751812711}
   - {fileID: 1669441492}
+  - {fileID: 236781738}

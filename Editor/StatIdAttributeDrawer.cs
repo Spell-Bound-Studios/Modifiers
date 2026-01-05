@@ -4,6 +4,7 @@
 using Spellbound.Stats.Attributes;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Spellbound.Stats.Editor {
     [CustomPropertyDrawer(typeof(StatIdAttribute))]

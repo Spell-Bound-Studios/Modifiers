@@ -10,20 +10,12 @@ namespace Spellbound.Stats.Samples {
     /// Modifier that changes projectile directions.
     /// </summary>
     [Serializable]
-    public class CircularProjectileModifier : IModifier {
-        public int ModifierId { get; }
+    public sealed class CircularProjectileModifier : IModifier {
+        private int? _modifierId;
+        public int ModifierId => _modifierId ??= GetHashCode();
         
-        [Tooltip("Conditions that must be met")]
-        public HashSet<int>? RequiredTags { get; private set; }
-
-        // Empty constructor for editor/inspector
-        public CircularProjectileModifier() { }
-
-        // Construction
-        public CircularProjectileModifier(int id, HashSet<int>? tags) {
-            ModifierId = id;
-            RequiredTags = tags;
-        }
+        private HashSet<int>? _requiredTags;
+        public HashSet<int>? RequiredTags => _requiredTags ??= new HashSet<int> { TagRegistry.Register("Projectile") };
         
         // How to apply this modifier - comes from IModifier.
         public void Apply(ICanBeModified target) {
@@ -51,6 +43,9 @@ namespace Spellbound.Stats.Samples {
         public void Remove(ICanBeModified target) {
             if (target is not Skill skill)
                 return;
+            
+            var projectileBehaviour = skill.GetBehaviour<ProjectileBehaviour>();
+            projectileBehaviour?.RestoreOriginalPattern();
         }
         
         private Vector3[] CalculateCircularDirections(int count) {
