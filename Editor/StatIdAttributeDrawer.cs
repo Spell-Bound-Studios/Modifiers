@@ -11,6 +11,7 @@ namespace Spellbound.Stats.Editor {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             if (property.propertyType != SerializedPropertyType.Integer) {
                 EditorGUI.LabelField(position, label.text, "[StatId] only works on int fields");
+
                 return;
             }
 

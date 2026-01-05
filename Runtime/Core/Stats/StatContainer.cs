@@ -24,8 +24,10 @@ namespace Spellbound.Stats {
 
         /// <summary>
         /// Set the base value for a stat (before modifiers).
-        /// Example: Base physical damage = 100
         /// </summary>
+        /// <example>
+        /// Base physical damage = 100
+        /// </example>
         public void SetBase(int statId, float value) {
             _baseValues[statId] = value;
             _isDirty = true;

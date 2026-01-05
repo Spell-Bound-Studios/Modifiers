@@ -69,7 +69,8 @@ namespace Spellbound.Stats.Editor {
 
         #region Property Drawing with Attribute Support
 
-        private static void DrawPropertyWithAttributeSupport(Rect position, SerializedProperty property, GUIContent label) {
+        private static void DrawPropertyWithAttributeSupport(
+            Rect position, SerializedProperty property, GUIContent label) {
             EditorGUI.BeginProperty(position, label, property);
 
             var foldoutRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
@@ -97,8 +98,6 @@ namespace Spellbound.Stats.Editor {
 
                 if (HasStatIdAttribute(property, iterator.name))
                     DrawStatIdField(fieldRect, iterator);
-                else if (HasTagIdAttribute(property, iterator.name))
-                    DrawTagIdField(fieldRect, iterator);
                 else
                     EditorGUI.PropertyField(fieldRect, iterator, true);
 
@@ -108,6 +107,29 @@ namespace Spellbound.Stats.Editor {
             EditorGUI.indentLevel--;
             EditorGUI.EndProperty();
         }
+
+        #endregion
+
+        #region Attribute Detection
+
+        private static bool HasStatIdAttribute(SerializedProperty parentProperty, string fieldName) {
+            if (parentProperty.managedReferenceValue == null)
+                return false;
+
+            var targetType = parentProperty.managedReferenceValue.GetType();
+
+            var field = targetType.GetField(fieldName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            return field != null && Attribute.IsDefined(field, typeof(StatIdAttribute));
+        }
+
+        #endregion
+
+        #region Drawing with Utility
+
+        private static void DrawStatIdField(Rect position, SerializedProperty property) =>
+                DefinitionDropdownUtility.DrawStatDropdown(position, property, new GUIContent(property.displayName));
 
         #endregion
 
@@ -182,44 +204,6 @@ namespace Spellbound.Stats.Editor {
 
             return lastDot >= 0 ? fullType[(lastDot + 1)..] : fullType;
         }
-
-        #endregion
-
-        #region Attribute Detection
-
-        private static bool HasStatIdAttribute(SerializedProperty parentProperty, string fieldName) {
-            if (parentProperty.managedReferenceValue == null)
-                return false;
-
-            var targetType = parentProperty.managedReferenceValue.GetType();
-
-            var field = targetType.GetField(fieldName,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            return field != null && Attribute.IsDefined(field, typeof(StatIdAttribute));
-        }
-
-        private static bool HasTagIdAttribute(SerializedProperty parentProperty, string fieldName) {
-            if (parentProperty.managedReferenceValue == null)
-                return false;
-
-            var targetType = parentProperty.managedReferenceValue.GetType();
-
-            var field = targetType.GetField(fieldName,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            return field != null && Attribute.IsDefined(field, typeof(TagIdAttribute));
-        }
-
-        #endregion
-
-        #region Drawing with Utility
-
-        private static void DrawStatIdField(Rect position, SerializedProperty property) =>
-                DefinitionDropdownUtility.DrawStatDropdown(position, property, new GUIContent(property.displayName));
-
-        private static void DrawTagIdField(Rect position, SerializedProperty property) =>
-                DefinitionDropdownUtility.DrawTagDropdown(position, property, new GUIContent(property.displayName));
 
         #endregion
     }

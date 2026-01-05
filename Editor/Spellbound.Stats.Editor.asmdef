@@ -1,16 +1,16 @@
 {
-    "name": "Spellbound.Stats.Editor",
-    "rootNamespace": "Spellbound.Stats.Editor",
-    "references": [
-        "GUID:7cf2c2f5768d84d459fa425567ae5e6a"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "Spellbound.Stats.Editor",
+  "rootNamespace": "Spellbound.Stats.Editor",
+  "references": [
+    "GUID:7cf2c2f5768d84d459fa425567ae5e6a"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

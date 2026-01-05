@@ -33,7 +33,7 @@ namespace Spellbound.Stats {
     [Serializable]
     public class NumericModifier : IModifier {
         [Tooltip("Unique identifier for this modifier instance")]
-        [SerializeField] private int modifierId;
+        private int _modifierId;
         
         [Tooltip("Which stat to modify")]
         [SerializeField] [StatId] private int statId;
@@ -47,7 +47,7 @@ namespace Spellbound.Stats {
         [Tooltip("Conditions that must be met")]
         public HashSet<int>? RequiredTags { get; }
 
-        public int ModifierId => modifierId;
+        public int ModifierId => _modifierId;
         private int _sourceId;
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Spellbound.Stats {
         /// Full constructor for runtime creation.
         /// </summary>
         public NumericModifier(int id, int stat, ModifierType type, float val, HashSet<int>? tags, int source) {
-            modifierId = id;
+            _modifierId = id;
             statId = stat;
             modifierType = type;
             value = val;

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Spellbound.Stats {
     /// <summary>
@@ -10,26 +11,24 @@ namespace Spellbound.Stats {
     /// </summary>
     public class Skill : ICanBeModified, IStats {
         public string Name { get; set; }
-        public HashSet<int> Tags { get; set; } = new();
-        public StatContainer Stats { get; set; } = new();
-        
+        public StatContainer Stats { get; private set; } = new();
         private readonly Dictionary<Type, IBehaviour> _behaviours = new();
-
+        public HashSet<int> Tags => _behaviours.Values
+                .SelectMany(b => b.Tags)
+                .ToHashSet();
+        
         public Skill(string name) {
             Name = name;
         }
 
-        public void AddBehaviour<T>(T behaviour) where T : IBehaviour {
-            _behaviours[typeof(T)] = behaviour;
-        }
+        public void AddBehaviour<T>(T behaviour) where T : IBehaviour => _behaviours[typeof(T)] = behaviour;
         
-        public void RemoveBehaviour<T>() where T : IBehaviour {
-            _behaviours.Remove(typeof(T));
-        }
+        public void RemoveBehaviour<T>() where T : IBehaviour => _behaviours.Remove(typeof(T));
         
-        public T GetBehaviour<T>() where T : IBehaviour {
-            return _behaviours.TryGetValue(typeof(T), out var behaviour) ? (T)behaviour : default;
-        }
+        public T GetBehaviour<T>() where T : IBehaviour =>
+                _behaviours.TryGetValue(typeof(T), out var behaviour) 
+                    ? (T)behaviour 
+                    : default;
         
         public bool HasBehaviour<T>() where T : IBehaviour => _behaviours.ContainsKey(typeof(T));
     }

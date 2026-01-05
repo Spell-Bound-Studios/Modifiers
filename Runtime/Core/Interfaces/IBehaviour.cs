@@ -1,5 +1,7 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
+using System.Collections.Generic;
+
 namespace Spellbound.Stats {
     /// <summary>
     /// Implement this if you want to create a behaviour that can be attached to something.
@@ -11,12 +13,25 @@ namespace Spellbound.Stats {
     /// </example>
     public interface IBehaviour {
         /// <summary>
-        /// Unique identifier for this behaviour type.
-        /// Used to retrieve specific behaviours from an implementer.
+        /// 
         /// </summary>
         /// <example>
-        /// "Projectile", "AoE", "Fire", etc.
+        /// 
         /// </example>
         string BehaviourType { get; }
+        
+        /// <summary>
+        /// An ID that allows the user to associate stats that are impacted by a modifier with matching tags.
+        /// </summary>
+        /// <example>
+        /// A "Fire" tag impacts the fire_damage and chance_to_burn stats.
+        /// </example>
+        HashSet<int> Tags { get; }
+        
+        /// <summary>
+        /// Stats specific to this behaviour.
+        /// Modifiers target these stats when matching tags.
+        /// </summary>
+        StatContainer Stats { get; }
     }
 }

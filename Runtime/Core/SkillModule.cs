@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Spellbound.Core;
-using Spellbound.Stats.Attributes;
 using UnityEngine;
 
 namespace Spellbound.Stats {
@@ -16,35 +15,16 @@ namespace Spellbound.Stats {
         [Tooltip("Display name for this skill")]
         [SerializeField] private string skillName;
         
-        [Tooltip("Base tags (Fire, Cold, Spell, Attack, Projectile, etc.)")]
-        [SerializeField] private List<TagEntry> baseTags = new();
-        
-        [Tooltip("Base stat values (damage, cast_speed, etc.)")]
-        [SerializeField] private List<BaseStatValue> baseStats = new();
-        
-        [Serializable]
-        public struct TagEntry {
-            [TagId] public int tagId;
-        }
-        
-        [Serializable]
-        public struct BaseStatValue {
-            [StatId] public int statId;
-            public float value;
-        }
-        
-        public override SbbData? GetData(ObjectPreset preset) {
-            return null;
-        }
+        [Tooltip("Behaviours this skill has (Fire, Projectile, Duration, etc.)")]
+        [SerializeReference] private List<IBehaviour> behaviours = new();
+
+        public override SbbData? GetData(ObjectPreset preset) => null;
         
         public Skill CreateSkill() {
             var skill = new Skill(skillName);
             
-            foreach (var tagEntry in baseTags)
-                skill.Tags.Add(tagEntry.tagId);
-            
-            foreach (var baseStat in baseStats)
-                skill.Stats.SetBase(baseStat.statId, baseStat.value);
+            foreach (var behaviour in behaviours)
+                skill.AddBehaviour(behaviour);
             
             return skill;
         }
