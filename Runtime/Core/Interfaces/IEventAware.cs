@@ -6,7 +6,7 @@ namespace Spellbound.Stats {
     /// Called automatically when behaviour is added to a skill.
     /// </summary>
     public interface IEventAware {
-        void Subscribe(SkillEventBus events);
-        void Unsubscribe(SkillEventBus events);
+        void Subscribe(Skill skill);
+        void Unsubscribe(Skill skill);
     }
 }

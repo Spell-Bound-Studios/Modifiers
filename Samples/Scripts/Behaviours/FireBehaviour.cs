@@ -22,14 +22,14 @@ namespace Spellbound.Stats.Samples {
         public HashSet<int> Tags => _tags ??= new HashSet<int> { TagRegistry.Register(BehaviourType) };
         public StatContainer Stats => _stats ??= InitializeStats();
 
-        public void Subscribe(SkillEventBus events) {
+        public void Subscribe(Skill skill) {
             _onHitHandler = OnHit;
-            events.On(_onHitHandler);
+            skill.Events.On(_onHitHandler);
         }
 
-        public void Unsubscribe(SkillEventBus events) {
+        public void Unsubscribe(Skill skill) {
             if (_onHitHandler != null)
-                events.Off(_onHitHandler);
+                skill.Events.Off(_onHitHandler);
         }
 
         private void OnHit(HitEvent evt) {

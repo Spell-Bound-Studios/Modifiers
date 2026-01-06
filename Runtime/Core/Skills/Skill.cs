@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Spellbound.Stats {
     /// <summary>
@@ -27,25 +26,25 @@ namespace Spellbound.Stats {
             _behaviours[behaviour.GetType()] = behaviour;
             
             if (behaviour is IEventAware eventAware)
-                eventAware.Subscribe(Events);
+                eventAware.Subscribe(this);
         }
         
         public void RemoveBehaviour<T>() where T : IBehaviour {
-            if (!_behaviours.TryGetValue(typeof(T), out var behaviour)) {
-                Debug.LogError(
-                    "Cannot remove behaviour of type " + typeof(T) + "as it does not exist in the behaviour dictionary"
-                    );
+            if (!_behaviours.TryGetValue(typeof(T), out var behaviour)) 
                 return;
-            }
 
             if (behaviour is IEventAware eventAware)
-                eventAware.Unsubscribe(Events);
+                eventAware.Unsubscribe(this);
+            
             _behaviours.Remove(typeof(T));
         }
+        
         public T GetBehaviour<T>() where T : IBehaviour =>
                 _behaviours.TryGetValue(typeof(T), out var behaviour) 
-                    ? (T)behaviour 
-                    : default;
-        public bool HasBehaviour<T>() where T : IBehaviour => _behaviours.ContainsKey(typeof(T));
+                        ? (T)behaviour 
+                        : default;
+                
+        public bool HasBehaviour<T>() where T : IBehaviour => 
+                _behaviours.ContainsKey(typeof(T));
     }
 }
