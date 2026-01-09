@@ -3,103 +3,67 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Spellbound.Stats.Samples {
-    /// <summary>
-    /// Behaviour for projectile mechanics.
-    /// </summary>
-    public class ProjectileBehaviour : IBehaviour, IEventAware {
-        // This gets set for the demo scene and enables the projectile spawning
+    [Serializable]
+    public class ProjectileBehaviour : SbBehaviour {
+        public override string BehaviourType => "Projectile";
+        
+        [SerializeField] private int count = 1;
+        [SerializeField] private float speed = 10f;
+        
         public GameObject ProjectilePrefab { get; set; }
         
-        [Tooltip("Number of projectiles to fire"), SerializeField]
-        private int count = 1;
-
-        [Tooltip("Projectile speed"), SerializeField]
-        private float speed = 10f;
+        private Func<int, Vector3[]> _directionOverride;
         
-        private Func<int, Vector3[]> _calculateDirections;
+        public void SetDirectionCalculation(Func<int, Vector3[]> calculation) => 
+            _directionOverride = calculation;
         
-        private Action<CastEvent> _onCastHandler;
-
-        private StatContainer _stats;
-
-        private HashSet<int> _tags;
-
-        public Func<int, Vector3[]> CalculateDirections {
-            get => _calculateDirections ??= DefaultPattern;
-            set => _calculateDirections = value;
-        }
-
-        public string BehaviourType => "Projectile";
-        public HashSet<int> Tags => _tags ??= new HashSet<int> { TagRegistry.Register(BehaviourType) };
-        public StatContainer Stats => _stats ??= InitializeStats();
-
-        private Skill _skill;
+        public void ClearDirectionCalculation() => 
+            _directionOverride = null;
         
-        public void Subscribe(Skill skill) {
-            _skill = skill;
-            _onCastHandler = OnCast;
-            skill.Events.On(_onCastHandler);
-        }
-        
-        public void Unsubscribe(Skill skill) {
-            if (_onCastHandler != null)
-                skill.Events.Off(_onCastHandler);
+        public List<SimpleProjectile> Launch(PositionalPayload payload) {
+            var spawned = new List<SimpleProjectile>();
             
-            _skill = null;
-        }
-
-        private void OnCast(CastEvent evt) {
+            if (ProjectilePrefab == null)
+                return spawned;
+            
             var projectileCount = (int)Stats.GetValue(StatRegistry.GetId("projectile_count"));
             var projectileSpeed = Stats.GetValue(StatRegistry.GetId("projectile_speed"));
             var directions = CalculateDirections(projectileCount);
             
-            Debug.Log($"[ProjectileBehaviour] Spawning {projectileCount} projectiles at speed {projectileSpeed}");
-            
-            for (var i = 0; i < directions.Length; i++) {
-                var dir = directions[i];
-                var worldDir = Quaternion.LookRotation(evt.Direction) * dir;
+            foreach (var t in directions) {
+                var worldDir = Quaternion.LookRotation(payload.Direction) * t;
+                var proj = UnityEngine.Object.Instantiate(ProjectilePrefab, payload.Position, Quaternion.identity);
                 
-                if (ProjectilePrefab != null) {
-                    var proj = UnityEngine.Object.Instantiate(ProjectilePrefab, evt.Origin, Quaternion.identity);
-                    var projectile = proj.GetComponent<SimpleProjectile>();
-                    projectile?.Initialize(worldDir, projectileSpeed, OnProjectileHit);
-                } else {
-                    Debug.Log($"  → Projectile {i + 1}: Direction {worldDir:F2}");
-                }
+                var projectile = proj.GetComponent<SimpleProjectile>();
+
+                if (projectile == null) 
+                    continue;
+
+                projectile.Direction = worldDir;
+                projectile.Speed = projectileSpeed;
+                spawned.Add(projectile);
             }
+            
+            return spawned;
         }
         
-        private void OnProjectileHit(GameObject target, Vector3 position) {
-            Debug.Log($"[ProjectileBehaviour] Projectile hit {target.name}, triggering HitEvent");
+        private Vector3[] CalculateDirections(int projectileCount) {
+            if (_directionOverride != null)
+                return _directionOverride(projectileCount);
             
-            _skill.Events.Trigger(new HitEvent(
-                _skill,
-                this,
-                target,
-                position
-            ));
+            var directions = new Vector3[projectileCount];
+            for (var i = 0; i < projectileCount; i++)
+                directions[i] = Vector3.forward;
+            return directions;
         }
-
-        private StatContainer InitializeStats() {
+        
+        protected override StatContainer InitializeStats() {
             var stats = new StatContainer();
             stats.SetBase(StatRegistry.Register("projectile_count"), count);
             stats.SetBase(StatRegistry.Register("projectile_speed"), speed);
-
             return stats;
         }
-
-        private static Vector3[] DefaultPattern(int projCount) {
-            var directions = new Vector3[projCount];
-
-            for (var i = 0; i < projCount; i++)
-                directions[i] = Vector3.forward;
-
-            return directions;
-        }
-
-        public void RestoreOriginalPattern() => _calculateDirections = null;
     }
 }

@@ -4,43 +4,34 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
-    /// <summary>
-    /// Simple projectile that travels and triggers hits.
-    /// </summary>
     public class SimpleProjectile : MonoBehaviour {
-        private const float MaxDistance = 20f;
-        private Vector3 _direction;
+        [SerializeField] private float maxDistance = 20f;
+        [SerializeField] private string targetTag = "Enemy";
+        
+        public Vector3 Direction { get; set; }
+        public float Speed { get; set; }
+        public Action<GameObject, Vector3> Payload { get; set; }
+        
         private float _distanceTraveled;
-        private Action<GameObject, Vector3> _onHit;
-        private float _speed;
 
         private void Update() {
-            var movement = _direction * (_speed * Time.deltaTime);
+            var movement = Direction * (Speed * Time.deltaTime);
             transform.position += movement;
             _distanceTraveled += movement.magnitude;
 
-            if (_distanceTraveled >= MaxDistance)
+            if (_distanceTraveled >= maxDistance)
                 Destroy(gameObject);
+            
+            if (Direction != Vector3.zero)
+                transform.rotation = Quaternion.LookRotation(Direction);
         }
-
+        
         private void OnTriggerEnter(Collider other) {
-            // Don't compare tags in your game - I'm just using this as a simple example. :)
-            if (!other.CompareTag("Enemy"))
+            if (!other.CompareTag(targetTag))
                 return;
             
-            _onHit?.Invoke(other.gameObject, transform.position);
+            Payload?.Invoke(other.gameObject, transform.position);
             Destroy(gameObject);
-        }
-
-        public void Initialize(Vector3 direction, float speed, Action<GameObject, Vector3> onHit) {
-            _direction = direction.normalized;
-            _speed = speed;
-            _onHit = onHit;
-            _distanceTraveled = 0f;
-
-            // Orient projectile in travel direction
-            if (_direction != Vector3.zero)
-                transform.rotation = Quaternion.LookRotation(_direction);
         }
     }
 }

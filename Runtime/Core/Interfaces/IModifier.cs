@@ -1,8 +1,5 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
-#nullable enable
-using System.Collections.Generic;
-
 namespace Spellbound.Stats {
     /// <summary>
     /// The atomic primitive for a modifier.
@@ -22,16 +19,6 @@ namespace Spellbound.Stats {
         /// Used to track individual modifiers for stacking rules and granular removal.
         /// </summary>
         int ModifierId { get; }
-
-        /// <summary>
-        /// Tags that determine what this modifier can affect.
-        /// Empty/Null RequiredTags means applies to everything.
-        /// </summary>
-        /// <example>
-        /// [Fire, Spell] = applies to anything with Fire or Spell tags
-        /// Null = applies unconditionally.
-        /// </example>
-        HashSet<int>? RequiredTags { get; }
 
         /// <summary>
         /// Apply this modifier to a target entity.

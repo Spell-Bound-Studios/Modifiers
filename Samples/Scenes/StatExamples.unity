@@ -848,7 +848,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b59950b64334677ac666a65d72efeb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.FireballDemo
-  fireballSkill: {fileID: 11400000, guid: aed0f6a64c4907a4288e8e62d0936142, type: 2}
   projectilePrefab: {fileID: 2249507177515892946, guid: c3f3a105cd47657438c7629544f61350, type: 3}
   player: {fileID: 994450418}
   enemyPrefab: {fileID: 4957247672107628884, guid: b8feac27374363e4a81c24c632ffae2a, type: 3}
@@ -982,53 +981,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1140140241}
   m_CullTransparentMesh: 1
---- !u!1 &1669441490
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1669441492}
-  - component: {fileID: 1669441491}
-  m_Layer: 0
-  m_Name: StatsManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1669441491
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1669441490}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a83642ab2cd246cfbbfb6dd55d8ececb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatsManager
-  registries:
-  - {fileID: 11400000, guid: 2fd4f4e640b0cd24f99a13fe74499f99, type: 2}
-  verbose: 0
---- !u!4 &1669441492
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1669441490}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1715621483
 GameObject:
   m_ObjectHideFlags: 0
@@ -1952,7 +1904,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1995933975}
   - {fileID: 751812711}
-  - {fileID: 1669441492}
   - {fileID: 8092004272606547571}
   - {fileID: 478415689}
   - {fileID: 1915032040}

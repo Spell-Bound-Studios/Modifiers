@@ -1,6 +1,5 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
-using Spellbound.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +10,6 @@ namespace Spellbound.Stats.Samples {
     /// </summary>
     public class FireballDemo : MonoBehaviour {
         [Header("Skill Setup")]
-        [SerializeField] private ObjectPreset fireballSkill;
         [SerializeField] private GameObject projectilePrefab;
         
         [Header("Scene Setup")]
@@ -33,11 +31,9 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private Color defaultButtonColor = Color.white;
         [SerializeField] private Color activeButtonColor = Color.green;
         
-        private Skill _fireball;
-        private EnemyTarget[] _enemies;
+        private FireballSkill _fireball;
         
-        // Modifier instances (null when not applied)
-        private AddProjectileModifier _projectileCountMod;
+        private AddedProjectileCountModifier _projectileCountMod;
         private CircularProjectileModifier _circularMod;
         private IncreasedDurationModifier _durationMod;
         
@@ -60,18 +56,14 @@ namespace Spellbound.Stats.Samples {
                 return;
             }
             
-            _enemies = new EnemyTarget[enemyCount];
             var playerPos = player.position;
             
             for (var i = 0; i < enemyCount; i++) {
                 Vector3 spawnPos;
                 
                 if (enemyCount == 1) {
-                    // Single enemy directly in front
                     spawnPos = playerPos + Vector3.forward * enemyDistance;
                 } else {
-                    // Evenly distribute in a circle
-                    // Sin for X, Cos for Z means i=0 is forward (+Z)
                     var angle = (360f / enemyCount) * i * Mathf.Deg2Rad;
                     var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * enemyDistance;
                     spawnPos = playerPos + offset;
@@ -79,33 +71,17 @@ namespace Spellbound.Stats.Samples {
                 
                 var enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
                 enemyObj.name = $"Enemy_{i + 1}";
-                
-                // Face the player
                 enemyObj.transform.LookAt(new Vector3(playerPos.x, enemyObj.transform.position.y, playerPos.z));
-                
-                _enemies[i] = enemyObj.GetComponent<EnemyTarget>();
-                
-                if (_enemies[i] == null)
-                    Debug.LogError($"Enemy prefab missing EnemyTarget component!");
             }
             
             Debug.Log($"[Demo] Spawned {enemyCount} enemies in a circle (radius: {enemyDistance})");
         }
         
         private void InitializeSkill() {
-            if (!fireballSkill.TryGetModule<SkillModule>(out var skillModule)) {
-                Debug.LogError("No SkillModule found on Fireball preset!");
-                return;
-            }
-            
-            _fireball = skillModule.CreateSkill();
-            
-            // Wire up projectile spawning
-            var projectileBehaviour = _fireball.GetBehaviour<ProjectileBehaviour>();
-            if (projectileBehaviour != null) {
-                projectileBehaviour.ProjectilePrefab = projectilePrefab;
-                projectileBehaviour.OnProjectileHit = OnProjectileHit;
-            }
+            _fireball = new FireballSkill {
+                ProjectilePrefab = projectilePrefab
+            };
+            _fireball.Initialize();
             
             Debug.Log($"[Demo] Fireball skill initialized: {_fireball.Name}");
         }
@@ -124,27 +100,14 @@ namespace Spellbound.Stats.Samples {
             Debug.Log("CASTING FIREBALL");
             Debug.Log("═══════════════════════════════════════");
             
-            _fireball.Events.Trigger(new CastEvent(
-                _fireball,
-                player.position,
-                player.forward
-            ));
-        }
-        
-        private void OnProjectileHit(GameObject target, Vector3 position) {
-            _fireball.Events.Trigger(new HitEvent(
-                _fireball,
-                _fireball.GetBehaviour<ProjectileBehaviour>(),
-                target,
-                position
-            ));
+            _fireball.Cast(player.position, player.forward);
         }
         
         #region Toggle Modifiers
         
         private void ToggleProjectileCount() {
             if (_projectileCountMod == null) {
-                _projectileCountMod = new AddProjectileModifier();
+                _projectileCountMod = new AddedProjectileCountModifier();
                 _projectileCountMod.Apply(_fireball);
                 Debug.Log("[Demo] Added: +6 Projectile Count");
             } else {
@@ -208,15 +171,15 @@ namespace Spellbound.Stats.Samples {
         private void UpdateStatusText() {
             if (statusText == null || _fireball == null) return;
             
-            var projectile = _fireball.GetBehaviour<ProjectileBehaviour>();
-            var fire = _fireball.GetBehaviour<FireBehaviour>();
-            var duration = _fireball.GetBehaviour<DurationBehaviour>();
+            var projectile = _fireball.Behaviours.Get<ProjectileBehaviour>();
+            var fire = _fireball.Behaviours.Get<FireBehaviour>();
+            var duration = _fireball.Behaviours.Get<DurationBehaviour>();
             
             var count = (int)projectile.Stats.GetValue(StatRegistry.GetId("projectile_count"));
             var speed = projectile.Stats.GetValue(StatRegistry.GetId("projectile_speed"));
             var damage = fire.Stats.GetValue(StatRegistry.GetId("fire_damage"));
             var igniteChance = fire.Stats.GetValue(StatRegistry.GetId("ignite_chance"));
-            var igniteDuration = duration.Stats.GetValue(StatRegistry.GetId("ignite_duration"));
+            var igniteDuration = duration.GetIgniteDuration();
             var pattern = _circularMod != null ? "Circular" : "Forward";
             
             statusText.text = $@"═══ FIREBALL STATS ═══
