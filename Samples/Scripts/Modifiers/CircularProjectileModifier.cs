@@ -12,8 +12,11 @@ namespace Spellbound.Stats.Samples {
         private ProjectileBehaviour _modifiedBehaviour;
         
         public void Apply(ICanBeModified target) {
-            if (target is not Skill skill) return;
-            if (!skill.Behaviours.TryGet<ProjectileBehaviour>(out var projectile)) return;
+            if (target is not Skill skill) 
+                return;
+            
+            if (!skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out var projectile)) 
+                return;
             
             _modifiedBehaviour = projectile;
             projectile.SetDirectionCalculation(CalculateCircularDirections);

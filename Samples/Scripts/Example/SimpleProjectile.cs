@@ -8,6 +8,8 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private float maxDistance = 20f;
         [SerializeField] private string targetTag = "Enemy";
         
+        public GameObject ExcludedTarget { get; set; }
+        
         public Vector3 Direction { get; set; }
         public float Speed { get; set; }
         public Action<GameObject, Vector3> Payload { get; set; }
@@ -28,6 +30,9 @@ namespace Spellbound.Stats.Samples {
         
         private void OnTriggerEnter(Collider other) {
             if (!other.CompareTag(targetTag))
+                return;
+            
+            if (other.gameObject == ExcludedTarget)
                 return;
             
             Payload?.Invoke(other.gameObject, transform.position);

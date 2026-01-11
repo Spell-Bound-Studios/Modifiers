@@ -23,6 +23,7 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private Button toggleProjectileCountButton;
         [SerializeField] private Button toggleCircularButton;
         [SerializeField] private Button toggleDurationButton;
+        [SerializeField] private Button toggleSplitButton;
         
         [Header("UI Status")]
         [SerializeField] private TMP_Text statusText;
@@ -36,6 +37,7 @@ namespace Spellbound.Stats.Samples {
         private AddedProjectileCountModifier _projectileCountMod;
         private CircularProjectileModifier _circularMod;
         private IncreasedDurationModifier _durationMod;
+        private SplittingProjectileModifier _splitMod;
         
         private void Start() {
             SpawnEnemies();
@@ -91,6 +93,7 @@ namespace Spellbound.Stats.Samples {
             toggleProjectileCountButton?.onClick.AddListener(ToggleProjectileCount);
             toggleCircularButton?.onClick.AddListener(ToggleCircular);
             toggleDurationButton?.onClick.AddListener(ToggleDuration);
+            toggleSplitButton?.onClick.AddListener(ToggleSplit);
         }
         
         private void CastFireball() {
@@ -150,12 +153,28 @@ namespace Spellbound.Stats.Samples {
             UpdateButtonColors();
         }
         
+        private void ToggleSplit() {
+            if (_splitMod == null) {
+                _splitMod = new SplittingProjectileModifier();
+                _splitMod.Apply(_fireball);
+                Debug.Log("[Demo] Added: Split On Hit");
+            } else {
+                _splitMod.Remove(_fireball);
+                _splitMod = null;
+                Debug.Log("[Demo] Removed: Split On Hit");
+            }
+            
+            UpdateStatusText();
+            UpdateButtonColors();
+        }
+        
         #endregion
         
         private void UpdateButtonColors() {
             SetButtonColor(toggleProjectileCountButton, _projectileCountMod != null);
             SetButtonColor(toggleCircularButton, _circularMod != null);
             SetButtonColor(toggleDurationButton, _durationMod != null);
+            SetButtonColor(toggleSplitButton, _splitMod != null);
         }
         
         private void SetButtonColor(Button button, bool isActive) {
@@ -171,9 +190,9 @@ namespace Spellbound.Stats.Samples {
         private void UpdateStatusText() {
             if (statusText == null || _fireball == null) return;
             
-            var projectile = _fireball.Behaviours.Get<ProjectileBehaviour>();
-            var fire = _fireball.Behaviours.Get<FireBehaviour>();
-            var duration = _fireball.Behaviours.Get<DurationBehaviour>();
+            var projectile = _fireball.Behaviours.GetBehaviour<ProjectileBehaviour>();
+            var fire = _fireball.Behaviours.GetBehaviour<FireBehaviour>();
+            var duration = _fireball.Behaviours.GetBehaviour<DurationBehaviour>();
             
             var count = (int)projectile.Stats.GetValue(StatRegistry.GetId("projectile_count"));
             var speed = projectile.Stats.GetValue(StatRegistry.GetId("projectile_speed"));
@@ -193,7 +212,8 @@ Ignite Duration: {igniteDuration}s
 ═══ ACTIVE MODIFIERS ═══
 [{(_projectileCountMod != null ? "X" : " ")}] +6 Projectile Count
 [{(_circularMod != null ? "X" : " ")}] Circular Pattern
-[{(_durationMod != null ? "X" : " ")}] +50% Duration";
+[{(_durationMod != null ? "X" : " ")}] +50% Duration
+[{(_splitMod != null ? "X" : " ")}] Split On Hit";
         }
     }
 }

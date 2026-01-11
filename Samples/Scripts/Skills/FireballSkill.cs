@@ -22,9 +22,9 @@ namespace Spellbound.Stats.Samples {
             Events.Register<TargetedPayload>("hit");
             Events.Register<DamagePayload>("damage");
             
-            var projectile = Behaviours.Get<ProjectileBehaviour>();
-            var fire = Behaviours.Get<FireBehaviour>();
-            var duration = Behaviours.Get<DurationBehaviour>();
+            var projectile = Behaviours.GetBehaviour<ProjectileBehaviour>();
+            var fire = Behaviours.GetBehaviour<FireBehaviour>();
+            var duration = Behaviours.GetBehaviour<DurationBehaviour>();
             
             projectile.ProjectilePrefab = ProjectilePrefab;
             

@@ -13,7 +13,7 @@ namespace Spellbound.Stats.Samples {
         
         public void Apply(ICanBeModified target) {
             if (target is not Skill skill) return;
-            if (!skill.Behaviours.TryGet<DurationBehaviour>(out var duration)) return;
+            if (!skill.Behaviours.TryGetBehaviour<DurationBehaviour>(out var duration)) return;
             
             duration.Stats.AddModifier(new StatModifier(
                 StatRegistry.Register("ignite_duration"),
@@ -25,7 +25,7 @@ namespace Spellbound.Stats.Samples {
         
         public void Remove(ICanBeModified target) {
             if (target is not FireballSkill skill) return;
-            if (!skill.Behaviours.TryGet<DurationBehaviour>(out var duration)) return;
+            if (!skill.Behaviours.TryGetBehaviour<DurationBehaviour>(out var duration)) return;
             
             duration.Stats.RemoveModifiersFromSource(ModifierId);
         }

@@ -15,7 +15,7 @@ namespace Spellbound.Stats.Samples {
             if (target is not Skill skill) 
                 return;
             
-            if (!skill.Behaviours.TryGet<ProjectileBehaviour>(out var projectile)) 
+            if (!skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out var projectile)) 
                 return;
             
             projectile.Stats.AddModifier(new StatModifier(
@@ -28,7 +28,7 @@ namespace Spellbound.Stats.Samples {
         
         public void Remove(ICanBeModified target) {
             if (target is not FireballSkill skill) return;
-            if (!skill.Behaviours.TryGet<ProjectileBehaviour>(out var projectile)) return;
+            if (!skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out var projectile)) return;
             
             projectile.Stats.RemoveModifiersFromSource(ModifierId);
         }

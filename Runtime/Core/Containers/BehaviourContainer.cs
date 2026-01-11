@@ -17,10 +17,24 @@ namespace Spellbound.Stats {
         public void Remove<T>() where T : SbBehaviour => 
                 _behaviours.Remove(typeof(T));
         
-        public T Get<T>() where T : SbBehaviour =>
-                _behaviours.TryGetValue(typeof(T), out var b) ? (T)b : null;
+        /// <summary>
+        /// Trys to get a value from the dictionary. Can return null.
+        /// </summary>
+        /// <typeparam name="T">
+        /// Behaviours are expected to be SbBehaviour types.
+        /// </typeparam>
+        public T GetBehaviour<T>() where T : SbBehaviour =>
+                _behaviours.TryGetValue(typeof(T), out var b) 
+                        ? (T)b 
+                        : null;
         
-        public bool TryGet<T>(out T behaviour) where T : SbBehaviour {
+        /// <summary>
+        /// Trys to get a value from the behaviour dictionary and returns a bool based on success.
+        /// </summary>
+        /// <param name="behaviour">Behaviours are expected to be SbBehaviour types.</param>
+        /// <typeparam name="T">Outs an SbBehaviour type if bool is true but otherwise outs behaviour as null.</typeparam>
+        /// <returns>True or false.</returns>
+        public bool TryGetBehaviour<T>(out T behaviour) where T : SbBehaviour {
             if (_behaviours.TryGetValue(typeof(T), out var b)) {
                 behaviour = (T)b;
                 return true;

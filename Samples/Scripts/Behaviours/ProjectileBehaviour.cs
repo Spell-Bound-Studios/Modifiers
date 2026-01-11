@@ -22,7 +22,7 @@ namespace Spellbound.Stats.Samples {
         public void ClearDirectionCalculation() => 
             _directionOverride = null;
         
-        public List<SimpleProjectile> Launch(PositionalPayload payload) {
+        public List<SimpleProjectile> Launch(PositionalPayload payload, Vector3[] directions = null) {
             var spawned = new List<SimpleProjectile>();
             
             if (ProjectilePrefab == null)
@@ -30,10 +30,11 @@ namespace Spellbound.Stats.Samples {
             
             var projectileCount = (int)Stats.GetValue(StatRegistry.GetId("projectile_count"));
             var projectileSpeed = Stats.GetValue(StatRegistry.GetId("projectile_speed"));
-            var directions = CalculateDirections(projectileCount);
             
-            foreach (var t in directions) {
-                var worldDir = Quaternion.LookRotation(payload.Direction) * t;
+            var effectiveDirections = directions ?? CalculateDirections(projectileCount);
+            
+            foreach (var dir in effectiveDirections) {
+                var worldDir = Quaternion.LookRotation(payload.Direction) * dir;
                 var proj = UnityEngine.Object.Instantiate(ProjectilePrefab, payload.Position, Quaternion.identity);
                 
                 var projectile = proj.GetComponent<SimpleProjectile>();
@@ -56,6 +57,7 @@ namespace Spellbound.Stats.Samples {
             var directions = new Vector3[projectileCount];
             for (var i = 0; i < projectileCount; i++)
                 directions[i] = Vector3.forward;
+            
             return directions;
         }
         
