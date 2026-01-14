@@ -9,7 +9,7 @@ namespace Spellbound.Stats.Samples {
         public override string BehaviourType => "Fire";
         
         [SerializeField] private float fireDamage = 50f;
-        [SerializeField] private float igniteChance = 100f;
+        [SerializeField] private float igniteChance = 50f;
         
         public DamagePayload DealDamage(TargetedPayload payload) {
             var damage = Stats.GetValue(StatRegistry.GetId("fire_damage"));
