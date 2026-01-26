@@ -46,5 +46,9 @@ namespace Spellbound.Stats {
         public IEnumerable<SbBehaviour> GetAll() => _behaviours.Values;
         
         public IEnumerable<T> GetAll<T>() => _behaviours.Values.OfType<T>();
+        
+        public void Clear() => _behaviours.Clear();
+        
+        public int Count => _behaviours.Count;
     }
 }

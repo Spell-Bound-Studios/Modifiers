@@ -18,10 +18,6 @@ namespace Spellbound.Stats.Samples {
         }
         
         public override void Initialize() {
-            Events.Register<PositionalPayload>("cast");
-            Events.Register<TargetedPayload>("hit");
-            Events.Register<DamagePayload>("damage");
-            
             var projectile = Behaviours.GetBehaviour<ProjectileBehaviour>();
             var fire = Behaviours.GetBehaviour<FireBehaviour>();
             var duration = Behaviours.GetBehaviour<DurationBehaviour>();
@@ -46,6 +42,6 @@ namespace Spellbound.Stats.Samples {
         }
         
         public void Cast(Vector3 position, Vector3 direction) =>
-                Events.Invoke("cast", new PositionalPayload(this, position, direction));
+            Events.Invoke("cast", new PositionalPayload(this, position, direction));
     }
 }
