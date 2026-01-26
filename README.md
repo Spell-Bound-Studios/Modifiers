@@ -24,6 +24,20 @@ Understanding these patterns will help you navigate, extend, contribute, and rea
 
 ---
 
+## Table of Contents
+- [Overview](#overview)
+- [The Layer Model](#the-layer-model)
+    - [Layer 0 - "The Data Layer"](#layer-0---the-data-layer)
+    - [Layer 1 - "The Engine Layer"](#layer-1---the-engine-layer)
+    - [Layer 2 - "The Convenience Layer"](#layer-2---the-convenience-layer)
+    - [Layer 3 - "The Educational Layer"](#layer-3---the-educational-layer)
+- [Dependency Rules](#dependency-rules)
+- [The Two User Types](#the-two-user-types)
+- [Library Directory Layout](#library-directory-layout)
+- [Summary](#summary)
+
+---
+
 ## The Layer Model
 
 ### Layer 0 - "The Data Layer"
