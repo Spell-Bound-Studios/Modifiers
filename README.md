@@ -99,7 +99,7 @@ Thorough and complete examples demonstrating usage. This layer is separate from 
 ---
 ## Dependency Rules
 
-Dependencies flow downward only. Never upward. Never sideways.
+Dependencies flow in one direction.
 
 | Layer | Can Depend On |
 |-------|---------------|
@@ -124,7 +124,7 @@ Violations of this rule indicate architectural problems.
 - Has constraints the library doesn't anticipate
 - Implements Layer 1 interfaces directly
 - May bypass Layer 2 entirely
-- Entry point: contracts and interfaces
+- Entry point: contracts/interfaces
 
 A well-designed library serves both.
 
@@ -165,14 +165,9 @@ https://docs.unity3d.com/6000.3/Documentation/Manual/cus-layout.html
 
 ## Summary
 
-| Layer | Name | Purpose | Users |
-|-------|------|---------|-------|
-| 0 | Data | Shapes that flow through the system | Everyone (indirectly) |
-| 1 | Engine | Powers the system | Power users (20%) |
-| 2 | Convenience | Makes the common case trivial | Most users (80%) |
-| 3 | Educational | Demonstrates usage | New users |
-
-When navigating any Spellbound Studio library:
-- **Quick results?** Start at Layer 2.
-- **Full control?** Drop to Layer 1.
-- **Learning?** Read Layer 3.
+| Layer | Name | Purpose                             | Users       |
+|-------|------|-------------------------------------|-------------|
+| 0 | Data | Input that flows through the system | All users   |
+| 1 | Engine | Powers the system                   | Power users |
+| 2 | Convenience | Makes the common case trivial       | Most users  |
+| 3 | Educational | Demonstrates usage                  | All users   |
