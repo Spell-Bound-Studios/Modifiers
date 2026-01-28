@@ -23,7 +23,9 @@ namespace Spellbound.Stats {
         /// </summary>
         /// <param name="target"></param>
         /// <param name="stats"></param>
-        /// <returns></returns>
+        /// <returns>
+        ///
+        /// </returns>
         protected bool TryGetStats(ICanBeModified target, out StatContainer stats) {
             stats = null;
             
@@ -40,7 +42,9 @@ namespace Spellbound.Stats {
         /// <param name="target"></param>
         /// <param name="behaviour"></param>
         /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <returns>
+        ///
+        /// </returns>
         protected bool TryGetBehaviour<T>(ICanBeModified target, out T behaviour) where T : SbBehaviour {
             behaviour = null;
             return target is IHasBehaviours hb && hb.Behaviours.TryGetBehaviour(out behaviour);
@@ -51,7 +55,9 @@ namespace Spellbound.Stats {
         /// </summary>
         /// <param name="target"></param>
         /// <param name="events"></param>
-        /// <returns></returns>
+        /// <returns>
+        ///
+        /// </returns>
         protected bool TryGetEvents(ICanBeModified target, out EventContainer events) {
             events = null;
             

@@ -1,15 +1,15 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
-
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
-    /// <summary>
-    /// Concrete skill: Fireball.
-    /// </summary>
     public class FireballSkill : Skill {
         public override string Name => "Fireball";
         
         public GameObject ProjectilePrefab { get; set; }
+        
+        // Cache behaviour references
+        private ProjectileBehaviour _projectile;
+        private FireBehaviour _fire;
+        private DurationBehaviour _duration;
         
         public FireballSkill() {
             Behaviours.Add(new ProjectileBehaviour());
@@ -18,30 +18,38 @@ namespace Spellbound.Stats.Samples {
         }
         
         public override void Initialize() {
-            var projectile = Behaviours.GetBehaviour<ProjectileBehaviour>();
-            var fire = Behaviours.GetBehaviour<FireBehaviour>();
-            var duration = Behaviours.GetBehaviour<DurationBehaviour>();
+            _projectile = Behaviours.GetBehaviour<ProjectileBehaviour>();
+            _fire = Behaviours.GetBehaviour<FireBehaviour>();
+            _duration = Behaviours.GetBehaviour<DurationBehaviour>();
             
-            projectile.ProjectilePrefab = ProjectilePrefab;
+            _projectile.ProjectilePrefab = ProjectilePrefab;
             
-            Events.Add<PositionalPayload>("cast", payload => {
-                var projectiles = projectile.Launch(payload);
-                foreach (var p in projectiles) {
-                    p.Payload = (target, pos) => 
-                            Events.Invoke("hit", new TargetedPayload(this, target, pos));
-                }
-            });
-            
-            Events.Add<TargetedPayload>("hit", payload => {
-                var damageResult = fire.DealDamage(payload);
-                Events.Invoke("damage", damageResult);
-                
-                var igniteDuration = duration.GetIgniteDuration();
-                fire.TryIgnite(payload, igniteDuration);
-            });
+            // Attaching specific payload types to specific events and then passing in those methods to be called
+            // when the event fires.
+            Events.Add<PositionalPayload>("cast", OnCast);
+            Events.Add<TargetedPayload>("hit", OnHit);
         }
         
         public void Cast(Vector3 position, Vector3 direction) =>
             Events.Invoke("cast", new PositionalPayload(this, position, direction));
+        
+        private void OnCast(PositionalPayload payload) {
+            var projectiles = _projectile.Launch(payload);
+            
+            foreach (var proj in projectiles) {
+                proj.Payload = TriggerHitEvent;
+            }
+        }
+        
+        private void TriggerHitEvent(GameObject target, Vector3 position) {
+            Events.Invoke("hit", new TargetedPayload(this, target, position));
+        }
+        
+        private void OnHit(TargetedPayload payload) {
+            var damageResult = _fire.DealDamage(payload);
+            Events.Invoke("damage", damageResult);
+            
+            _fire.TryIgnite(payload, _duration.GetIgniteDuration());
+        }
     }
 }

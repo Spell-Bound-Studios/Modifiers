@@ -8,34 +8,37 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private int splitCount = 2;
         [SerializeField] private int splitAngle = 30;
         
-        private Skill _skill;
+        private ICanBeModified _target;
         private Action<TargetedPayload> _handler;
 
         public override void Apply(ICanBeModified target) {
-            if (target is not Skill skill) 
+            if (!TryGetBehaviour<ProjectileBehaviour>(target, out _)) 
                 return;
             
-            if (!skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out _)) 
+            if (!TryGetEvents(target, out var events)) 
                 return;
             
-            _skill = skill;
+            _target = target;
             _handler = SplitProjectiles;
-            skill.Events.Add("hit", _handler);
+            events.Add("hit", _handler);
         }
-
+        
         public override void Remove(ICanBeModified target) {
-            if (_skill == null) 
+            if (_target == null) 
                 return;
             
-            _skill.Events.Remove("hit", _handler);
-            _skill = null;
+            if (!TryGetEvents(_target, out var events)) 
+                return;
+            
+            events.Remove("hit", _handler);
+            _target = null;
             _handler = null;
         }
 
         private void SplitProjectiles(TargetedPayload payload) {
-            if (!_skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out var projectileBehaviour)) 
+            if (!TryGetBehaviour<ProjectileBehaviour>(_target, out var projectileBehaviour)) 
                 return;
-            
+
             var hitPosition = payload.Position;
             var targetPosition = payload.Target.transform.position;
             
@@ -45,21 +48,19 @@ namespace Spellbound.Stats.Samples {
             
             var directions = CalculateSplitDirections(outgoingDirection, splitCount, splitAngle);
             
-            var splitPayload = new PositionalPayload(_skill, hitPosition, Vector3.forward);
+            var splitPayload = new PositionalPayload(_target, hitPosition, Vector3.forward);
             
             var splitProjectiles = projectileBehaviour.Launch(splitPayload, directions);
             
-            foreach (var projectile in splitProjectiles) {
-                projectile.ExcludedTarget = payload.Target;
-                
-                projectile.Payload = (target, pos) => {
-                    if (!_skill.Behaviours.TryGetBehaviour<FireBehaviour>(out var fire)) 
+            foreach (var proj in splitProjectiles) {
+                proj.Payload = (hitTarget, pos) => {
+                    if (!TryGetBehaviour<FireBehaviour>(_target, out var fire)) 
                         return;
                     
-                    var targetPayload = new TargetedPayload(_skill, target, pos);
+                    var targetPayload = new TargetedPayload(_target, hitTarget, pos);
                     fire.DealDamage(targetPayload);
                     
-                    if (_skill.Behaviours.TryGetBehaviour<DurationBehaviour>(out var duration))
+                    if (TryGetBehaviour<DurationBehaviour>(_target, out var duration))
                         fire.TryIgnite(targetPayload, duration.GetIgniteDuration());
                 };
             }

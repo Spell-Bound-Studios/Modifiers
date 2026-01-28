@@ -9,10 +9,7 @@ namespace Spellbound.Stats.Samples {
         private ProjectileBehaviour _modifiedBehaviour;
         
         public override void Apply(ICanBeModified target) {
-            if (target is not Skill skill) 
-                return;
-            
-            if (!skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out var projectile)) 
+            if (!TryGetBehaviour<ProjectileBehaviour>(target, out var projectile)) 
                 return;
             
             _modifiedBehaviour = projectile;
