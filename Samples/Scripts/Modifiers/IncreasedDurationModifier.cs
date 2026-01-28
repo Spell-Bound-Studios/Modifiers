@@ -5,29 +5,32 @@ using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
     [Serializable]
-    public sealed class IncreasedDurationModifier : IModifier {
+    public sealed class IncreasedDurationModifier : SbModifier {
         [SerializeField] private float increasedDurationPercent = 50f;
         
-        private int? _modifierId;
-        public int ModifierId => _modifierId ??= GetHashCode();
-        
-        public void Apply(ICanBeModified target) {
-            if (target is not Skill skill) return;
-            if (!skill.Behaviours.TryGetBehaviour<DurationBehaviour>(out var duration)) return;
+        public override void Apply(ICanBeModified target) {
+            if (target is not Skill skill) 
+                return;
+            
+            if (!skill.Behaviours.TryGetBehaviour<DurationBehaviour>(out var duration)) 
+                return;
             
             duration.Stats.AddModifier(new StatModifier(
                 StatRegistry.Register("ignite_duration"),
                 ModifierType.Increased,
                 increasedDurationPercent,
-                ModifierId
+                UniqueId
             ));
         }
         
-        public void Remove(ICanBeModified target) {
-            if (target is not FireballSkill skill) return;
-            if (!skill.Behaviours.TryGetBehaviour<DurationBehaviour>(out var duration)) return;
+        public override void Remove(ICanBeModified target) {
+            if (target is not FireballSkill skill) 
+                return;
             
-            duration.Stats.RemoveModifiersFromSource(ModifierId);
+            if (!skill.Behaviours.TryGetBehaviour<DurationBehaviour>(out var duration)) 
+                return;
+            
+            duration.Stats.RemoveModifierByUniqueId(UniqueId);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Spellbound.Stats {
     public enum ModifierRollType {
-        Fixed, // Always use FixedValue
-        Range  // Roll between MinValue and MaxValue
+        Fixed,
+        Range
     }
 }

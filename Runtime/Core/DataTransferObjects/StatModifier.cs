@@ -6,13 +6,13 @@
         public readonly int StatId;
         public readonly ModifierType Type;
         public readonly float Value;
-        public readonly int SourceId;
+        public readonly string UniqueId;
 
-        public StatModifier(int statId, ModifierType type, float value, int sourceId = 0) {
+        public StatModifier(int statId, ModifierType type, float value, string uniqueId = null) {
             StatId = statId;
             Type = type;
             Value = value;
-            SourceId = sourceId;
+            UniqueId = uniqueId;
         }
     }
 }

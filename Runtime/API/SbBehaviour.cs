@@ -8,8 +8,6 @@ namespace Spellbound.Stats {
     /// </summary>
     [Serializable]
     public abstract class SbBehaviour {
-        public abstract string BehaviourType { get; }
-        
         private StatContainer _stats;
         public StatContainer Stats => _stats ??= InitializeStats();
         

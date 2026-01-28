@@ -6,8 +6,6 @@ using UnityEngine;
 namespace Spellbound.Stats.Samples {
     [Serializable]
     public class FireBehaviour : SbBehaviour {
-        public override string BehaviourType => "Fire";
-        
         [SerializeField] private float fireDamage = 50f;
         [SerializeField] private float igniteChance = 50f;
         

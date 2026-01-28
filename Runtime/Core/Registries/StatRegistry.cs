@@ -3,7 +3,7 @@
 namespace Spellbound.Stats {
     public static class StatRegistry {
         private static readonly Dictionary<string, int> NameToId = new();
-        private static readonly Dictionary<int, string> IDToName = new();
+        private static readonly Dictionary<int, string> IdToName = new();
         private static int _nextId;
 
         public static int Register(string statName) {
@@ -12,7 +12,7 @@ namespace Spellbound.Stats {
 
             var id = _nextId++;
             NameToId[statName] = id;
-            IDToName[id] = statName;
+            IdToName[id] = statName;
 
             return id;
         }
@@ -24,6 +24,6 @@ namespace Spellbound.Stats {
 
         public static bool TryGetId(string statName, out int id) => NameToId.TryGetValue(statName, out id);
 
-        public static string GetName(int id) => IDToName[id];
+        public static string GetName(int id) => IdToName[id];
     }
 }

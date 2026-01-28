@@ -10,19 +10,12 @@ namespace Spellbound.Stats {
     /// NumericModifier (changes stats), OnKillModifier (adds on-kill effects), ConversionModifier (converts damage types)
     /// </example>
     /// <remarks>
-    /// This is a primitive component of this entire architecture. It's very important to remember that IModifier
-    /// represents a single modification.
+    /// This is a primitive component of the entire architecture. It's very important to remember that IModifier
+    /// represents a single modification in its purest form.
     /// </remarks>
     public interface IModifier {
         /// <summary>
-        /// Unique identifier for this modifier instance.
-        /// Used to track individual modifiers for stacking rules and granular removal.
-        /// </summary>
-        int ModifierId { get; }
-
-        /// <summary>
         /// Apply this modifier to a target entity.
-        /// Should check if target's tags match RequiredTags.
         /// </summary>
         void Apply(ICanBeModified target);
 

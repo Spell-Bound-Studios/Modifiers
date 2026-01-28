@@ -4,17 +4,14 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
-    public sealed class SplittingProjectileModifier : IModifier {
+    public sealed class SplittingProjectileModifier : SbModifier {
         [SerializeField] private int splitCount = 2;
         [SerializeField] private int splitAngle = 30;
-        
-        private int? _modifierId;
-        public int ModifierId => _modifierId ??= GetHashCode();
         
         private Skill _skill;
         private Action<TargetedPayload> _handler;
 
-        public void Apply(ICanBeModified target) {
+        public override void Apply(ICanBeModified target) {
             if (target is not Skill skill) 
                 return;
             
@@ -26,7 +23,7 @@ namespace Spellbound.Stats.Samples {
             skill.Events.Add("hit", _handler);
         }
 
-        public void Remove(ICanBeModified target) {
+        public override void Remove(ICanBeModified target) {
             if (_skill == null) 
                 return;
             
@@ -36,7 +33,8 @@ namespace Spellbound.Stats.Samples {
         }
 
         private void SplitProjectiles(TargetedPayload payload) {
-            if (!_skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out var projectileBehaviour)) return;
+            if (!_skill.Behaviours.TryGetBehaviour<ProjectileBehaviour>(out var projectileBehaviour)) 
+                return;
             
             var hitPosition = payload.Position;
             var targetPosition = payload.Target.transform.position;

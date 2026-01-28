@@ -12,6 +12,9 @@ namespace Spellbound.Stats {
         /// <example>
         /// "+10 to Strength"
         /// </example>
+        /// <remarks>
+        /// 
+        /// </remarks>
         Flat = 0,
 
         /// <summary>
@@ -20,6 +23,9 @@ namespace Spellbound.Stats {
         /// <example>
         /// "30% increased Physical Damage" + "20% increased Physical Damage" = 50% total
         /// </example>
+        /// <remarks>
+        /// 
+        /// </remarks>
         Increased = 1,
 
         /// <summary>
@@ -28,6 +34,9 @@ namespace Spellbound.Stats {
         /// <example>
         /// "40% more Attack Speed" then "30% more Attack Speed" = 1.4 * 1.3 = 82% total
         /// </example>
+        /// <remarks>
+        /// 
+        /// </remarks>
         More = 2,
 
         /// <summary>
@@ -36,6 +45,9 @@ namespace Spellbound.Stats {
         /// <example>
         /// "Set maximum Life to 1" (for certain unique mechanics)
         /// </example>
+        /// <remarks>
+        /// 
+        /// </remarks>
         Override = 3
     }
 }

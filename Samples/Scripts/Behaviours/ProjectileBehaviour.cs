@@ -7,8 +7,6 @@ using UnityEngine;
 namespace Spellbound.Stats.Samples {
     [Serializable]
     public class ProjectileBehaviour : SbBehaviour {
-        public override string BehaviourType => "Projectile";
-        
         [SerializeField] private int count = 1;
         [SerializeField] private float speed = 10f;
         

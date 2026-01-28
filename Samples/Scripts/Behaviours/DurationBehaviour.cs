@@ -6,8 +6,6 @@ using UnityEngine;
 namespace Spellbound.Stats.Samples {
     [Serializable]
     public class DurationBehaviour : SbBehaviour {
-        public override string BehaviourType => "Duration";
-        
         [SerializeField] private float igniteDuration = 4f;
         [SerializeField] private float skillDuration = 5f;
         

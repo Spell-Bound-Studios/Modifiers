@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -53,12 +52,17 @@ namespace Spellbound.Stats {
         }
 
         /// <summary>
-        /// Remove all modifiers from a specific source.
+        /// Remove all modifiers from a specific id.
         /// Use this when unequipping an item, removing a buff, etc.
         /// </summary>
-        public void RemoveModifiersFromSource(int sourceId) {
+        public void RemoveModifierByUniqueId(string uniqueId) {
+            if (string.IsNullOrEmpty(uniqueId)) {
+                Debug.LogError("Attempting to remove a modifier with a null ID.");
+                return;
+            }
+            
             foreach (var modifierList in _modifiersByStatId.Values)
-                modifierList.RemoveAll(m => m.SourceId == sourceId);
+                modifierList.RemoveAll(m => m.UniqueId == uniqueId);
 
             _isDirty = true;
         }
@@ -71,7 +75,9 @@ namespace Spellbound.Stats {
             if (_isDirty)
                 Recalculate();
 
-            return _calculatedValues.TryGetValue(statId, out var value) ? value : GetBase(statId);
+            return _calculatedValues.TryGetValue(statId, out var value) 
+                ? value 
+                : GetBase(statId);
         }
         
         public void ClearModifiers() {
@@ -197,10 +203,25 @@ namespace Spellbound.Stats {
                 return string.Join("\n", lines);
             }
 
-            var flats = modifiers.Where(m => m.Type == ModifierType.Flat).Select(m => m.Value).ToList();
-            var increases = modifiers.Where(m => m.Type == ModifierType.Increased).Select(m => m.Value).ToList();
-            var mores = modifiers.Where(m => m.Type == ModifierType.More).Select(m => m.Value).ToList();
-            var overrides = modifiers.Where(m => m.Type == ModifierType.Override).Select(m => m.Value).ToList();
+            var flats = modifiers
+                .Where(m => m.Type == ModifierType.Flat)
+                .Select(m => m.Value)
+                .ToList();
+            
+            var increases = modifiers
+                .Where(m => m.Type == ModifierType.Increased)
+                .Select(m => m.Value)
+                .ToList();
+            
+            var mores = modifiers
+                .Where(m => m.Type == ModifierType.More)
+                .Select(m => m.Value)
+                .ToList();
+            
+            var overrides = modifiers
+                .Where(m => m.Type == ModifierType.Override)
+                .Select(m => m.Value)
+                .ToList();
 
             if (flats.Count > 0)
                 lines.Add($"Flat: {string.Join(", ", flats.Select(f => $"+{f}"))} (Total: +{flats.Sum()})");
