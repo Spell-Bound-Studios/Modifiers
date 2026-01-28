@@ -37,6 +37,7 @@ namespace Spellbound.Stats.Samples {
             var projectiles = _projectile.Launch(payload);
             
             foreach (var proj in projectiles) {
+                // Assign the TriggerHitEvent to the Action on the projectile. 
                 proj.Payload = TriggerHitEvent;
             }
         }
