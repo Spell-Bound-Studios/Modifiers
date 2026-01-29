@@ -5,13 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace Spellbound.Stats.Samples {
-    /// <summary>
-    /// Demo controller showing the modifier system in action.
-    /// </summary>
-    /// <remarks>
-    /// This script has a lot of scaffolding but there is a small example of casting and equipping modifiers to the
-    /// _fireball skill that may be helpful to the user.
-    /// </remarks>
     public sealed class FireballDemo : MonoBehaviour {
         [Header("Skill Setup")]
         [SerializeField] private GameObject projectilePrefab;
@@ -19,8 +12,19 @@ namespace Spellbound.Stats.Samples {
         [Header("Scene Setup")]
         [SerializeField] private Transform player;
         [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private int enemyCount = 7;
-        [SerializeField] private float enemyDistance = 5f;
+        
+        [Header("Inner Ring")]
+        [SerializeField] private int innerEnemyCount = 7;
+        [SerializeField] private float innerRingDistance = 5f;
+        
+        [Header("Outer Ring")]
+        [SerializeField] private int outerEnemyCount = 14;
+        [SerializeField] private float outerRingDistance = 10f;
+        [SerializeField] private float outerRingOffset = 0f;
+        
+        [Header("Enemy Movement")]
+        [SerializeField] private bool enemiesMove = false;
+        [SerializeField] private float moveSpeed = 2f;
         
         [Header("UI Buttons")]
         [SerializeField] private Button castButton;
@@ -28,6 +32,11 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private Button toggleCircularButton;
         [SerializeField] private Button toggleDurationButton;
         [SerializeField] private Button toggleSplitButton;
+        
+        [Header("UI Sliders")]
+        [SerializeField] private Slider outerOffsetSlider;
+        [SerializeField] private TMP_Text outerOffsetLabel;
+        [SerializeField] private Toggle movementToggle;
         
         [Header("UI Status")]
         [SerializeField] private TMP_Text statusText;
@@ -43,12 +52,21 @@ namespace Spellbound.Stats.Samples {
         private IncreasedDurationModifier _durationMod;
         private SplittingProjectileModifier _splitMod;
         
+        private EnemyTarget[] _innerEnemies;
+        private EnemyTarget[] _outerEnemies;
+        
         private void Start() {
             SpawnEnemies();
             InitializeSkill();
             SetupButtons();
+            SetupSliders();
             UpdateStatusText();
             UpdateButtonColors();
+        }
+        
+        private void Update() {
+            if (enemiesMove)
+                MoveEnemiesAroundPlayer();
         }
         
         private void SpawnEnemies() {
@@ -62,25 +80,80 @@ namespace Spellbound.Stats.Samples {
                 return;
             }
             
+            _innerEnemies = SpawnRing(innerEnemyCount, innerRingDistance, 0f, "Inner");
+            _outerEnemies = SpawnRing(outerEnemyCount, outerRingDistance, outerRingOffset, "Outer");
+            
+            Debug.Log($"[Demo] Spawned {innerEnemyCount} inner enemies (radius: {innerRingDistance})");
+            Debug.Log($"[Demo] Spawned {outerEnemyCount} outer enemies (radius: {outerRingDistance})");
+        }
+        
+        private EnemyTarget[] SpawnRing(int count, float distance, float angleOffset, string prefix) {
+            var enemies = new EnemyTarget[count];
             var playerPos = player.position;
             
-            for (var i = 0; i < enemyCount; i++) {
-                Vector3 spawnPos;
-                
-                if (enemyCount == 1) {
-                    spawnPos = playerPos + Vector3.forward * enemyDistance;
-                } else {
-                    var angle = (360f / enemyCount) * i * Mathf.Deg2Rad;
-                    var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * enemyDistance;
-                    spawnPos = playerPos + offset;
-                }
+            for (var i = 0; i < count; i++) {
+                var angle = ((360f / count) * i + angleOffset) * Mathf.Deg2Rad;
+                var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * distance;
+                var spawnPos = playerPos + offset;
                 
                 var enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-                enemyObj.name = $"Enemy_{i + 1}";
+                enemyObj.name = $"{prefix}_Enemy_{i + 1}";
                 enemyObj.transform.LookAt(new Vector3(playerPos.x, enemyObj.transform.position.y, playerPos.z));
+                
+                enemies[i] = enemyObj.GetComponent<EnemyTarget>();
             }
             
-            Debug.Log($"[Demo] Spawned {enemyCount} enemies in a circle (radius: {enemyDistance})");
+            return enemies;
+        }
+        
+        private void MoveEnemiesAroundPlayer() {
+            var playerPos = player.position;
+            var rotationAmount = moveSpeed * Time.deltaTime;
+            
+            RotateRing(_innerEnemies, playerPos, innerRingDistance, rotationAmount);
+            RotateRing(_outerEnemies, playerPos, outerRingDistance, -rotationAmount); // Opposite direction
+        }
+        
+        private void RotateRing(EnemyTarget[] enemies, Vector3 center, float distance, float rotationAmount) {
+            if (enemies == null) 
+                return;
+            
+            foreach (var enemy in enemies) {
+                if (enemy == null) 
+                    continue;
+                
+                var direction = enemy.transform.position - center;
+                direction.y = 0;
+                direction = Quaternion.AngleAxis(rotationAmount, Vector3.up) * direction;
+                
+                enemy.transform.position = center + direction.normalized * distance;
+                enemy.transform.LookAt(new Vector3(center.x, enemy.transform.position.y, center.z));
+            }
+        }
+        
+        private void UpdateOuterRingOffset(float newOffset) {
+            outerRingOffset = newOffset;
+            
+            if (outerOffsetLabel != null)
+                outerOffsetLabel.text = $"Outer Ring Offset: {newOffset:F1}°";
+            
+            RepositionOuterRing();
+        }
+        
+        private void RepositionOuterRing() {
+            if (_outerEnemies == null) return;
+            
+            var playerPos = player.position;
+            
+            for (var i = 0; i < _outerEnemies.Length; i++) {
+                if (_outerEnemies[i] == null) continue;
+                
+                var angle = ((360f / outerEnemyCount) * i + outerRingOffset) * Mathf.Deg2Rad;
+                var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * outerRingDistance;
+                
+                _outerEnemies[i].transform.position = playerPos + offset;
+                _outerEnemies[i].transform.LookAt(new Vector3(playerPos.x, _outerEnemies[i].transform.position.y, playerPos.z));
+            }
         }
         
         private void InitializeSkill() {
@@ -98,6 +171,22 @@ namespace Spellbound.Stats.Samples {
             toggleCircularButton?.onClick.AddListener(ToggleCircular);
             toggleDurationButton?.onClick.AddListener(ToggleDuration);
             toggleSplitButton?.onClick.AddListener(ToggleSplit);
+        }
+        
+        private void SetupSliders() {
+            if (outerOffsetSlider != null) {
+                outerOffsetSlider.minValue = 0f;
+                outerOffsetSlider.maxValue = 360f / outerEnemyCount;
+                outerOffsetSlider.value = outerRingOffset;
+                outerOffsetSlider.onValueChanged.AddListener(UpdateOuterRingOffset);
+            }
+            
+            if (movementToggle != null) {
+                movementToggle.isOn = enemiesMove;
+                movementToggle.onValueChanged.AddListener(enabled => enemiesMove = enabled);
+            }
+            
+            UpdateOuterRingOffset(outerRingOffset);
         }
         
         private void CastFireball() {
@@ -183,28 +272,42 @@ namespace Spellbound.Stats.Samples {
         }
         
         private void SetButtonColor(Button button, bool isActive) {
-            if (button == null) return;
+            if (button == null) 
+                return;
             
             var colors = button.colors;
-            colors.normalColor = isActive ? activeButtonColor : defaultButtonColor;
-            colors.highlightedColor = isActive ? activeButtonColor : defaultButtonColor;
-            colors.selectedColor = isActive ? activeButtonColor : defaultButtonColor;
+            
+            colors.normalColor = isActive 
+                ? activeButtonColor 
+                : defaultButtonColor;
+            
+            colors.highlightedColor = isActive 
+                ? activeButtonColor 
+                : defaultButtonColor;
+            
+            colors.selectedColor = isActive 
+                ? activeButtonColor 
+                : defaultButtonColor;
+            
             button.colors = colors;
         }
         
         private void UpdateStatusText() {
-            if (statusText == null || _fireball == null) return;
+            if (statusText == null || _fireball == null) 
+                return;
             
             var projectile = _fireball.Behaviours.GetBehaviour<ProjectileBehaviour>();
             var fire = _fireball.Behaviours.GetBehaviour<FireBehaviour>();
             var duration = _fireball.Behaviours.GetBehaviour<DurationBehaviour>();
             
-            var count = (int)projectile.Stats.GetValue(StatRegistry.GetId("projectile_count"));
-            var speed = projectile.Stats.GetValue(StatRegistry.GetId("projectile_speed"));
-            var damage = fire.Stats.GetValue(StatRegistry.GetId("fire_damage"));
-            var igniteChance = fire.Stats.GetValue(StatRegistry.GetId("ignite_chance"));
+            var count = (int)projectile.Stats.GetValue("projectile_count");
+            var speed = projectile.Stats.GetValue("projectile_speed");
+            var damage = fire.Stats.GetValue("fire_damage");
+            var igniteChance = fire.Stats.GetValue("ignite_chance");
             var igniteDuration = duration.GetIgniteDuration();
-            var pattern = _circularMod != null ? "Circular" : "Forward";
+            var pattern = _circularMod != null 
+                ? "Circular" 
+                : "Forward";
             
             statusText.text = $@"═══ FIREBALL STATS ═══
 Projectiles: {count}

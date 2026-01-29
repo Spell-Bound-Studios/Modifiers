@@ -726,14 +726,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 751812709}
   m_Enabled: 1
-  serializedVersion: 11
+  serializedVersion: 12
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
+  m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
@@ -1110,13 +1110,21 @@ MonoBehaviour:
   projectilePrefab: {fileID: 2249507177515892946, guid: c3f3a105cd47657438c7629544f61350, type: 3}
   player: {fileID: 994450418}
   enemyPrefab: {fileID: 4957247672107628884, guid: b8feac27374363e4a81c24c632ffae2a, type: 3}
-  enemyCount: 7
-  enemyDistance: 5
+  innerEnemyCount: 7
+  innerRingDistance: 5
+  outerEnemyCount: 14
+  outerRingDistance: 10
+  outerRingOffset: 0
+  enemiesMove: 1
+  moveSpeed: 2
   castButton: {fileID: 1925400154}
   toggleProjectileCountButton: {fileID: 1972431038}
   toggleCircularButton: {fileID: 1140140243}
   toggleDurationButton: {fileID: 1715621485}
   toggleSplitButton: {fileID: 878479802}
+  outerOffsetSlider: {fileID: 0}
+  outerOffsetLabel: {fileID: 0}
+  movementToggle: {fileID: 0}
   statusText: {fileID: 891253316}
   defaultButtonColor: {r: 1, g: 1, b: 1, a: 1}
   activeButtonColor: {r: 0, g: 1, b: 0, a: 1}
