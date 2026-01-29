@@ -42,7 +42,7 @@ namespace Spellbound.Stats.Samples {
             if (other.gameObject == ExcludedTarget)
                 return;
             
-            OnTargetHit?.Invoke(new TargetedPayload(null, other.gameObject, transform.position));
+            OnTargetHit?.Invoke(new TargetedPayload(null, other.gameObject, transform.position, this));
             Destroy(gameObject);
         }
     }

@@ -44,7 +44,7 @@ namespace Spellbound.Stats.Samples {
             Events.Invoke("hit", new TargetedPayload(this, payload.Target, payload.Position));
         
         private void OnHit(TargetedPayload payload) {
-            var damageResult = _fire.DealDamage(payload);
+            var damageResult = _fire.DealFireDamage(payload);
             Events.Invoke("damage", damageResult);
             
             _fire.TryIgnite(payload, _duration.GetIgniteDuration());

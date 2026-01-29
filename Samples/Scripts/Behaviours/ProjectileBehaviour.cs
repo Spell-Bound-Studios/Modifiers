@@ -36,7 +36,7 @@ namespace Spellbound.Stats.Samples {
                 finalDirections = new Vector3[localDirections.Length];
                 for (var i = 0; i < localDirections.Length; i++)
                     finalDirections[i] = Quaternion.LookRotation(payload.Direction) * localDirections[i];
-            };
+            }
             
             foreach (var dir in finalDirections) {
                 var proj = UnityEngine.Object.Instantiate(ProjectilePrefab, payload.Position, Quaternion.identity);

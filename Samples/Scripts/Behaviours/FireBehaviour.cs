@@ -9,9 +9,10 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private float fireDamage = 50f;
         [SerializeField] private float igniteChance = 50f;
         
-        public DamagePayload DealDamage(TargetedPayload payload) {
+        public DamagePayload DealFireDamage(TargetedPayload payload) {
             var damage = Stats.GetValue("fire_damage");
             
+            // This is likely an interface in your game like IDamageable.
             var enemy = payload.Target.GetComponent<EnemyTarget>();
             if (enemy != null)
                 enemy.TakeDamage(damage, "fire");
