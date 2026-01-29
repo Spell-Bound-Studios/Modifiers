@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
-    public class SimpleProjectile : MonoBehaviour {
+    public class SimpleProjectile : MonoBehaviour, ITriggersTargetedEvent {
         [SerializeField] private float maxDistance = 20f;
         [SerializeField] private string targetTag = "Enemy";
         
@@ -12,7 +12,7 @@ namespace Spellbound.Stats.Samples {
         
         public Vector3 Direction { get; set; }
         public float Speed { get; set; }
-        public Action<GameObject, Vector3> Payload { get; set; }
+        public Action<TargetedPayload> OnTargetHit { get; set; }
         
         private float _distanceTraveled;
 
@@ -35,7 +35,7 @@ namespace Spellbound.Stats.Samples {
             if (other.gameObject == ExcludedTarget)
                 return;
             
-            Payload?.Invoke(other.gameObject, transform.position);
+            OnTargetHit?.Invoke(new TargetedPayload(null, other.gameObject, transform.position));
             Destroy(gameObject);
         }
     }

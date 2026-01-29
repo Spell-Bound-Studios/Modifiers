@@ -36,15 +36,12 @@ namespace Spellbound.Stats.Samples {
         private void OnCast(PositionalPayload payload) {
             var projectiles = _projectile.Launch(payload);
             
-            foreach (var proj in projectiles) {
-                // Assign the TriggerHitEvent to the Action on the projectile. 
-                proj.Payload = TriggerHitEvent;
-            }
+            foreach (var proj in projectiles)
+                proj.OnTargetHit = TriggerHitEvent;
         }
         
-        private void TriggerHitEvent(GameObject target, Vector3 position) {
-            Events.Invoke("hit", new TargetedPayload(this, target, position));
-        }
+        private void TriggerHitEvent(TargetedPayload payload) =>
+            Events.Invoke("hit", new TargetedPayload(this, payload.Target, payload.Position));
         
         private void OnHit(TargetedPayload payload) {
             var damageResult = _fire.DealDamage(payload);
