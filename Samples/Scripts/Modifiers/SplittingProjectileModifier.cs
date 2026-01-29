@@ -9,7 +9,7 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private int splitAngle = 30;
         
         private ICanBeModified _target;
-        private Action<TargetedPayload> _handler;
+        private Action<TargetedPayload> _targetedPayloadAction;
 
         public override void Apply(ICanBeModified target) {
             if (!TryGetBehaviour<ProjectileBehaviour>(target, out _)) 
@@ -19,8 +19,8 @@ namespace Spellbound.Stats.Samples {
                 return;
             
             _target = target;
-            _handler = SplitProjectiles;
-            events.Add("hit", _handler);
+            _targetedPayloadAction = SplitProjectiles;
+            events.Add("hit", _targetedPayloadAction);
         }
         
         public override void Remove(ICanBeModified target) {
@@ -30,9 +30,9 @@ namespace Spellbound.Stats.Samples {
             if (!TryGetEvents(_target, out var events)) 
                 return;
             
-            events.Remove("hit", _handler);
+            events.Remove("hit", _targetedPayloadAction);
             _target = null;
-            _handler = null;
+            _targetedPayloadAction = null;
         }
 
         private void SplitProjectiles(TargetedPayload payload) {
@@ -53,13 +53,14 @@ namespace Spellbound.Stats.Samples {
             var splitProjectiles = projectileBehaviour.Launch(splitPayload, directions);
             
             foreach (var proj in splitProjectiles) {
-                proj.Payload = (hitTarget, pos) => {
+                proj.ExcludedTarget = payload.Target;
+                proj.OnTargetHit = hitPayload => {
                     if (!TryGetBehaviour<FireBehaviour>(_target, out var fire)) 
                         return;
-                    
-                    var targetPayload = new TargetedPayload(_target, hitTarget, pos);
+        
+                    var targetPayload = new TargetedPayload(_target, hitPayload.Target, hitPayload.Position);
                     fire.DealDamage(targetPayload);
-                    
+        
                     if (TryGetBehaviour<DurationBehaviour>(_target, out var duration))
                         fire.TryIgnite(targetPayload, duration.GetIgniteDuration());
                 };

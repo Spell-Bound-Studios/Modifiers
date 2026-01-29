@@ -29,9 +29,18 @@ namespace Spellbound.Stats.Samples {
             var projectileCount = (int)Stats.GetValue(StatRegistry.GetId("projectile_count"));
             var projectileSpeed = Stats.GetValue(StatRegistry.GetId("projectile_speed"));
             
-            var effectiveDirections = directions ?? CalculateDirections(projectileCount);
+            Vector3[] finalDirections;
+    
+            if (directions != null)
+                finalDirections = directions;
+            else {
+                var localDirections = CalculateDirections(projectileCount);
+                finalDirections = new Vector3[localDirections.Length];
+                for (var i = 0; i < localDirections.Length; i++)
+                    finalDirections[i] = Quaternion.LookRotation(payload.Direction) * localDirections[i];
+            };
             
-            foreach (var dir in effectiveDirections) {
+            foreach (var dir in finalDirections) {
                 var worldDir = Quaternion.LookRotation(payload.Direction) * dir;
                 var proj = UnityEngine.Object.Instantiate(ProjectilePrefab, payload.Position, Quaternion.identity);
                 
