@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
+    [Serializable]
     public sealed class SplittingProjectileModifier : SbModifier {
         [SerializeField] private int splitCount = 2;
         [SerializeField] private int splitAngle = 30;

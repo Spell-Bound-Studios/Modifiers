@@ -7,7 +7,11 @@ namespace Spellbound.Stats.Samples {
     /// <summary>
     /// Simple enemy target that can be hit and ignited.
     /// </summary>
-    public class EnemyTarget : MonoBehaviour {
+    /// <remarks>
+    /// This is purely an example script and scaffolding to highlight the library. Nothing in this script is really
+    /// highlighting the libraries capabilities.
+    /// </remarks>
+    public sealed class EnemyTarget : MonoBehaviour {
         [SerializeField] private Renderer targetRenderer;
         [SerializeField] private Color defaultColor = Color.white;
         [SerializeField] private Color ignitedColor = Color.red;

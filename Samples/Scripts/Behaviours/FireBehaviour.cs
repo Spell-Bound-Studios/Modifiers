@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
     [Serializable]
-    public class FireBehaviour : SbBehaviour {
+    public sealed class FireBehaviour : SbBehaviour {
         [SerializeField] private float fireDamage = 50f;
         [SerializeField] private float igniteChance = 50f;
         
         public DamagePayload DealDamage(TargetedPayload payload) {
-            var damage = Stats.GetValue(StatRegistry.GetId("fire_damage"));
+            var damage = Stats.GetValue("fire_damage");
             
             var enemy = payload.Target.GetComponent<EnemyTarget>();
             if (enemy != null)
@@ -20,7 +20,7 @@ namespace Spellbound.Stats.Samples {
         }
         
         public void TryIgnite(TargetedPayload payload, float duration) {
-            var chance = Stats.GetValue(StatRegistry.GetId("ignite_chance"));
+            var chance = Stats.GetValue("ignite_chance");
             
             if (UnityEngine.Random.value * 100f >= chance)
                 return;
@@ -31,8 +31,8 @@ namespace Spellbound.Stats.Samples {
         
         protected override StatContainer InitializeStats() {
             var stats = new StatContainer();
-            stats.SetBase(StatRegistry.Register("fire_damage"), fireDamage);
-            stats.SetBase(StatRegistry.Register("ignite_chance"), igniteChance);
+            stats.SetBase("fire_damage", fireDamage);
+            stats.SetBase("ignite_chance", igniteChance);
             return stats;
         }
     }

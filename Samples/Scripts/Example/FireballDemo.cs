@@ -8,7 +8,11 @@ namespace Spellbound.Stats.Samples {
     /// <summary>
     /// Demo controller showing the modifier system in action.
     /// </summary>
-    public class FireballDemo : MonoBehaviour {
+    /// <remarks>
+    /// This script has a lot of scaffolding but there is a small example of casting and equipping modifiers to the
+    /// _fireball skill that may be helpful to the user.
+    /// </remarks>
+    public sealed class FireballDemo : MonoBehaviour {
         [Header("Skill Setup")]
         [SerializeField] private GameObject projectilePrefab;
         
@@ -97,7 +101,8 @@ namespace Spellbound.Stats.Samples {
         }
         
         private void CastFireball() {
-            if (_fireball == null) return;
+            if (_fireball == null) 
+                return;
             
             Debug.Log("═══════════════════════════════════════");
             Debug.Log("CASTING FIREBALL");

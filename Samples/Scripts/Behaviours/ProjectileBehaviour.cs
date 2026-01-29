@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
     [Serializable]
-    public class ProjectileBehaviour : SbBehaviour {
+    public sealed class ProjectileBehaviour : SbBehaviour {
         [SerializeField] private int count = 1;
         [SerializeField] private float speed = 10f;
         
@@ -14,11 +14,9 @@ namespace Spellbound.Stats.Samples {
         
         private Func<int, Vector3[]> _directionOverride;
         
-        public void SetDirectionCalculation(Func<int, Vector3[]> calculation) => 
-            _directionOverride = calculation;
+        public void SetDirectionCalculation(Func<int, Vector3[]> calculation) => _directionOverride = calculation;
         
-        public void ClearDirectionCalculation() => 
-            _directionOverride = null;
+        public void ClearDirectionCalculation() => _directionOverride = null;
         
         public List<SimpleProjectile> Launch(PositionalPayload payload, Vector3[] directions = null) {
             var spawned = new List<SimpleProjectile>();
@@ -26,8 +24,8 @@ namespace Spellbound.Stats.Samples {
             if (ProjectilePrefab == null)
                 return spawned;
             
-            var projectileCount = (int)Stats.GetValue(StatRegistry.GetId("projectile_count"));
-            var projectileSpeed = Stats.GetValue(StatRegistry.GetId("projectile_speed"));
+            var projectileCount = (int)Stats.GetValue("projectile_count");
+            var projectileSpeed = Stats.GetValue("projectile_speed");
             
             Vector3[] finalDirections;
     
@@ -41,15 +39,14 @@ namespace Spellbound.Stats.Samples {
             };
             
             foreach (var dir in finalDirections) {
-                var worldDir = Quaternion.LookRotation(payload.Direction) * dir;
                 var proj = UnityEngine.Object.Instantiate(ProjectilePrefab, payload.Position, Quaternion.identity);
-                
+    
                 var projectile = proj.GetComponent<SimpleProjectile>();
 
                 if (projectile == null) 
                     continue;
 
-                projectile.Direction = worldDir;
+                projectile.Direction = dir;
                 projectile.Speed = projectileSpeed;
                 spawned.Add(projectile);
             }
@@ -70,8 +67,8 @@ namespace Spellbound.Stats.Samples {
         
         protected override StatContainer InitializeStats() {
             var stats = new StatContainer();
-            stats.SetBase(StatRegistry.Register("projectile_count"), count);
-            stats.SetBase(StatRegistry.Register("projectile_speed"), speed);
+            stats.SetBase("projectile_count", count);
+            stats.SetBase("projectile_speed", speed);
             return stats;
         }
     }

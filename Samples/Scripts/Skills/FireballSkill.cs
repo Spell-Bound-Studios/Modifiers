@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
-    public class FireballSkill : Skill {
+    public sealed class FireballSkill : Skill {
         public override string Name => "Fireball";
         
         public GameObject ProjectilePrefab { get; set; }

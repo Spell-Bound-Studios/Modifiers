@@ -4,7 +4,14 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
-    public class SimpleProjectile : MonoBehaviour, ITriggersTargetedEvent {
+    /// <summary>
+    /// A simple projectile example script.
+    /// </summary>
+    /// <remarks>
+    /// This script is intended to show the user how to implement a specific ITrigger and then invoke it with the
+    /// appropriate payload struct.
+    /// </remarks>
+    public sealed class SimpleProjectile : MonoBehaviour, ITriggersTargetedEvent {
         [SerializeField] private float maxDistance = 20f;
         [SerializeField] private string targetTag = "Enemy";
         
