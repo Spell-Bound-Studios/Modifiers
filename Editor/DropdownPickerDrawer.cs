@@ -71,28 +71,33 @@ namespace Spellbound.Stats.Editor {
             container.Add(row);
             
             // If there's a value, show its properties
-            if (property.managedReferenceValue != null) {
-                var foldout = new Foldout { text = "Properties", value = true };
-                
-                // Iterate child properties
-                var iterator = property.Copy();
-                var endProperty = property.GetEndProperty();
-                
-                if (iterator.NextVisible(true)) {
-                    do {
-                        if (SerializedProperty.EqualContents(iterator, endProperty))
-                            break;
-                        
-                        var field = new PropertyField(iterator.Copy());
-                        field.Bind(property.serializedObject);
-                        foldout.Add(field);
-                        
-                    } while (iterator.NextVisible(false));
-                }
-                
-                container.Add(foldout);
-            }
+            if (property.managedReferenceValue == null) 
+                return container;
             
+            var foldout = new Foldout
+            {
+                text = "Properties", 
+                value = true
+            };
+                
+            // Iterate child properties
+            var iterator = property.Copy();
+            var endProperty = property.GetEndProperty();
+                
+            if (iterator.NextVisible(true)) {
+                do {
+                    if (SerializedProperty.EqualContents(iterator, endProperty))
+                        break;
+                        
+                    var field = new PropertyField(iterator.Copy());
+                    field.Bind(property.serializedObject);
+                    foldout.Add(field);
+                        
+                } while (iterator.NextVisible(false));
+            }
+                
+            container.Add(foldout);
+
             return container;
         }
         
