@@ -13,10 +13,32 @@ MonoBehaviour:
   m_Name: New Modded Collection
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.ModdedCollection
   modifiableObject:
-    rid: -2
-  modifiers: []
+    rid: 6480194562550137020
+  modifiers:
+  - rid: 6480194562550137021
+  - rid: 6480194562550137022
+  - rid: 6480194562550137023
+  - rid: 6480194562550137024
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    - rid: 6480194562550137020
+      type: {class: Fireball, ns: Spellbound.Stats.Samples, asm: Assembly-CSharp}
+      data:
+        projectilePrefab: {fileID: 0}
+    - rid: 6480194562550137021
+      type: {class: AddedProjectileCountModifier, ns: Spellbound.Stats.Samples, asm: Assembly-CSharp}
+      data:
+        additionalProjectiles: 6
+    - rid: 6480194562550137022
+      type: {class: CircularProjectileModifier, ns: Spellbound.Stats.Samples, asm: Assembly-CSharp}
+      data: 
+    - rid: 6480194562550137023
+      type: {class: SplittingProjectileModifier, ns: Spellbound.Stats.Samples, asm: Assembly-CSharp}
+      data:
+        splitCount: 2
+        splitAngle: 30
+    - rid: 6480194562550137024
+      type: {class: IncreasedDurationModifier, ns: Spellbound.Stats.Samples, asm: Assembly-CSharp}
+      data:
+        increasedDurationPercent: 50

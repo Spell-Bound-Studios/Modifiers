@@ -388,7 +388,7 @@ namespace Spellbound.Stats.Samples {
         
         private void InitializeSkill() {
             _fireball = new Fireball {
-                ProjectilePrefab = projectilePrefab
+                projectilePrefab = projectilePrefab
             };
             _fireball.Initialize();
             

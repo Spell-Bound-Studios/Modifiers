@@ -15,10 +15,13 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private Renderer targetRenderer;
         [SerializeField] private Color defaultColor = Color.white;
         [SerializeField] private Color ignitedColor = Color.red;
+        [SerializeField] private Color chilledColor = Color.darkBlue;
 
         private Coroutine _igniteCoroutine;
+        private Coroutine _chillCoroutine;
 
         public bool IsIgnited { get; private set; }
+        public bool IsChilled { get; private set; }
 
         private void Awake() {
             if (targetRenderer == null)
@@ -57,6 +60,32 @@ namespace Spellbound.Stats.Samples {
 
             Debug.Log($"[{gameObject.name}] Ignite expired.");
             _igniteCoroutine = null;
+        }
+
+        public void ApplyChill(float duration) {
+            if (_chillCoroutine != null)
+                StopCoroutine(_chillCoroutine);
+
+            _chillCoroutine = StartCoroutine(ChillRoutine(duration));
+        }
+
+        private IEnumerator ChillRoutine(float duration) {
+            IsChilled = true;
+            
+            if (targetRenderer != null)
+                targetRenderer.material.color = chilledColor;
+
+            Debug.Log($"[{gameObject.name}] CHILLED for {duration}s!");
+
+            yield return new WaitForSeconds(duration);
+
+            IsChilled = false;
+
+            if (targetRenderer != null)
+                targetRenderer.material.color = defaultColor;
+
+            Debug.Log($"[{gameObject.name}] Chill expired.");
+            _chillCoroutine = null;
         }
     }
 }

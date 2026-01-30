@@ -5,8 +5,8 @@ namespace Spellbound.Stats.Samples {
     [Serializable]
     public sealed class Fireball : ModifiableObject {
         public override string Name => "Fireball";
-        
-        public GameObject ProjectilePrefab { get; set; }
+
+        [SerializeField] public GameObject projectilePrefab;
         
         // Cache behaviour references
         private ProjectileBehaviour _projectile;
@@ -24,7 +24,7 @@ namespace Spellbound.Stats.Samples {
             _fire = Behaviours.GetBehaviour<FireBehaviour>();
             _duration = Behaviours.GetBehaviour<DurationBehaviour>();
             
-            _projectile.ProjectilePrefab = ProjectilePrefab;
+            _projectile.ProjectilePrefab = projectilePrefab;
             
             // Attaching specific payload types to specific events and then passing in those methods to be called
             // when the event fires.
