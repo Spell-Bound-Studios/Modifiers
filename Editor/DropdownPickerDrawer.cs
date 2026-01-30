@@ -95,9 +95,10 @@ namespace Spellbound.Stats.Editor {
                         
                 } while (iterator.NextVisible(false));
             }
-                
-            container.Add(foldout);
-
+            
+            if (foldout.childCount > 0)
+                container.Add(foldout);
+            
             return container;
         }
         

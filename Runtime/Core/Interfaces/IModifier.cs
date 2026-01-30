@@ -24,5 +24,7 @@ namespace Spellbound.Stats {
         /// Called when the modifier source is removed.
         /// </summary>
         void Remove(ICanBeModified target);
+
+        IModifier Clone();
     }
 }

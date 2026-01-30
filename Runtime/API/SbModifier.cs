@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Spellbound.Stats {
     /// <summary>
@@ -14,7 +15,14 @@ namespace Spellbound.Stats {
 
         public abstract void Remove(ICanBeModified target);
 
-        public string UniqueId { get; } = Guid.NewGuid().ToString();
+        public string UniqueId { get; set; } = Guid.NewGuid().ToString();
+        
+        public virtual IModifier Clone() {
+            var json = JsonUtility.ToJson(this);
+            var clone = (SbModifier)JsonUtility.FromJson(json, GetType());
+            clone.UniqueId = Guid.NewGuid().ToString();
+            return clone;
+        }
 
         #region Convenience Methods
         

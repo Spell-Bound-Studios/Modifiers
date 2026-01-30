@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
+    [Serializable]
     public sealed class Fireball : ModifiableObject {
         public override string Name => "Fireball";
         
