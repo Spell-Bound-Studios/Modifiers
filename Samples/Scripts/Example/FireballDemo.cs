@@ -3,6 +3,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 namespace Spellbound.Stats.Samples {
     public sealed class FireballDemo : MonoBehaviour {
@@ -13,63 +14,286 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private Transform player;
         [SerializeField] private GameObject enemyPrefab;
         
-        [Header("Inner Ring")]
-        [SerializeField] private int innerEnemyCount = 7;
+        [Header("Ring Defaults")]
         [SerializeField] private float innerRingDistance = 5f;
-        
-        [Header("Outer Ring")]
-        [SerializeField] private int outerEnemyCount = 14;
         [SerializeField] private float outerRingDistance = 10f;
-        [SerializeField] private float outerRingOffset = 0f;
         
         [Header("Enemy Movement")]
-        [SerializeField] private bool enemiesMove = false;
         [SerializeField] private float moveSpeed = 2f;
         
-        [Header("UI Buttons")]
-        [SerializeField] private Button castButton;
-        [SerializeField] private Button toggleProjectileCountButton;
-        [SerializeField] private Button toggleCircularButton;
-        [SerializeField] private Button toggleDurationButton;
-        [SerializeField] private Button toggleSplitButton;
-        
-        [Header("UI Sliders")]
-        [SerializeField] private Slider outerOffsetSlider;
-        [SerializeField] private TMP_Text outerOffsetLabel;
-        [SerializeField] private Toggle movementToggle;
-        
-        [Header("UI Status")]
-        [SerializeField] private TMP_Text statusText;
+        [Header("UI Setup")]
+        [SerializeField] private Canvas canvas;
         
         [Header("Button Colors")]
         [SerializeField] private Color defaultButtonColor = Color.white;
         [SerializeField] private Color activeButtonColor = Color.green;
         
-        private FireballSkill _fireball;
+        private Fireball _fireball;
         
         private AddedProjectileCountModifier _projectileCountMod;
         private CircularProjectileModifier _circularMod;
         private IncreasedDurationModifier _durationMod;
         private SplittingProjectileModifier _splitMod;
         
-        private EnemyTarget[] _innerEnemies;
-        private EnemyTarget[] _outerEnemies;
+        private List<EnemyTarget> _innerEnemies = new();
+        private List<EnemyTarget> _outerEnemies = new();
+        
+        private int _innerEnemyCount = 7;
+        private int _outerEnemyCount = 14;
+        private float _radiusJitter;
+        private bool _enemiesMove;
+        
+        private TMP_Text _statusText;
+        private TMP_Text _innerCountLabel;
+        private TMP_Text _outerCountLabel;
+        private TMP_Text _radiusJitterLabel;
+        private Button _toggleProjectileCountButton;
+        private Button _toggleCircularButton;
+        private Button _toggleDurationButton;
+        private Button _toggleSplitButton;
         
         private void Start() {
-            SpawnEnemies();
+            CreateUI();
+            SpawnAllEnemies();
             InitializeSkill();
-            SetupButtons();
-            SetupSliders();
             UpdateStatusText();
             UpdateButtonColors();
         }
         
         private void Update() {
-            if (enemiesMove)
+            if (_enemiesMove)
                 MoveEnemiesAroundPlayer();
         }
         
-        private void SpawnEnemies() {
+        private void CreateUI() {
+            if (canvas == null) {
+                var canvasObj = new GameObject("DemoCanvas");
+                canvas = canvasObj.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvasObj.AddComponent<CanvasScaler>();
+                canvasObj.AddComponent<GraphicRaycaster>();
+            }
+            
+            var panelObj = new GameObject("Panel");
+            panelObj.transform.SetParent(canvas.transform, false);
+            var panelRect = panelObj.AddComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(0, 0.5f);
+            panelRect.anchorMax = new Vector2(0, 0.5f);
+            panelRect.pivot = new Vector2(0, 0.5f);
+            panelRect.anchoredPosition = new Vector2(20, 0);
+            panelRect.sizeDelta = new Vector2(300, 0);
+            
+            var verticalLayout = panelObj.AddComponent<VerticalLayoutGroup>();
+            verticalLayout.spacing = 8;
+            verticalLayout.childControlWidth = true;
+            verticalLayout.childControlHeight = false;
+            verticalLayout.childForceExpandWidth = true;
+            verticalLayout.childForceExpandHeight = false;
+            verticalLayout.padding = new RectOffset(10, 10, 10, 10);
+            
+            var sizeFitter = panelObj.AddComponent<ContentSizeFitter>();
+            sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            
+            var panelImage = panelObj.AddComponent<Image>();
+            panelImage.color = new Color(0, 0, 0, 0.7f);
+            
+            _statusText = CreateText(panelObj.transform, "", 12);
+            _statusText.GetComponent<RectTransform>().sizeDelta = new Vector2(280, 180);
+            
+            CreateButton(panelObj.transform, "Cast Fireball", CastFireball);
+            _toggleProjectileCountButton = CreateButton(panelObj.transform, "+6 Projectiles", ToggleProjectileCount);
+            _toggleCircularButton = CreateButton(panelObj.transform, "Circular Pattern", ToggleCircular);
+            _toggleDurationButton = CreateButton(panelObj.transform, "+50% Duration", ToggleDuration);
+            _toggleSplitButton = CreateButton(panelObj.transform, "Split On Hit", ToggleSplit);
+            
+            CreateText(panelObj.transform, "═══ SCENE CONTROLS ═══", 12);
+            
+            _innerCountLabel = CreateText(panelObj.transform, $"Inner Ring Count: {_innerEnemyCount}", 12);
+            CreateSlider(panelObj.transform, 1, 20, _innerEnemyCount, UpdateInnerEnemyCount);
+            
+            _outerCountLabel = CreateText(panelObj.transform, $"Outer Ring Count: {_outerEnemyCount}", 12);
+            CreateSlider(panelObj.transform, 1, 30, _outerEnemyCount, UpdateOuterEnemyCount);
+            
+            _radiusJitterLabel = CreateText(panelObj.transform, $"Radius Jitter: {_radiusJitter:F1}", 12);
+            CreateSlider(panelObj.transform, 0f, 3f, _radiusJitter, UpdateRadiusJitter);
+            
+            CreateToggle(panelObj.transform, "Enemies Move", _enemiesMove, e => _enemiesMove = e);
+        }
+        
+        private TMP_Text CreateText(Transform parent, string text, int fontSize) {
+            var obj = new GameObject("Text");
+            obj.transform.SetParent(parent, false);
+            
+            var rect = obj.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(280, 25);
+            
+            var tmp = obj.AddComponent<TextMeshProUGUI>();
+            tmp.text = text;
+            tmp.fontSize = fontSize;
+            tmp.color = Color.white;
+            
+            return tmp;
+        }
+        
+        private Button CreateButton(Transform parent, string label, UnityEngine.Events.UnityAction onClick) {
+            var obj = new GameObject("Button");
+            obj.transform.SetParent(parent, false);
+            
+            var rect = obj.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(280, 35);
+            
+            var image = obj.AddComponent<Image>();
+            image.color = defaultButtonColor;
+            
+            var button = obj.AddComponent<Button>();
+            button.targetGraphic = image;
+            button.onClick.AddListener(onClick);
+            
+            var textObj = new GameObject("Text");
+            textObj.transform.SetParent(obj.transform, false);
+            
+            var textRect = textObj.AddComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.sizeDelta = Vector2.zero;
+            
+            var tmp = textObj.AddComponent<TextMeshProUGUI>();
+            tmp.text = label;
+            tmp.fontSize = 14;
+            tmp.color = Color.black;
+            tmp.alignment = TextAlignmentOptions.Center;
+            
+            return button;
+        }
+        
+        private void CreateSlider(Transform parent, float min, float max, float value, UnityEngine.Events.UnityAction<float> onValueChanged) {
+            var obj = new GameObject("Slider");
+            obj.transform.SetParent(parent, false);
+            
+            var rect = obj.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(280, 20);
+            
+            var slider = obj.AddComponent<Slider>();
+            slider.minValue = min;
+            slider.maxValue = max;
+            slider.value = value;
+            slider.onValueChanged.AddListener(onValueChanged);
+            
+            var bgObj = new GameObject("Background");
+            bgObj.transform.SetParent(obj.transform, false);
+            var bgRect = bgObj.AddComponent<RectTransform>();
+            bgRect.anchorMin = new Vector2(0, 0.25f);
+            bgRect.anchorMax = new Vector2(1, 0.75f);
+            bgRect.sizeDelta = Vector2.zero;
+            var bgImage = bgObj.AddComponent<Image>();
+            bgImage.color = Color.gray;
+            
+            var fillAreaObj = new GameObject("Fill Area");
+            fillAreaObj.transform.SetParent(obj.transform, false);
+            var fillAreaRect = fillAreaObj.AddComponent<RectTransform>();
+            fillAreaRect.anchorMin = new Vector2(0, 0.25f);
+            fillAreaRect.anchorMax = new Vector2(1, 0.75f);
+            fillAreaRect.sizeDelta = Vector2.zero;
+            
+            var fillObj = new GameObject("Fill");
+            fillObj.transform.SetParent(fillAreaObj.transform, false);
+            var fillRect = fillObj.AddComponent<RectTransform>();
+            fillRect.sizeDelta = Vector2.zero;
+            var fillImage = fillObj.AddComponent<Image>();
+            fillImage.color = Color.green;
+            
+            slider.fillRect = fillRect;
+            
+            var handleAreaObj = new GameObject("Handle Slide Area");
+            handleAreaObj.transform.SetParent(obj.transform, false);
+            var handleAreaRect = handleAreaObj.AddComponent<RectTransform>();
+            handleAreaRect.anchorMin = Vector2.zero;
+            handleAreaRect.anchorMax = Vector2.one;
+            handleAreaRect.sizeDelta = Vector2.zero;
+            
+            var handleObj = new GameObject("Handle");
+            handleObj.transform.SetParent(handleAreaObj.transform, false);
+            var handleRect = handleObj.AddComponent<RectTransform>();
+            handleRect.sizeDelta = new Vector2(20, 20);
+            var handleImage = handleObj.AddComponent<Image>();
+            handleImage.color = Color.white;
+            
+            slider.handleRect = handleRect;
+        }
+        
+        private void CreateToggle(Transform parent, string label, bool isOn, UnityEngine.Events.UnityAction<bool> onValueChanged) {
+            var obj = new GameObject("Toggle");
+            obj.transform.SetParent(parent, false);
+            
+            var rect = obj.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(280, 30);
+            
+            var layout = obj.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 10;
+            layout.childControlWidth = false;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            
+            var bgObj = new GameObject("Background");
+            bgObj.transform.SetParent(obj.transform, false);
+            var bgRect = bgObj.AddComponent<RectTransform>();
+            bgRect.sizeDelta = new Vector2(25, 25);
+            var bgImage = bgObj.AddComponent<Image>();
+            bgImage.color = Color.white;
+            
+            var checkObj = new GameObject("Checkmark");
+            checkObj.transform.SetParent(bgObj.transform, false);
+            var checkRect = checkObj.AddComponent<RectTransform>();
+            checkRect.anchorMin = Vector2.zero;
+            checkRect.anchorMax = Vector2.one;
+            checkRect.sizeDelta = new Vector2(-6, -6);
+            checkRect.anchoredPosition = Vector2.zero;
+            var checkImage = checkObj.AddComponent<Image>();
+            checkImage.color = Color.green;
+            
+            var labelObj = new GameObject("Label");
+            labelObj.transform.SetParent(obj.transform, false);
+            var labelRect = labelObj.AddComponent<RectTransform>();
+            labelRect.sizeDelta = new Vector2(200, 30);
+            var tmp = labelObj.AddComponent<TextMeshProUGUI>();
+            tmp.text = label;
+            tmp.fontSize = 14;
+            tmp.color = Color.white;
+            tmp.alignment = TextAlignmentOptions.MidlineLeft;
+            
+            var toggle = obj.AddComponent<Toggle>();
+            toggle.isOn = isOn;
+            toggle.graphic = checkImage;
+            toggle.targetGraphic = bgImage;
+            toggle.onValueChanged.AddListener(onValueChanged);
+        }
+        
+        private void UpdateInnerEnemyCount(float value) {
+            var newCount = Mathf.RoundToInt(value);
+            if (newCount == _innerEnemyCount) return;
+            
+            _innerEnemyCount = newCount;
+            _innerCountLabel.text = $"Inner Ring Count: {_innerEnemyCount}";
+            RespawnRing(ref _innerEnemies, _innerEnemyCount, innerRingDistance, "Inner");
+        }
+        
+        private void UpdateOuterEnemyCount(float value) {
+            var newCount = Mathf.RoundToInt(value);
+            if (newCount == _outerEnemyCount) return;
+            
+            _outerEnemyCount = newCount;
+            _outerCountLabel.text = $"Outer Ring Count: {_outerEnemyCount}";
+            RespawnRing(ref _outerEnemies, _outerEnemyCount, outerRingDistance, "Outer");
+        }
+        
+        private void UpdateRadiusJitter(float value) {
+            _radiusJitter = value;
+            _radiusJitterLabel.text = $"Radius Jitter: {_radiusJitter:F1}";
+            ApplyJitterToRings();
+        }
+        
+        private void SpawnAllEnemies() {
             if (enemyPrefab == null) {
                 Debug.LogError("Enemy prefab not assigned!");
                 return;
@@ -80,113 +304,95 @@ namespace Spellbound.Stats.Samples {
                 return;
             }
             
-            _innerEnemies = SpawnRing(innerEnemyCount, innerRingDistance, 0f, "Inner");
-            _outerEnemies = SpawnRing(outerEnemyCount, outerRingDistance, outerRingOffset, "Outer");
+            SpawnRing(ref _innerEnemies, _innerEnemyCount, innerRingDistance, "Inner");
+            SpawnRing(ref _outerEnemies, _outerEnemyCount, outerRingDistance, "Outer");
             
-            Debug.Log($"[Demo] Spawned {innerEnemyCount} inner enemies (radius: {innerRingDistance})");
-            Debug.Log($"[Demo] Spawned {outerEnemyCount} outer enemies (radius: {outerRingDistance})");
+            Debug.Log($"[Demo] Spawned {_innerEnemyCount} inner enemies (radius: {innerRingDistance})");
+            Debug.Log($"[Demo] Spawned {_outerEnemyCount} outer enemies (radius: {outerRingDistance})");
         }
         
-        private EnemyTarget[] SpawnRing(int count, float distance, float angleOffset, string prefix) {
-            var enemies = new EnemyTarget[count];
+        private void SpawnRing(ref List<EnemyTarget> enemies, int count, float distance, string prefix) {
+            enemies.Clear();
             var playerPos = player.position;
             
             for (var i = 0; i < count; i++) {
-                var angle = ((360f / count) * i + angleOffset) * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * distance;
+                var angle = (360f / count) * i * Mathf.Deg2Rad;
+                var jitteredDistance = distance + Random.Range(-_radiusJitter, _radiusJitter);
+                var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * jitteredDistance;
                 var spawnPos = playerPos + offset;
                 
                 var enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
                 enemyObj.name = $"{prefix}_Enemy_{i + 1}";
                 enemyObj.transform.LookAt(new Vector3(playerPos.x, enemyObj.transform.position.y, playerPos.z));
                 
-                enemies[i] = enemyObj.GetComponent<EnemyTarget>();
+                var enemy = enemyObj.GetComponent<EnemyTarget>();
+                enemies.Add(enemy);
+            }
+        }
+        
+        private void RespawnRing(ref List<EnemyTarget> enemies, int count, float distance, string prefix) {
+            foreach (var enemy in enemies) {
+                if (enemy != null)
+                    Destroy(enemy.gameObject);
             }
             
-            return enemies;
+            SpawnRing(ref enemies, count, distance, prefix);
+        }
+        
+        private void ApplyJitterToRings() {
+            ApplyJitterToRing(_innerEnemies, innerRingDistance);
+            ApplyJitterToRing(_outerEnemies, outerRingDistance);
+        }
+        
+        private void ApplyJitterToRing(List<EnemyTarget> enemies, float baseDistance) {
+            if (enemies == null) return;
+            
+            var playerPos = player.position;
+            var count = enemies.Count;
+            
+            for (var i = 0; i < count; i++) {
+                if (enemies[i] == null) continue;
+                
+                var angle = (360f / count) * i * Mathf.Deg2Rad;
+                var jitteredDistance = baseDistance + Random.Range(-_radiusJitter, _radiusJitter);
+                var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * jitteredDistance;
+                
+                enemies[i].transform.position = playerPos + offset;
+                enemies[i].transform.LookAt(new Vector3(playerPos.x, enemies[i].transform.position.y, playerPos.z));
+            }
         }
         
         private void MoveEnemiesAroundPlayer() {
             var playerPos = player.position;
             var rotationAmount = moveSpeed * Time.deltaTime;
             
-            RotateRing(_innerEnemies, playerPos, innerRingDistance, rotationAmount);
-            RotateRing(_outerEnemies, playerPos, outerRingDistance, -rotationAmount); // Opposite direction
+            RotateRing(_innerEnemies, playerPos, rotationAmount);
+            RotateRing(_outerEnemies, playerPos, -rotationAmount);
         }
         
-        private void RotateRing(EnemyTarget[] enemies, Vector3 center, float distance, float rotationAmount) {
-            if (enemies == null) 
-                return;
+        private void RotateRing(List<EnemyTarget> enemies, Vector3 center, float rotationAmount) {
+            if (enemies == null) return;
             
             foreach (var enemy in enemies) {
-                if (enemy == null) 
-                    continue;
+                if (enemy == null) continue;
                 
                 var direction = enemy.transform.position - center;
+                var currentDistance = direction.magnitude;
                 direction.y = 0;
                 direction = Quaternion.AngleAxis(rotationAmount, Vector3.up) * direction;
                 
-                enemy.transform.position = center + direction.normalized * distance;
+                enemy.transform.position = center + direction.normalized * currentDistance;
                 enemy.transform.LookAt(new Vector3(center.x, enemy.transform.position.y, center.z));
             }
         }
         
-        private void UpdateOuterRingOffset(float newOffset) {
-            outerRingOffset = newOffset;
-            
-            if (outerOffsetLabel != null)
-                outerOffsetLabel.text = $"Outer Ring Offset: {newOffset:F1}°";
-            
-            RepositionOuterRing();
-        }
-        
-        private void RepositionOuterRing() {
-            if (_outerEnemies == null) return;
-            
-            var playerPos = player.position;
-            
-            for (var i = 0; i < _outerEnemies.Length; i++) {
-                if (_outerEnemies[i] == null) continue;
-                
-                var angle = ((360f / outerEnemyCount) * i + outerRingOffset) * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * outerRingDistance;
-                
-                _outerEnemies[i].transform.position = playerPos + offset;
-                _outerEnemies[i].transform.LookAt(new Vector3(playerPos.x, _outerEnemies[i].transform.position.y, playerPos.z));
-            }
-        }
-        
         private void InitializeSkill() {
-            _fireball = new FireballSkill {
+            _fireball = new Fireball {
                 ProjectilePrefab = projectilePrefab
             };
             _fireball.Initialize();
             
             Debug.Log($"[Demo] Fireball skill initialized: {_fireball.Name}");
-        }
-        
-        private void SetupButtons() {
-            castButton?.onClick.AddListener(CastFireball);
-            toggleProjectileCountButton?.onClick.AddListener(ToggleProjectileCount);
-            toggleCircularButton?.onClick.AddListener(ToggleCircular);
-            toggleDurationButton?.onClick.AddListener(ToggleDuration);
-            toggleSplitButton?.onClick.AddListener(ToggleSplit);
-        }
-        
-        private void SetupSliders() {
-            if (outerOffsetSlider != null) {
-                outerOffsetSlider.minValue = 0f;
-                outerOffsetSlider.maxValue = 360f / outerEnemyCount;
-                outerOffsetSlider.value = outerRingOffset;
-                outerOffsetSlider.onValueChanged.AddListener(UpdateOuterRingOffset);
-            }
-            
-            if (movementToggle != null) {
-                movementToggle.isOn = enemiesMove;
-                movementToggle.onValueChanged.AddListener(enabled => enemiesMove = enabled);
-            }
-            
-            UpdateOuterRingOffset(outerRingOffset);
         }
         
         private void CastFireball() {
@@ -265,36 +471,24 @@ namespace Spellbound.Stats.Samples {
         #endregion
         
         private void UpdateButtonColors() {
-            SetButtonColor(toggleProjectileCountButton, _projectileCountMod != null);
-            SetButtonColor(toggleCircularButton, _circularMod != null);
-            SetButtonColor(toggleDurationButton, _durationMod != null);
-            SetButtonColor(toggleSplitButton, _splitMod != null);
+            SetButtonColor(_toggleProjectileCountButton, _projectileCountMod != null);
+            SetButtonColor(_toggleCircularButton, _circularMod != null);
+            SetButtonColor(_toggleDurationButton, _durationMod != null);
+            SetButtonColor(_toggleSplitButton, _splitMod != null);
         }
         
         private void SetButtonColor(Button button, bool isActive) {
-            if (button == null) 
-                return;
+            if (button == null) return;
             
             var colors = button.colors;
-            
-            colors.normalColor = isActive 
-                ? activeButtonColor 
-                : defaultButtonColor;
-            
-            colors.highlightedColor = isActive 
-                ? activeButtonColor 
-                : defaultButtonColor;
-            
-            colors.selectedColor = isActive 
-                ? activeButtonColor 
-                : defaultButtonColor;
-            
+            colors.normalColor = isActive ? activeButtonColor : defaultButtonColor;
+            colors.highlightedColor = isActive ? activeButtonColor : defaultButtonColor;
+            colors.selectedColor = isActive ? activeButtonColor : defaultButtonColor;
             button.colors = colors;
         }
         
         private void UpdateStatusText() {
-            if (statusText == null || _fireball == null) 
-                return;
+            if (_statusText == null || _fireball == null) return;
             
             var projectile = _fireball.Behaviours.GetBehaviour<ProjectileBehaviour>();
             var fire = _fireball.Behaviours.GetBehaviour<FireBehaviour>();
@@ -305,11 +499,9 @@ namespace Spellbound.Stats.Samples {
             var damage = fire.Stats.GetValue("fire_damage");
             var igniteChance = fire.Stats.GetValue("ignite_chance");
             var igniteDuration = duration.GetIgniteDuration();
-            var pattern = _circularMod != null 
-                ? "Circular" 
-                : "Forward";
+            var pattern = _circularMod != null ? "Circular" : "Forward";
             
-            statusText.text = $@"═══ FIREBALL STATS ═══
+            _statusText.text = $@"═══ FIREBALL STATS ═══
 Projectiles: {count}
 Speed: {speed}
 Pattern: {pattern}

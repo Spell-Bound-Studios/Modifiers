@@ -24,7 +24,7 @@ namespace Spellbound.Stats {
         /// <param name="target"></param>
         /// <param name="stats"></param>
         /// <returns>
-        ///
+        /// bool - True if a stat container is found and false if it's not.
         /// </returns>
         protected bool TryGetStats(ICanBeModified target, out StatContainer stats) {
             stats = null;
