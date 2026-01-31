@@ -21,4 +21,4 @@ MonoBehaviour:
     - rid: 6480194562550137025
       type: {class: RayOfFrost, ns: Spellbound.Stats.Samples, asm: Assembly-CSharp}
       data:
-        beamVisualPrefab: {fileID: 8844077887402412299, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+        beamVisualPrefab: {fileID: 3185007814782221311, guid: cc891efbd3400904ab0cffd2d60f5a48, type: 3}

@@ -12,6 +12,9 @@ namespace Spellbound.Stats.Samples {
         private ColdBehaviour _cold;
         private DurationBehaviour _duration;
 
+        private Vector3 _lastPosition;
+        private Vector3 _lastDirection;
+        
         public bool IsChanneling { get; private set; }
 
         public RayOfFrost() {
@@ -27,7 +30,7 @@ namespace Spellbound.Stats.Samples {
             
             _beam.BeamVisualPrefab = beamVisualPrefab;
             
-            Events.Add<PositionalPayload>("cast", OnChannel);
+            Events.Add<PositionalPayload>("channel", OnChannel);
             Events.Add<TargetedPayload>("hit", OnHit);
         }
         
@@ -36,14 +39,23 @@ namespace Spellbound.Stats.Samples {
                 return;
             
             IsChanneling = true;
+            _lastPosition = position;
+            _lastDirection = direction;
+            
             _beam.StartVisual(position, direction);
+            
+            // Initial fire to set beam length
+            var result = _beam.Fire(new PositionalPayload(this, position, direction));
+            _beam.UpdateVisual(position, direction, result.Distance, result.HitPoint, result.DidHit);
         }
         
         public void UpdateChannel(Vector3 position, Vector3 direction) {
             if (!IsChanneling) 
                 return;
-            // TODO: Temporary beam length.
-            _beam.UpdateVisual(position, direction, 5);
+            
+            _lastPosition = position;
+            _lastDirection = direction;
+            
             Events.Invoke("channel", new PositionalPayload(this, position, direction));
         }
         
@@ -56,10 +68,13 @@ namespace Spellbound.Stats.Samples {
         }
         
         private void OnChannel(PositionalPayload payload) {
-            var hits = _beam.Fire(payload);
+            var result = _beam.Fire(payload);
             
-            foreach (var hit in hits)
+            _beam.UpdateVisual(payload.Position, payload.Direction, result.Distance, result.HitPoint, result.DidHit);
+            
+            foreach (var hit in result.Hits) {
                 Events.Invoke("hit", new TargetedPayload(this, hit, hit.transform.position));
+            }
         }
         
         private void OnHit(TargetedPayload payload) {
