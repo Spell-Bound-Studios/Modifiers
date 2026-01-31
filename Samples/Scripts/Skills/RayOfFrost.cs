@@ -11,7 +11,9 @@ namespace Spellbound.Stats.Samples {
         private BeamBehaviour _beam;
         private ColdBehaviour _cold;
         private DurationBehaviour _duration;
-        
+
+        public bool IsChanneling { get; private set; }
+
         public RayOfFrost() {
             Behaviours.Add(new BeamBehaviour());
             Behaviours.Add(new ColdBehaviour());
@@ -25,14 +27,35 @@ namespace Spellbound.Stats.Samples {
             
             _beam.BeamVisualPrefab = beamVisualPrefab;
             
-            Events.Add<PositionalPayload>("cast", OnCast);
+            Events.Add<PositionalPayload>("cast", OnChannel);
             Events.Add<TargetedPayload>("hit", OnHit);
         }
         
-        public void Cast(Vector3 position, Vector3 direction) =>
-            Events.Invoke("cast", new PositionalPayload(this, position, direction));
+        public void StartChannel(Vector3 position, Vector3 direction) {
+            if (IsChanneling) 
+                return;
+            
+            IsChanneling = true;
+            _beam.StartVisual(position, direction);
+        }
         
-        private void OnCast(PositionalPayload payload) {
+        public void UpdateChannel(Vector3 position, Vector3 direction) {
+            if (!IsChanneling) 
+                return;
+            // TODO: Temporary beam length.
+            _beam.UpdateVisual(position, direction, 5);
+            Events.Invoke("channel", new PositionalPayload(this, position, direction));
+        }
+        
+        public void StopChannel() {
+            if (!IsChanneling) 
+                return;
+            
+            IsChanneling = false;
+            _beam.StopVisual();
+        }
+        
+        private void OnChannel(PositionalPayload payload) {
             var hits = _beam.Fire(payload);
             
             foreach (var hit in hits)

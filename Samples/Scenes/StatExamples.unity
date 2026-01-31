@@ -269,18 +269,76 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.FireballDemo
   projectilePrefab: {fileID: 2249507177515892946, guid: c3f3a105cd47657438c7629544f61350, type: 3}
+  rayOfFrostCollection: {fileID: 11400000, guid: fb6deddaed526fa42bed7b84cff64942, type: 2}
   player: {fileID: 994450418}
   enemyPrefab: {fileID: 4957247672107628884, guid: b8feac27374363e4a81c24c632ffae2a, type: 3}
-  innerEnemyCount: 7
   innerRingDistance: 5
-  outerEnemyCount: 14
   outerRingDistance: 10
-  outerRingOffset: 0
-  enemiesMove: 1
   moveSpeed: 2
   canvas: {fileID: 0}
   defaultButtonColor: {r: 1, g: 1, b: 1, a: 1}
   activeButtonColor: {r: 0, g: 1, b: 0, a: 1}
+--- !u!1001 &1692941981
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.09432
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.25069
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.92387956
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.38268343
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305400234315873149, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -45
+      objectReference: {fileID: 0}
+    - target: {fileID: 8844077887402412299, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_Name
+      value: RayOfFrost
+      objectReference: {fileID: 0}
+    - target: {fileID: 8844077887402412299, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d718d06ac1e30d441ac0429a8253fb9f, type: 3}
 --- !u!1 &1915032037
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,3 +627,4 @@ SceneRoots:
   - {fileID: 751812711}
   - {fileID: 8092004272606547571}
   - {fileID: 1915032040}
+  - {fileID: 1692941981}

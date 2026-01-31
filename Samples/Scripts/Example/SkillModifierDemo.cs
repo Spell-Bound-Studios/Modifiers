@@ -6,9 +6,10 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 
 namespace Spellbound.Stats.Samples {
-    public sealed class FireballDemo : MonoBehaviour {
+    public sealed class SkillModifierDemo : MonoBehaviour {
         [Header("Skill Setup")]
         [SerializeField] private GameObject projectilePrefab;
+        [SerializeField] private ModdedCollection rayOfFrostCollection;
         
         [Header("Scene Setup")]
         [SerializeField] private Transform player;
@@ -29,6 +30,7 @@ namespace Spellbound.Stats.Samples {
         [SerializeField] private Color activeButtonColor = Color.green;
         
         private Fireball _fireball;
+        private RayOfFrost _rayOfFrost;
         
         private AddedProjectileCountModifier _projectileCountMod;
         private CircularProjectileModifier _circularMod;
@@ -52,10 +54,13 @@ namespace Spellbound.Stats.Samples {
         private Button _toggleDurationButton;
         private Button _toggleSplitButton;
         
+        private Button _rayOfFrostButton;
+        private bool _isChannelingRayOfFrost;
+        
         private void Start() {
             CreateUI();
             SpawnAllEnemies();
-            InitializeSkill();
+            InitializeSkills();
             UpdateStatusText();
             UpdateButtonColors();
         }
@@ -63,6 +68,17 @@ namespace Spellbound.Stats.Samples {
         private void Update() {
             if (_enemiesMove)
                 MoveEnemiesAroundPlayer();
+            
+            HandleRayOfFrostChannel();
+        }
+        
+        private void HandleRayOfFrostChannel() {
+            if (_rayOfFrost == null)
+                return;
+            
+            if (_isChannelingRayOfFrost) {
+                _rayOfFrost.UpdateChannel(player.position, player.forward);
+            }
         }
         
         private void CreateUI() {
@@ -101,11 +117,15 @@ namespace Spellbound.Stats.Samples {
             _statusText = CreateText(panelObj.transform, "", 12);
             _statusText.GetComponent<RectTransform>().sizeDelta = new Vector2(280, 180);
             
+            CreateText(panelObj.transform, "═══ FIREBALL (Code) ═══", 12);
             CreateButton(panelObj.transform, "Cast Fireball", CastFireball);
             _toggleProjectileCountButton = CreateButton(panelObj.transform, "+6 Projectiles", ToggleProjectileCount);
             _toggleCircularButton = CreateButton(panelObj.transform, "Circular Pattern", ToggleCircular);
             _toggleDurationButton = CreateButton(panelObj.transform, "+50% Duration", ToggleDuration);
             _toggleSplitButton = CreateButton(panelObj.transform, "Split On Hit", ToggleSplit);
+            
+            CreateText(panelObj.transform, "═══ RAY OF FROST (SO) ═══", 12);
+            _rayOfFrostButton = CreateHoldButton(panelObj.transform, "Channel Ray of Frost", OnRayOfFrostDown, OnRayOfFrostUp);
             
             CreateText(panelObj.transform, "═══ SCENE CONTROLS ═══", 12);
             
@@ -149,6 +169,48 @@ namespace Spellbound.Stats.Samples {
             var button = obj.AddComponent<Button>();
             button.targetGraphic = image;
             button.onClick.AddListener(onClick);
+            
+            var textObj = new GameObject("Text");
+            textObj.transform.SetParent(obj.transform, false);
+            
+            var textRect = textObj.AddComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.sizeDelta = Vector2.zero;
+            
+            var tmp = textObj.AddComponent<TextMeshProUGUI>();
+            tmp.text = label;
+            tmp.fontSize = 14;
+            tmp.color = Color.black;
+            tmp.alignment = TextAlignmentOptions.Center;
+            
+            return button;
+        }
+        
+        private Button CreateHoldButton(Transform parent, string label, UnityEngine.Events.UnityAction onDown, UnityEngine.Events.UnityAction onUp) {
+            var obj = new GameObject("HoldButton");
+            obj.transform.SetParent(parent, false);
+            
+            var rect = obj.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(280, 35);
+            
+            var image = obj.AddComponent<Image>();
+            image.color = new Color(0.6f, 0.8f, 1f);
+            
+            var button = obj.AddComponent<Button>();
+            button.targetGraphic = image;
+            
+            var eventTrigger = obj.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+            
+            var pointerDown = new UnityEngine.EventSystems.EventTrigger.Entry();
+            pointerDown.eventID = UnityEngine.EventSystems.EventTriggerType.PointerDown;
+            pointerDown.callback.AddListener(_ => onDown());
+            eventTrigger.triggers.Add(pointerDown);
+            
+            var pointerUp = new UnityEngine.EventSystems.EventTrigger.Entry();
+            pointerUp.eventID = UnityEngine.EventSystems.EventTriggerType.PointerUp;
+            pointerUp.callback.AddListener(_ => onUp());
+            eventTrigger.triggers.Add(pointerUp);
             
             var textObj = new GameObject("Text");
             textObj.transform.SetParent(obj.transform, false);
@@ -386,13 +448,23 @@ namespace Spellbound.Stats.Samples {
             }
         }
         
-        private void InitializeSkill() {
+        private void InitializeSkills() {
             _fireball = new Fireball {
                 projectilePrefab = projectilePrefab
             };
             _fireball.Initialize();
+            Debug.Log($"[Demo] Fireball initialized: {_fireball.Name}");
+
+            if (rayOfFrostCollection == null) 
+                return;
             
-            Debug.Log($"[Demo] Fireball skill initialized: {_fireball.Name}");
+            var instance = rayOfFrostCollection.CreateInstance();
+            _rayOfFrost = instance as RayOfFrost;
+                
+            if (_rayOfFrost != null)
+                Debug.Log($"[Demo] Ray of Frost initialized from SO: {_rayOfFrost.Name}");
+            else
+                Debug.LogWarning("[Demo] RayOfFrost collection did not create a RayOfFrost instance");
         }
         
         private void CastFireball() {
@@ -404,6 +476,28 @@ namespace Spellbound.Stats.Samples {
             Debug.Log("═══════════════════════════════════════");
             
             _fireball.Cast(player.position, player.forward);
+        }
+        
+        private void OnRayOfFrostDown() {
+            if (_rayOfFrost == null)
+                return;
+            
+            Debug.Log("═══════════════════════════════════════");
+            Debug.Log("CHANNELING RAY OF FROST");
+            Debug.Log("═══════════════════════════════════════");
+            
+            _isChannelingRayOfFrost = true;
+            _rayOfFrost.StartChannel(player.position, player.forward);
+        }
+        
+        private void OnRayOfFrostUp() {
+            if (_rayOfFrost == null)
+                return;
+            
+            Debug.Log("RAY OF FROST STOPPED");
+            
+            _isChannelingRayOfFrost = false;
+            _rayOfFrost.StopChannel();
         }
         
         #region Toggle Modifiers
