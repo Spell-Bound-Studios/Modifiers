@@ -1,5 +1,6 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,7 @@ namespace Spellbound.Stats.Samples {
         [Header("Ring Defaults")]
         [SerializeField] private float innerRingDistance = 5f;
         [SerializeField] private float outerRingDistance = 10f;
+        [SerializeField] private bool autoRespawn = true;
         
         [Header("Enemy Movement")]
         [SerializeField] private float moveSpeed = 2f;
@@ -139,6 +141,10 @@ namespace Spellbound.Stats.Samples {
             CreateSlider(panelObj.transform, 0f, 3f, _radiusJitter, UpdateRadiusJitter);
             
             CreateToggle(panelObj.transform, "Enemies Move", _enemiesMove, e => _enemiesMove = e);
+            
+            CreateText(panelObj.transform, "═══ ENEMY CONTROLS ═══", 12);
+            CreateButton(panelObj.transform, "Respawn All Enemies", RespawnAllEnemies);
+            CreateToggle(panelObj.transform, "Auto Respawn (3s)", false, v => autoRespawn = v);
         }
         
         private TMP_Text CreateText(Transform parent, string text, int fontSize) {
@@ -373,23 +379,45 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"[Demo] Spawned {_outerEnemyCount} outer enemies (radius: {outerRingDistance})");
         }
         
+        private void RespawnAllEnemies() {
+            foreach (var enemy in _innerEnemies)
+                if (enemy != null && enemy.IsDead)
+                    enemy.Respawn();
+    
+            foreach (var enemy in _outerEnemies)
+                if (enemy != null && enemy.IsDead)
+                    enemy.Respawn();
+        }
+        
         private void SpawnRing(ref List<EnemyTarget> enemies, int count, float distance, string prefix) {
             enemies.Clear();
             var playerPos = player.position;
-            
+    
             for (var i = 0; i < count; i++) {
                 var angle = (360f / count) * i * Mathf.Deg2Rad;
                 var jitteredDistance = distance + Random.Range(-_radiusJitter, _radiusJitter);
                 var offset = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * jitteredDistance;
                 var spawnPos = playerPos + offset;
-                
+        
                 var enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
                 enemyObj.name = $"{prefix}_Enemy_{i + 1}";
                 enemyObj.transform.LookAt(new Vector3(playerPos.x, enemyObj.transform.position.y, playerPos.z));
-                
+        
                 var enemy = enemyObj.GetComponent<EnemyTarget>();
+                enemy.OnDeath += OnEnemyDeath;
                 enemies.Add(enemy);
             }
+        }
+
+        private void OnEnemyDeath(EnemyTarget enemy) {
+            if (autoRespawn)
+                StartCoroutine(RespawnAfterDelay(enemy, 3f));
+        }
+
+        private IEnumerator RespawnAfterDelay(EnemyTarget enemy, float delay) {
+            yield return new WaitForSeconds(delay);
+            if (enemy != null)
+                enemy.Respawn();
         }
         
         private void RespawnRing(ref List<EnemyTarget> enemies, int count, float distance, string prefix) {

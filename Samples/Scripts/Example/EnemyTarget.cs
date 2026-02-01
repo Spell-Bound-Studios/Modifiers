@@ -1,27 +1,43 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
-
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
 namespace Spellbound.Stats.Samples {
-    /// <summary>
-    /// Simple enemy target that can be hit and ignited.
-    /// </summary>
-    /// <remarks>
-    /// This is purely an example script and scaffolding to highlight the library. Nothing in this script is really
-    /// highlighting the libraries capabilities.
-    /// </remarks>
-    public sealed class EnemyTarget : MonoBehaviour {
+    public sealed class EnemyTarget : MonoBehaviour, IHasStats {
+        [Header("Stats")]
+        [SerializeField] private float baseHealth = 100f;
+        [SerializeField] private float baseMana = 50f;
+        
+        [Header("Visual")]
         [SerializeField] private Renderer targetRenderer;
         [SerializeField] private Color defaultColor = Color.white;
         [SerializeField] private Color ignitedColor = Color.red;
-        [SerializeField] private Color chilledColor = Color.darkBlue;
-
+        [SerializeField] private Color chilledColor = new(0.2f, 0.4f, 0.8f);
+        [SerializeField] private Color deadColor = Color.gray;
+        
+        [Header("Health Display")]
+        [SerializeField] private Vector3 healthBarOffset = new(0, 2f, 0);
+        
+        private StatContainer _stats;
         private Coroutine _igniteCoroutine;
         private Coroutine _chillCoroutine;
-
+        private EnemyHealthDisplay _healthDisplay;
+        
+        private float _currentHealth;
+        private float _currentMana;
+        
+        public StatContainer Stats => _stats;
         public bool IsIgnited { get; private set; }
         public bool IsChilled { get; private set; }
+        public bool IsDead { get; private set; }
+        
+        public float CurrentHealth => _currentHealth;
+        public float MaxHealth => _stats.GetValue("health");
+        public float CurrentMana => _currentMana;
+        public float MaxMana => _stats.GetValue("mana");
+        
+        public event Action<EnemyTarget> OnDeath;
+        public event Action<EnemyTarget, float, string> OnDamageTaken;
 
         private void Awake() {
             if (targetRenderer == null)
@@ -31,12 +47,96 @@ namespace Spellbound.Stats.Samples {
                 targetRenderer.material.color = defaultColor;
 
             gameObject.tag = "Enemy";
+            
+            InitializeStats();
+            CreateHealthDisplay();
+        }
+        
+        private void InitializeStats() {
+            _stats = new StatContainer();
+            _stats.SetBase("health", baseHealth);
+            _stats.SetBase("mana", baseMana);
+            
+            _currentHealth = MaxHealth;
+            _currentMana = MaxMana;
+        }
+        
+        private void CreateHealthDisplay() {
+            var displayObj = new GameObject("HealthDisplay");
+            displayObj.transform.SetParent(transform);
+            displayObj.transform.localPosition = healthBarOffset;
+            
+            _healthDisplay = displayObj.AddComponent<EnemyHealthDisplay>();
+            _healthDisplay.Initialize(this);
+        }
+        
+        private void Update() {
+            if (_healthDisplay != null)
+                _healthDisplay.transform.rotation = Camera.main.transform.rotation;
         }
 
-        public void TakeDamage(float damage, string damageType) =>
-                Debug.Log($"[{gameObject.name}] Took {damage} {damageType} damage!");
+        public void TakeDamage(float damage, string damageType) {
+            if (IsDead)
+                return;
+            
+            _currentHealth -= damage;
+            
+            Debug.Log($"[{gameObject.name}] Took {damage:F0} {damageType} damage! ({_currentHealth:F0}/{MaxHealth:F0})");
+            
+            OnDamageTaken?.Invoke(this, damage, damageType);
+            _healthDisplay?.UpdateDisplay();
+            
+            if (_currentHealth <= 0) {
+                _currentHealth = 0;
+                Die();
+            }
+        }
+        
+        public void Heal(float amount) {
+            if (IsDead)
+                return;
+            
+            _currentHealth = Mathf.Min(_currentHealth + amount, MaxHealth);
+            _healthDisplay?.UpdateDisplay();
+        }
+        
+        private void Die() {
+            IsDead = true;
+            
+            if (_igniteCoroutine != null)
+                StopCoroutine(_igniteCoroutine);
+            
+            if (_chillCoroutine != null)
+                StopCoroutine(_chillCoroutine);
+            
+            IsIgnited = false;
+            IsChilled = false;
+            
+            if (targetRenderer != null)
+                targetRenderer.material.color = deadColor;
+            
+            Debug.Log($"[{gameObject.name}] DIED!");
+            
+            OnDeath?.Invoke(this);
+        }
+        
+        public void Respawn() {
+            IsDead = false;
+            _currentHealth = MaxHealth;
+            _currentMana = MaxMana;
+            
+            if (targetRenderer != null)
+                targetRenderer.material.color = defaultColor;
+            
+            _healthDisplay?.UpdateDisplay();
+            
+            Debug.Log($"[{gameObject.name}] Respawned!");
+        }
 
         public void ApplyIgnite(float duration) {
+            if (IsDead)
+                return;
+            
             if (_igniteCoroutine != null)
                 StopCoroutine(_igniteCoroutine);
 
@@ -45,24 +145,23 @@ namespace Spellbound.Stats.Samples {
 
         private IEnumerator IgniteRoutine(float duration) {
             IsIgnited = true;
-
-            if (targetRenderer != null)
-                targetRenderer.material.color = ignitedColor;
+            UpdateColor();
 
             Debug.Log($"[{gameObject.name}] IGNITED for {duration}s!");
 
             yield return new WaitForSeconds(duration);
 
             IsIgnited = false;
-
-            if (targetRenderer != null)
-                targetRenderer.material.color = defaultColor;
+            UpdateColor();
 
             Debug.Log($"[{gameObject.name}] Ignite expired.");
             _igniteCoroutine = null;
         }
 
         public void ApplyChill(float duration) {
+            if (IsDead)
+                return;
+            
             if (_chillCoroutine != null)
                 StopCoroutine(_chillCoroutine);
 
@@ -71,21 +170,29 @@ namespace Spellbound.Stats.Samples {
 
         private IEnumerator ChillRoutine(float duration) {
             IsChilled = true;
-            
-            if (targetRenderer != null)
-                targetRenderer.material.color = chilledColor;
+            UpdateColor();
 
             Debug.Log($"[{gameObject.name}] CHILLED for {duration}s!");
 
             yield return new WaitForSeconds(duration);
 
             IsChilled = false;
-
-            if (targetRenderer != null)
-                targetRenderer.material.color = defaultColor;
+            UpdateColor();
 
             Debug.Log($"[{gameObject.name}] Chill expired.");
             _chillCoroutine = null;
+        }
+        
+        private void UpdateColor() {
+            if (targetRenderer == null || IsDead)
+                return;
+            
+            if (IsIgnited)
+                targetRenderer.material.color = ignitedColor;
+            else if (IsChilled)
+                targetRenderer.material.color = chilledColor;
+            else
+                targetRenderer.material.color = defaultColor;
         }
     }
 }

@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db9314a9a3b94e448d9a4321d043afe6, type: 3}
   m_Name: Stat_ColdDamage
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
-  statName: strength
-  displayName: Strength
-  description: The amount of strength something has.
+  statName: cold_damage
+  displayName: Cold Damage
+  description: The amount of cold damage something does.
   icon: {fileID: 0}
-  defaultValue: 0
-  displayType: 0
+  displayFormat: {fileID: 0}
+  internalStorage: '1505500 (precision: 10000)'
+  formattedDisplay: 151

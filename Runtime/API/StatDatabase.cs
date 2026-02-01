@@ -66,12 +66,12 @@ namespace Spellbound.Stats {
                 if (stat == null)
                     continue;
                 
-                if (seen.Contains(stat)) {
-                    Debug.LogWarning($"[StatDatabase] Duplicate reference to '{stat.StatName}' at index {i}. Remove the duplicate.");
-                }
-                else if (seenNames.Contains(stat.StatName)) {
-                    Debug.LogWarning($"[StatDatabase] Duplicate stat name '{stat.StatName}' at index {i}. Two different assets have the same stat name.");
-                }
+                if (seen.Contains(stat))
+                    Debug.LogWarning($"[StatDatabase] Duplicate reference to '{stat.StatName}' at index {i}. " +
+                                      "Remove the duplicate.");
+                else if (seenNames.Contains(stat.StatName))
+                    Debug.LogWarning($"[StatDatabase] Duplicate stat name '{stat.StatName}' at index {i}. " +
+                                      "Two different assets have the same stat name.");
                 else {
                     seen.Add(stat);
                     seenNames.Add(stat.StatName);

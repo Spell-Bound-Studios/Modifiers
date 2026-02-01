@@ -16,5 +16,6 @@ MonoBehaviour:
   displayName: Mana
   description: The mana capacity of something.
   icon: {fileID: 0}
-  defaultValue: 0
-  displayType: 0
+  displayFormat: {fileID: 11400000, guid: 8cff6e62574c2a949850d3ecd4bf46d9, type: 2}
+  internalStorage: '1505500 (precision: 10000)'
+  formattedDisplay: +150.55
