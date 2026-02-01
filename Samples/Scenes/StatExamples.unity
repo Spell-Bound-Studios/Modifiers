@@ -278,6 +278,19 @@ MonoBehaviour:
   canvas: {fileID: 0}
   defaultButtonColor: {r: 1, g: 1, b: 1, a: 1}
   activeButtonColor: {r: 0, g: 1, b: 0, a: 1}
+--- !u!114 &994450420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994450414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92334e1ffb654476841d7b7a83a8b535, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.StatDemo
+  statDatabase: {fileID: 11400000, guid: 35ae5b347043616448270ded8ffeabe1, type: 2}
 --- !u!1 &1915032037
 GameObject:
   m_ObjectHideFlags: 0
@@ -557,6 +570,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1995389603694144288, guid: 169252d65e7f3af43a15b8d7518e2f38, type: 3}
       insertIndex: -1
       addedObject: {fileID: 994450419}
+    - targetCorrespondingSourceObject: {fileID: 1995389603694144288, guid: 169252d65e7f3af43a15b8d7518e2f38, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 994450420}
   m_SourcePrefab: {fileID: 100100000, guid: 169252d65e7f3af43a15b8d7518e2f38, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

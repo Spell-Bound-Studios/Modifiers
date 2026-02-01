@@ -7,13 +7,14 @@ namespace Spellbound.Stats {
     /// Holds base stat values and modifiers for an entity (character, item, etc.).
     /// Calculates final stat values by applying modifiers in the correct order.
     /// Uses dirty flagging to avoid unnecessary recalculation.
+    /// Internally uses fixed-point integers for deterministic math.
     /// </summary>
     public class StatContainer {
-        // Base values before any modifiers are applied
-        private readonly Dictionary<int, float> _baseValues = new();
+        // Base values before any modifiers are applied (stored as fixed-point ints)
+        private readonly Dictionary<int, int> _baseValues = new();
 
-        // Cached calculated values (only valid when !_isDirty)
-        private readonly Dictionary<int, float> _calculatedValues = new();
+        // Cached calculated values (stored as fixed-point ints, only valid when !_isDirty)
+        private readonly Dictionary<int, int> _calculatedValues = new();
 
         // All active modifiers affecting this entity
         private readonly Dictionary<int, List<StatModifier>> _modifiersByStatId = new();
@@ -28,7 +29,7 @@ namespace Spellbound.Stats {
         /// Base physical damage = 100
         /// </example>
         public void SetBase(int statId, float value) {
-            _baseValues[statId] = value;
+            _baseValues[statId] = StatSettings.ToInternal(value);
             _isDirty = true;
         }
 
@@ -36,7 +37,12 @@ namespace Spellbound.Stats {
         /// Get the base value for a stat before modifiers.
         /// Returns 0 if the stat hasn't been set.
         /// </summary>
-        public float GetBase(int statId) => _baseValues.GetValueOrDefault(statId, 0f);
+        public float GetBase(int statId) {
+            return _baseValues.TryGetValue(statId, out var value)
+                ? StatSettings.ToExternal(value)
+                : 0f;
+        }
+        
         public bool HasBase(int statId) => _baseValues.ContainsKey(statId);
 
         /// <summary>
@@ -75,9 +81,10 @@ namespace Spellbound.Stats {
             if (_isDirty)
                 Recalculate();
 
-            return _calculatedValues.TryGetValue(statId, out var value) 
-                ? value 
-                : GetBase(statId);
+            if (_calculatedValues.TryGetValue(statId, out var value))
+                return StatSettings.ToExternal(value);
+            
+            return GetBase(statId);
         }
         
         public void ClearModifiers() {
@@ -111,40 +118,47 @@ namespace Spellbound.Stats {
 
         /// <summary>
         /// Calculate a single stat's final value by applying modifiers in PoE order.
+        /// Uses fixed-point integer math for deterministic calculations.
         /// </summary>
-        private float CalculateStat(int statId, List<StatModifier> modifiers) {
-            var baseValue = GetBase(statId);
+        private int CalculateStat(int statId, List<StatModifier> modifiers) {
+            var baseValue = _baseValues.GetValueOrDefault(statId, 0);
+            var precision = StatSettings.Precision;
 
-            // Step 1: Apply flat mod
-            var flatSum = 0f;
+            // Step 1: Apply flat modifiers
+            var flatSum = 0;
             foreach (var mod in modifiers)
                 if (mod.Type == ModifierType.Flat)
-                    flatSum += mod.Value;
+                    flatSum += StatSettings.ToInternal(mod.Value);
 
             var afterFlat = baseValue + flatSum;
 
             // Step 2: Apply all Increased modifiers - they stack additively
             // Example: 30% + 20% + 50% = 100% increased = multiply by 2.0
-            var increasedSum = 0f;
+            var increasedSum = 0;
             foreach (var mod in modifiers)
                 if (mod.Type == ModifierType.Increased)
-                    increasedSum += mod.Value;
+                    increasedSum += StatSettings.ToInternal(mod.Value);
 
-            var afterIncreased = afterFlat * (1f + increasedSum / 100f);
+            // (base + flat) * (1 + increased/100)
+            // In fixed-point: afterFlat * (precision + increasedSum) / precision
+            long afterIncreased = (long)afterFlat * (precision + increasedSum) / precision;
 
             // Step 3: Apply all More modifiers - each is multiplicative
             // Example: 40% more and then 30% more = 1.4 * 1.3 = 1.82 (82% total increase)
             var afterMore = afterIncreased;
-            foreach (var mod in modifiers)
-                if (mod.Type == ModifierType.More)
-                    afterMore *= 1f + mod.Value / 100f;
+            foreach (var mod in modifiers) {
+                if (mod.Type == ModifierType.More) {
+                    var moreValue = StatSettings.ToInternal(mod.Value);
+                    afterMore = afterMore * (precision + moreValue) / precision;
+                }
+            }
 
             // Step 4: Check for Override modifiers (last one wins, ignores all previous calculations)
             foreach (var mod in modifiers)
                 if (mod.Type == ModifierType.Override)
-                    return mod.Value;
+                    return StatSettings.ToInternal(mod.Value);
 
-            return afterMore;
+            return (int)afterMore;
         }
 
         #region Display Helpers
@@ -156,7 +170,8 @@ namespace Spellbound.Stats {
             var lines = _baseValues
                 .Select(kvp => {
                     var name = StatRegistry.GetName(kvp.Key) ?? $"Unknown({kvp.Key})";
-                    return $"  {name}: {kvp.Value}";
+                    var value = StatSettings.ToExternal(kvp.Value);
+                    return $"  {name}: {value}";
                 });
 
             return string.Join("\n", lines);

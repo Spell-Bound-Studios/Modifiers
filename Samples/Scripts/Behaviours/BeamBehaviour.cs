@@ -20,6 +20,7 @@ namespace Spellbound.Stats.Samples {
         private ParticleSystem _impactParticles;
         
         public float GetRange() => Stats.GetValue("beam_range");
+        public float GetWidth() => Stats.GetValue("beam_width");
         
         public BeamHitResult Fire(PositionalPayload payload) {
             var hits = new List<GameObject>();
@@ -105,6 +106,8 @@ namespace Spellbound.Stats.Samples {
             var scale = beam.localScale;
             scale.y = length;
             beam.localScale = scale;
+            
+            beam.localPosition = new Vector3(0, 0, length * 0.5f);
         }
         
         public void StopVisual() {
