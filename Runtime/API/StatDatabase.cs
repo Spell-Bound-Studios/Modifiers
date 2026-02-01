@@ -20,18 +20,27 @@ namespace Spellbound.Stats {
         /// </summary>
         public void RegisterAll(bool strictStatValidation = false) {
             StatSettings.SetDecimalPrecision(decimalPrecision);
-            
+            ContainerExtensions.SetDatabase(this);
+    
             _lookup = new Dictionary<string, StatDefinition>();
-            
+    
             foreach (var stat in stats) {
+                if (stat == null)
+                    continue;
+        
+                if (_lookup.ContainsKey(stat.StatName)) {
+                    Debug.LogError($"[StatDatabase] Duplicate stat '{stat.StatName}' detected. Skipping.");
+                    continue;
+                }
+        
                 stat.Register();
                 _lookup[stat.StatName] = stat;
             }
-            
+    
             if (strictStatValidation)
                 StatRegistry.EnableStrictValidation(_lookup.Keys);
-            
-            Debug.Log($"[StatDatabase] Registered {stats.Count} stats. Precision: {decimalPrecision} decimals. Strict validation: {strictStatValidation}");
+    
+            Debug.Log($"[StatDatabase] Registered {_lookup.Count} stats. Precision: {decimalPrecision} decimals. Strict validation: {strictStatValidation}");
         }
         
         public StatDefinition GetDefinition(string statName) {
