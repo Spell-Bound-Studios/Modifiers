@@ -18,6 +18,9 @@ namespace Spellbound.Stats.Samples {
         [Header("Health Display")]
         [SerializeField] private Vector3 healthBarOffset = new(0, 2f, 0);
         
+        [Header("DoT Settings")]
+        [SerializeField] private float dotTickRate = 0.5f;
+        
         private StatContainer _stats;
         private Coroutine _igniteCoroutine;
         private Coroutine _chillCoroutine;
@@ -71,7 +74,7 @@ namespace Spellbound.Stats.Samples {
         }
         
         private void Update() {
-            if (_healthDisplay != null)
+            if (_healthDisplay != null && Camera.main != null)
                 _healthDisplay.transform.rotation = Camera.main.transform.rotation;
         }
 
@@ -81,7 +84,7 @@ namespace Spellbound.Stats.Samples {
             
             _currentHealth -= damage;
             
-            Debug.Log($"[{gameObject.name}] Took {damage:F0} {damageType} damage! ({_currentHealth:F0}/{MaxHealth:F0})");
+            Debug.Log($"[{gameObject.name}] Took {damage:F1} {damageType} damage! ({_currentHealth:F0}/{MaxHealth:F0})");
             
             OnDamageTaken?.Invoke(this, damage, damageType);
             _healthDisplay?.UpdateDisplay();
@@ -118,9 +121,13 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"[{gameObject.name}] DIED!");
             
             OnDeath?.Invoke(this);
+            
+            gameObject.SetActive(false);
         }
         
         public void Respawn() {
+            gameObject.SetActive(true);
+            
             IsDead = false;
             _currentHealth = MaxHealth;
             _currentMana = MaxMana;
@@ -133,28 +140,38 @@ namespace Spellbound.Stats.Samples {
             Debug.Log($"[{gameObject.name}] Respawned!");
         }
 
-        public void ApplyIgnite(float duration) {
+        public void ApplyIgnite(float duration, float damagePerSecond) {
             if (IsDead)
                 return;
             
             if (_igniteCoroutine != null)
                 StopCoroutine(_igniteCoroutine);
 
-            _igniteCoroutine = StartCoroutine(IgniteRoutine(duration));
+            _igniteCoroutine = StartCoroutine(IgniteRoutine(duration, damagePerSecond));
         }
 
-        private IEnumerator IgniteRoutine(float duration) {
+        private IEnumerator IgniteRoutine(float duration, float damagePerSecond) {
             IsIgnited = true;
             UpdateColor();
+            
+            var damagePerTick = damagePerSecond * dotTickRate;
+            var elapsed = 0f;
 
-            Debug.Log($"[{gameObject.name}] IGNITED for {duration}s!");
+            Debug.Log($"[{gameObject.name}] IGNITED for {duration}s! ({damagePerSecond:F1} dps)");
 
-            yield return new WaitForSeconds(duration);
+            while (elapsed < duration && !IsDead) {
+                yield return new WaitForSeconds(dotTickRate);
+                elapsed += dotTickRate;
+                
+                TakeDamage(damagePerTick, "fire (ignite)");
+            }
 
             IsIgnited = false;
             UpdateColor();
 
-            Debug.Log($"[{gameObject.name}] Ignite expired.");
+            if (!IsDead)
+                Debug.Log($"[{gameObject.name}] Ignite expired.");
+            
             _igniteCoroutine = null;
         }
 
@@ -179,7 +196,9 @@ namespace Spellbound.Stats.Samples {
             IsChilled = false;
             UpdateColor();
 
-            Debug.Log($"[{gameObject.name}] Chill expired.");
+            if (!IsDead)
+                Debug.Log($"[{gameObject.name}] Chill expired.");
+            
             _chillCoroutine = null;
         }
         

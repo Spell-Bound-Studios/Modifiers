@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Spellbound.Stats.Samples {
     [Serializable]
     public sealed class ColdBehaviour : SbBehaviour {
-        [SerializeField] private float coldDamage = 40f;
+        [SerializeField] private float coldDamage = 15f;
         [SerializeField] private float chillChance = 100f;
         
         public DamagePayload DealColdDamage(TargetedPayload payload) {

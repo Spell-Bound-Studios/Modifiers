@@ -410,6 +410,8 @@ namespace Spellbound.Stats.Samples {
         }
 
         private void OnEnemyDeath(EnemyTarget enemy) {
+            enemy.gameObject.SetActive(false);
+            
             if (autoRespawn)
                 StartCoroutine(RespawnAfterDelay(enemy, 3f));
         }

@@ -49,7 +49,7 @@ namespace Spellbound.Stats.Samples {
             var damageResult = _fire.DealFireDamage(payload);
             Events.Invoke("damage", damageResult);
             
-            _fire.TryIgnite(payload, _duration.GetIgniteDuration());
+            _fire.TryIgnite(payload, _duration.GetIgniteDuration(), damageResult.Amount);
         }
     }
 }
