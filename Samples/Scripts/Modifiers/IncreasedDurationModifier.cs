@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Spellbound.Stats.Samples {
     [Serializable]
     public sealed class IncreasedDurationModifier : SbModifier {
-        [SerializeField] private float increasedDurationPercent = 50f;
+        [SerializeField] private float increasedDurationPercent = .5f;
         
         public override void Apply(ICanBeModified target) {
             if (!TryGetBehaviour<DurationBehaviour>(target, out var duration)) 

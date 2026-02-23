@@ -20,12 +20,11 @@ namespace Spellbound.Stats.Samples {
         
         public void TryIgnite(TargetedPayload payload, float duration, float hitDamage) {
             var chance = Stats.GetValue("ignite_chance");
-            
+    
             if (UnityEngine.Random.value * 100f >= chance)
                 return;
-            
+    
             var increasedIgnite = Stats.GetValue("increased_ignite_damage");
-            
             var totalIgniteDamage = hitDamage * (1f + increasedIgnite / 100f);
             var igniteDps = totalIgniteDamage / duration;
             
