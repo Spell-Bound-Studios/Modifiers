@@ -10,7 +10,7 @@
     "url": "https://github.com/Spell-Bound-Studios/Modifiers"
   },
   "dependencies": {
-    "com.spellboundstudios.core": "0.0.2"
+    "com.spellboundstudios.core": "0.0.5"
   },
   "keywords": [
     "modifiers",
