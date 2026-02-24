@@ -1,0 +1,21 @@
+{
+  "name": "com.spellboundstudios.modifiers",
+  "version": "0.0.1",
+  "displayName": "SpellBound.modifiers",
+  "description": "Spellbound Modifier system.",
+  "unity": "6000.0",
+  "unityRelease": "40f1",
+  "dependencies": {
+    "com.spellboundstudios.core": "0.0.2"
+  },
+  "author": {
+    "name": "Spellbound Studios",
+    "email": "Judsin1349@gmail.com",
+    "url": "https://github.com/Spell-Bound-Studios/Modifiers"
+  },
+  "keywords": [
+    "modifiers",
+    "modular",
+    "stats"
+  ]
+}
