@@ -1,5 +1,5 @@
 {
-    "name": "Spellbound.Stats",
+    "name": "Spellbound.Modifiers",
     "rootNamespace": "",
     "references": [
         "GUID:c14a5db03514b8d4ba10b621ed3627d5"

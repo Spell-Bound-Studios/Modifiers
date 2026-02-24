@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     /// <summary>
     /// A simple projectile example script.
     /// </summary>

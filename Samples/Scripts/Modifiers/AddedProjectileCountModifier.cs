@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class AddedProjectileCountModifier : SbModifier {
         [SerializeField] 

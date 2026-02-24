@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class RayOfFrost : ModifiableObject {
         public override string Name => "Ray of Frost";

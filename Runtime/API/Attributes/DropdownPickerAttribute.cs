@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     [AttributeUsage(AttributeTargets.Field)]
     public class DropdownPickerAttribute : PropertyAttribute { }
 }

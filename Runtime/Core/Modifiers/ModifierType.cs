@@ -1,6 +1,6 @@
 // Copyright 2025 Spellbound Studio Inc.
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Defines how a modifier's value is applied during stat calculation.
     /// This determines the mathematical operation, not what stat is being modified.

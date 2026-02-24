@@ -1,7 +1,7 @@
 ﻿using Spellbound.Core;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Stat Definition")]
     public class StatDefinition : ScriptableObject {
         [Header("Identity")]

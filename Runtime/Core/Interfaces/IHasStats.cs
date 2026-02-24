@@ -1,4 +1,4 @@
-﻿namespace Spellbound.Stats {
+﻿namespace Spellbound.Modifiers {
     /// <summary>
     /// Composability interface for stats.
     /// </summary>

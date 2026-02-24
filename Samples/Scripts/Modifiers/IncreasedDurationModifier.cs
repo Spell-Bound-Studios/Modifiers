@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class IncreasedDurationModifier : SbModifier {
         [SerializeField] private float increasedDurationPercent = .5f;

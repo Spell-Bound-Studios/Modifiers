@@ -1,4 +1,4 @@
-﻿namespace Spellbound.Stats {
+﻿namespace Spellbound.Modifiers {
     /// <summary>
     /// Indicates that the implementer is unique.
     /// </summary>

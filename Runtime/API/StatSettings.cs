@@ -1,4 +1,4 @@
-﻿namespace Spellbound.Stats {
+﻿namespace Spellbound.Modifiers {
     /// <summary>
     /// Responsible for fixed point integer precision.
     /// </summary>

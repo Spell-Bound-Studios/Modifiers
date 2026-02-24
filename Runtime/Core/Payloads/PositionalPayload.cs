@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Payload for positional events.
     /// </summary>

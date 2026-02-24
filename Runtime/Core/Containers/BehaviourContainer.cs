@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Container for behaviours. This is what modifiers target.
     /// </summary>

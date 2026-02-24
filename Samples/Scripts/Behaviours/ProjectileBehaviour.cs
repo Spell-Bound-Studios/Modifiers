@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class ProjectileBehaviour : SbBehaviour {
         [SerializeField] private int count = 1;

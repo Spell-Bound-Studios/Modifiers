@@ -1,7 +1,7 @@
 ﻿using Spellbound.Core;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Stat Display Format")]
     public class StatDisplayFormat : ScriptableObject {
         [Header("Format")]

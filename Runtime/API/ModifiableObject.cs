@@ -1,6 +1,6 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     public abstract class ModifiableObject : ICanBeModified, IHasStats, IHasBehaviours, IHasEvents {
         public abstract string Name { get; }
         public StatContainer Stats { get; } = new();

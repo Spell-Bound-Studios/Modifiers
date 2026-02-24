@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class CircularProjectileModifier : SbModifier {
         private ProjectileBehaviour _modifiedBehaviour;

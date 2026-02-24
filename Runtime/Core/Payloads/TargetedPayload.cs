@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     public readonly struct TargetedPayload {
         public readonly object Source;
         public readonly GameObject Target;

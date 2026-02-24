@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     public class SpritePreviewAttribute : PropertyAttribute {
         public float Size { get; }
         

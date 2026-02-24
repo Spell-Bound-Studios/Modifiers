@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Container for events. Handles registration, subscription, and invocation.
     /// </summary>

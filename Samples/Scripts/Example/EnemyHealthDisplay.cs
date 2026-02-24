@@ -1,7 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     public class EnemyHealthDisplay : MonoBehaviour {
         private EnemyTarget _enemy;
         private TextMeshPro _healthText;

@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Holds base stat values and modifiers for an entity (character, item, etc.).
     /// Calculates final stat values by applying modifiers in the correct order.

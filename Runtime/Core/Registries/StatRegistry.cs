@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     public static class StatRegistry {
         private static readonly Dictionary<string, int> NameToId = new();
         private static readonly Dictionary<int, string> IdToName = new();

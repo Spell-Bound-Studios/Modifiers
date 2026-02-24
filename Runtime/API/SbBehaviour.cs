@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Base class for all behaviours. Pure capabilities with stats that can be modified.
     /// </summary>

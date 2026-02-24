@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class FireBehaviour : SbBehaviour {
         [SerializeField] private float fireDamage = 20f;

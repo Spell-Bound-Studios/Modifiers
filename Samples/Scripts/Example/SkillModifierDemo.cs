@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     public sealed class SkillModifierDemo : MonoBehaviour {
         [Header("Skill Setup")]
         [SerializeField] private GameObject projectilePrefab;

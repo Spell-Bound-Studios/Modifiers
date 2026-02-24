@@ -1,6 +1,6 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Implement this if you want something to be able to receive modifiers - it simply marks it as being modifiable.
     /// </summary>

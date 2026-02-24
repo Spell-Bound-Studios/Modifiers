@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace Spellbound.Stats.Editor {
+namespace Spellbound.Modifiers.Editor {
     [CustomPropertyDrawer(typeof(SpritePreviewAttribute))]
     public class SpritePreviewDrawer : PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {

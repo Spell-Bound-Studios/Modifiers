@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     public class StatDemo : MonoBehaviour {
         [SerializeField] private StatDatabase statDatabase;
 

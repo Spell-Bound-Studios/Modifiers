@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Stat Database")]
     public class StatDatabase : ScriptableObject {
         [Header("Settings")]

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Implement this on anything that deals damage.
     /// The implementer is responsible for invoking OnDamageDealt when damage is dealt.

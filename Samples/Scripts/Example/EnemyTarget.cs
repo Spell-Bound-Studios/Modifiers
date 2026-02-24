@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Spellbound.Stats.Samples {
+namespace Spellbound.Modifiers.Samples {
     public sealed class EnemyTarget : MonoBehaviour, IHasStats {
         [Header("Stats")]
         [SerializeField] private float baseHealth = 100f;

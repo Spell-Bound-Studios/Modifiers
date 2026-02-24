@@ -2,7 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Spellbound.Stats.Editor
+namespace Spellbound.Modifiers.Editor
 {
     public class NoiseTextureGenerator : EditorWindow
     {

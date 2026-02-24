@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Implement this on anything that "hits" things.
     /// The implementer is responsible for invoking OnTargetHit when a target is hit.

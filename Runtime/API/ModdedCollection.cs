@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     [Serializable]
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Modded Collection")]
     public class ModdedCollection : ScriptableObject {

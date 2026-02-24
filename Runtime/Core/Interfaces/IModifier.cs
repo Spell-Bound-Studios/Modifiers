@@ -1,6 +1,6 @@
 ﻿// Copyright 2025 Spellbound Studio Inc.
 
-namespace Spellbound.Stats {
+namespace Spellbound.Modifiers {
     /// <summary>
     /// The atomic primitive for a modifier.
     /// Implement this if you want to create a custom modifier.

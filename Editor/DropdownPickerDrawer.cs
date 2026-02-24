@@ -6,22 +6,25 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Spellbound.Stats.Editor {
+namespace Spellbound.Modifiers.Editor {
     [CustomPropertyDrawer(typeof(DropdownPickerAttribute))]
     public class DropdownPickerDrawer : PropertyDrawer {
         
         public override VisualElement CreatePropertyGUI(SerializedProperty property) {
             // Determine which mode based on property type
-            if (property.propertyType == SerializedPropertyType.ManagedReference) {
+            if (property.propertyType == SerializedPropertyType.ManagedReference)
                 return CreateSerializeReferencePicker(property);
-            }
             
-            if (property.propertyType == SerializedPropertyType.ObjectReference) {
+            if (property.propertyType == SerializedPropertyType.ObjectReference)
                 return CreateAssetPicker(property);
-            }
             
-            var label = new Label($"[DropdownPicker] Unsupported property type: {property.propertyType}");
-            label.style.color = Color.red;
+            var label = new Label($"[DropdownPicker] Unsupported property type: {property.propertyType}")
+                    {
+                        style = {
+                            color = Color.red
+                        }
+                    };
+
             return label;
         }
         

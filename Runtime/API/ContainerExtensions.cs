@@ -1,4 +1,4 @@
-﻿namespace Spellbound.Stats {
+﻿namespace Spellbound.Modifiers {
     /// <summary>
     /// General helper methods that wrap capability in a single location.
     /// </summary>
