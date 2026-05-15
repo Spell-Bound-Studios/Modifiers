@@ -1,4 +1,5 @@
 ﻿using Spellbound.Core;
+using Spellbound.Core.Tooling;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
