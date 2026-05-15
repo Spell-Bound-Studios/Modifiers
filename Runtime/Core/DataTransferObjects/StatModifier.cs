@@ -1,4 +1,6 @@
-﻿namespace Spellbound.Modifiers {
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+namespace Spellbound.Modifiers {
     /// <summary>
     /// This is a data transfer object so that we can easily modify our stat container without passing in a long tuple.
     /// </summary>

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+using UnityEngine;
 
 namespace Spellbound.Modifiers {
     public readonly struct TargetedPayload {
@@ -6,7 +8,7 @@ namespace Spellbound.Modifiers {
         public readonly GameObject Target;
         public readonly Vector3 Position;
         public readonly object Cause;
-        
+
         public TargetedPayload(object source, GameObject target, Vector3 position, object cause = null) {
             Source = source;
             Target = target;

@@ -6,7 +6,7 @@ namespace Spellbound.Modifiers {
         public StatContainer Stats { get; } = new();
         public BehaviourContainer Behaviours { get; } = new();
         public EventContainer Events { get; } = new();
-    
+
         public abstract void Initialize();
     }
 }

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
@@ -10,7 +12,7 @@ namespace Spellbound.Modifiers {
         public readonly float Amount;
         public readonly string DamageType;
         public readonly bool WasCrit;
-        
+
         public DamagePayload(object source, GameObject target, float amount, string damageType, bool wasCrit = false) {
             Source = source;
             Target = target;

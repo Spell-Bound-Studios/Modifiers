@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 
@@ -10,7 +10,7 @@ namespace Spellbound.Modifiers {
     public abstract class SbBehaviour {
         private StatContainer _stats;
         public StatContainer Stats => _stats ??= InitializeStats();
-        
+
         protected virtual StatContainer InitializeStats() => new();
     }
 }
