@@ -1,4 +1,6 @@
-﻿namespace Spellbound.Modifiers {
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+namespace Spellbound.Modifiers {
     /// <summary>
     /// Composability interface for stats.
     /// </summary>

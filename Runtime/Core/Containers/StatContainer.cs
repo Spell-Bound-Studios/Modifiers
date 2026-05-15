@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -37,12 +39,11 @@ namespace Spellbound.Modifiers {
         /// Get the base value for a stat before modifiers.
         /// Returns 0 if the stat hasn't been set.
         /// </summary>
-        public float GetBase(int statId) {
-            return _baseValues.TryGetValue(statId, out var value)
-                ? StatSettings.ToExternal(value)
-                : 0f;
-        }
-        
+        public float GetBase(int statId) =>
+                _baseValues.TryGetValue(statId, out var value)
+                        ? StatSettings.ToExternal(value)
+                        : 0f;
+
         public bool HasBase(int statId) => _baseValues.ContainsKey(statId);
 
         /// <summary>
@@ -64,9 +65,10 @@ namespace Spellbound.Modifiers {
         public void RemoveModifierByUniqueId(string uniqueId) {
             if (string.IsNullOrEmpty(uniqueId)) {
                 Debug.LogError("Attempting to remove a modifier with a null ID.");
+
                 return;
             }
-            
+
             foreach (var modifierList in _modifiersByStatId.Values)
                 modifierList.RemoveAll(m => m.UniqueId == uniqueId);
 
@@ -83,10 +85,10 @@ namespace Spellbound.Modifiers {
 
             if (_calculatedValues.TryGetValue(statId, out var value))
                 return StatSettings.ToExternal(value);
-            
+
             return GetBase(statId);
         }
-        
+
         public void ClearModifiers() {
             _modifiersByStatId.Clear();
             _isDirty = true;
@@ -109,7 +111,7 @@ namespace Spellbound.Modifiers {
         /// </summary>
         private void Recalculate() {
             _calculatedValues.Clear();
-            
+
             foreach (var (statId, modifiers) in _modifiersByStatId)
                 _calculatedValues[statId] = CalculateStat(statId, modifiers);
 
@@ -126,26 +128,31 @@ namespace Spellbound.Modifiers {
 
             // Step 1: Apply flat modifiers
             var flatSum = 0;
-            foreach (var mod in modifiers)
+
+            foreach (var mod in modifiers) {
                 if (mod.Type == ModifierType.Flat)
                     flatSum += StatSettings.ToInternal(mod.Value);
+            }
 
             var afterFlat = baseValue + flatSum;
 
             // Step 2: Apply all Increased modifiers - they stack additively
             // Example: 30% + 20% + 50% = 100% increased = multiply by 2.0
             var increasedSum = 0;
-            foreach (var mod in modifiers)
+
+            foreach (var mod in modifiers) {
                 if (mod.Type == ModifierType.Increased)
                     increasedSum += StatSettings.ToInternal(mod.Value);
+            }
 
             // (base + flat) * (1 + increased/100)
             // In fixed-point: afterFlat * (precision + increasedSum) / precision
-            long afterIncreased = (long)afterFlat * (precision + increasedSum) / precision;
+            var afterIncreased = (long)afterFlat * (precision + increasedSum) / precision;
 
             // Step 3: Apply all More modifiers - each is multiplicative
             // Example: 40% more and then 30% more = 1.4 * 1.3 = 1.82 (82% total increase)
             var afterMore = afterIncreased;
+
             foreach (var mod in modifiers) {
                 if (mod.Type == ModifierType.More) {
                     var moreValue = StatSettings.ToInternal(mod.Value);
@@ -154,9 +161,10 @@ namespace Spellbound.Modifiers {
             }
 
             // Step 4: Check for Override modifiers (last one wins, ignores all previous calculations)
-            foreach (var mod in modifiers)
+            foreach (var mod in modifiers) {
                 if (mod.Type == ModifierType.Override)
                     return StatSettings.ToInternal(mod.Value);
+            }
 
             return (int)afterMore;
         }
@@ -168,38 +176,41 @@ namespace Spellbound.Modifiers {
         /// </summary>
         public string GetBaseStatList() {
             var lines = _baseValues
-                .Select(kvp => {
-                    var name = StatRegistry.GetName(kvp.Key) ?? $"Unknown({kvp.Key})";
-                    var value = StatSettings.ToExternal(kvp.Value);
-                    return $"  {name}: {value}";
-                });
+                    .Select(kvp => {
+                        var name = StatRegistry.GetName(kvp.Key) ?? $"Unknown({kvp.Key})";
+                        var value = StatSettings.ToExternal(kvp.Value);
+
+                        return $"  {name}: {value}";
+                    });
 
             return string.Join("\n", lines);
         }
-        
+
         /// <summary>
         /// Get a formatted string of all calculated stats for debug output.
         /// Triggers recalculation if needed.
         /// </summary>
         public string GetCalculatedStatList() {
-            if (_isDirty) 
+            if (_isDirty)
                 Recalculate();
 
             var allStatIds = new HashSet<int>(_baseValues.Keys);
+
             foreach (var statId in _modifiersByStatId.Keys)
                 allStatIds.Add(statId);
 
             var lines = allStatIds
-                .Select(statId => {
-                    var name = StatRegistry.GetName(statId) ?? $"Unknown({statId})";
-                    var baseValue = GetBase(statId);
-                    var finalValue = GetValue(statId);
-                    return $"  {name}: {finalValue:F2} (base: {baseValue})";
-                });
+                    .Select(statId => {
+                        var name = StatRegistry.GetName(statId) ?? $"Unknown({statId})";
+                        var baseValue = GetBase(statId);
+                        var finalValue = GetValue(statId);
+
+                        return $"  {name}: {finalValue:F2} (base: {baseValue})";
+                    });
 
             return string.Join("\n", lines);
         }
-        
+
         /// <summary>
         /// Get a detailed breakdown of how a stat's value is calculated.
         /// Shows all modifiers grouped by type and the step-by-step calculation.
@@ -207,6 +218,7 @@ namespace Spellbound.Modifiers {
         public string GetModifierAnalysis(int statId) {
             var statName = StatRegistry.GetName(statId) ?? $"Unknown({statId})";
             var baseValue = GetBase(statId);
+
             var lines = new List<string> {
                 $"Stat: {statName}",
                 $"Base: {baseValue}"
@@ -215,38 +227,42 @@ namespace Spellbound.Modifiers {
             if (!_modifiersByStatId.TryGetValue(statId, out var modifiers) || modifiers.Count == 0) {
                 lines.Add("No modifiers");
                 lines.Add($"Final: {baseValue}");
+
                 return string.Join("\n", lines);
             }
 
             var flats = modifiers
-                .Where(m => m.Type == ModifierType.Flat)
-                .Select(m => m.Value)
-                .ToList();
-            
+                    .Where(m => m.Type == ModifierType.Flat)
+                    .Select(m => m.Value)
+                    .ToList();
+
             var increases = modifiers
-                .Where(m => m.Type == ModifierType.Increased)
-                .Select(m => m.Value)
-                .ToList();
-            
+                    .Where(m => m.Type == ModifierType.Increased)
+                    .Select(m => m.Value)
+                    .ToList();
+
             var mores = modifiers
-                .Where(m => m.Type == ModifierType.More)
-                .Select(m => m.Value)
-                .ToList();
-            
+                    .Where(m => m.Type == ModifierType.More)
+                    .Select(m => m.Value)
+                    .ToList();
+
             var overrides = modifiers
-                .Where(m => m.Type == ModifierType.Override)
-                .Select(m => m.Value)
-                .ToList();
+                    .Where(m => m.Type == ModifierType.Override)
+                    .Select(m => m.Value)
+                    .ToList();
 
             if (flats.Count > 0)
                 lines.Add($"Flat: {string.Join(", ", flats.Select(f => $"+{f}"))} (Total: +{flats.Sum()})");
 
             if (increases.Count > 0)
-                lines.Add($"Increased: {string.Join(", ", increases.Select(i => $"{i}%"))} (Total: {increases.Sum()}%)");
+                lines.Add(
+                    $"Increased: {string.Join(", ", increases.Select(i => $"{i}%"))} (Total: {increases.Sum()}%)");
 
             if (mores.Count > 0) {
                 var moreProduct = mores.Aggregate(1f, (acc, m) => acc * (1f + m / 100f));
-                lines.Add($"More: {string.Join(", ", mores.Select(m => $"{m}%"))} (Total: {(moreProduct - 1f) * 100f:F2}%)");
+
+                lines.Add(
+                    $"More: {string.Join(", ", mores.Select(m => $"{m}%"))} (Total: {(moreProduct - 1f) * 100f:F2}%)");
             }
 
             if (overrides.Count > 0)

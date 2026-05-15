@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
@@ -16,16 +18,17 @@ namespace Spellbound.Modifiers {
         public abstract void Remove(ICanBeModified target);
 
         public string UniqueId { get; set; } = Guid.NewGuid().ToString();
-        
+
         public virtual IModifier Clone() {
             var json = JsonUtility.ToJson(this);
             var clone = (SbModifier)JsonUtility.FromJson(json, GetType());
             clone.UniqueId = Guid.NewGuid().ToString();
+
             return clone;
         }
 
         #region Convenience Methods
-        
+
         /// <summary>
         /// Attempts to get the StatContainer from the ICanBeModified target if an IHasStats exists on the target.
         /// </summary>
@@ -36,14 +39,15 @@ namespace Spellbound.Modifiers {
         /// </returns>
         protected bool TryGetStats(ICanBeModified target, out StatContainer stats) {
             stats = null;
-            
-            if (target is not IHasStats hs) 
+
+            if (target is not IHasStats hs)
                 return false;
-            
+
             stats = hs.Stats;
+
             return true;
         }
-    
+
         /// <summary>
         /// Attempts to get the SbBehaviour from the ICanBeModified target if an IHasBehaviour exists on the target.
         /// </summary>
@@ -55,9 +59,10 @@ namespace Spellbound.Modifiers {
         /// </returns>
         protected bool TryGetBehaviour<T>(ICanBeModified target, out T behaviour) where T : SbBehaviour {
             behaviour = null;
+
             return target is IHasBehaviours hb && hb.Behaviours.TryGetBehaviour(out behaviour);
         }
-    
+
         /// <summary>
         /// Attempts to get the EventContainer from the ICanBeModified target if an IHasEvents exists on the target.
         /// </summary>
@@ -68,14 +73,15 @@ namespace Spellbound.Modifiers {
         /// </returns>
         protected bool TryGetEvents(ICanBeModified target, out EventContainer events) {
             events = null;
-            
-            if (target is not IHasEvents he) 
+
+            if (target is not IHasEvents he)
                 return false;
-            
+
             events = he.Events;
+
             return true;
         }
-        
+
         #endregion
     }
 }

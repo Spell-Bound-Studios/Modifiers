@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 using UnityEngine;
@@ -7,18 +7,18 @@ namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class IncreasedDurationModifier : SbModifier {
         [SerializeField] private float increasedDurationPercent = .5f;
-        
+
         public override void Apply(ICanBeModified target) {
-            if (!TryGetBehaviour<DurationBehaviour>(target, out var duration)) 
+            if (!TryGetBehaviour<DurationBehaviour>(target, out var duration))
                 return;
-            
+
             duration.Stats.AddIncreased("ignite_duration", increasedDurationPercent, UniqueId);
         }
-        
+
         public override void Remove(ICanBeModified target) {
-            if (!TryGetBehaviour<DurationBehaviour>(target, out var duration)) 
+            if (!TryGetBehaviour<DurationBehaviour>(target, out var duration))
                 return;
-            
+
             duration.Stats.RemoveModifierByUniqueId(UniqueId);
         }
     }

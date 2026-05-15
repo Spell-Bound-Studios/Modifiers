@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
@@ -8,7 +10,7 @@ namespace Spellbound.Modifiers {
         public readonly object Source;
         public readonly Vector3 Position;
         public readonly Vector3 Direction;
-        
+
         public PositionalPayload(object source, Vector3 position, Vector3 direction) {
             Source = source;
             Position = position;

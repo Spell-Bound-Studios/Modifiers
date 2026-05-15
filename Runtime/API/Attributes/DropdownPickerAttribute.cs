@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright 2026 Spellbound Studio Inc.
+
+using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {

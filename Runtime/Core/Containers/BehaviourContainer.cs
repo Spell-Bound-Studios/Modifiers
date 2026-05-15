@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Spellbound Studio Inc.
+﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 using System.Collections.Generic;
@@ -10,13 +10,11 @@ namespace Spellbound.Modifiers {
     /// </summary>
     public class BehaviourContainer {
         private readonly Dictionary<Type, SbBehaviour> _behaviours = new();
-        
-        public void Add(SbBehaviour behaviour) => 
-                _behaviours[behaviour.GetType()] = behaviour;
-        
-        public void Remove<T>() where T : SbBehaviour => 
-                _behaviours.Remove(typeof(T));
-        
+
+        public void Add(SbBehaviour behaviour) => _behaviours[behaviour.GetType()] = behaviour;
+
+        public void Remove<T>() where T : SbBehaviour => _behaviours.Remove(typeof(T));
+
         /// <summary>
         /// Trys to get a value from the dictionary. Can return null.
         /// </summary>
@@ -24,10 +22,10 @@ namespace Spellbound.Modifiers {
         /// Behaviours are expected to be SbBehaviour types.
         /// </typeparam>
         public T GetBehaviour<T>() where T : SbBehaviour =>
-                _behaviours.TryGetValue(typeof(T), out var b) 
-                        ? (T)b 
+                _behaviours.TryGetValue(typeof(T), out var b)
+                        ? (T)b
                         : null;
-        
+
         /// <summary>
         /// Trys to get a value from the behaviour dictionary and returns a bool based on success.
         /// </summary>
@@ -37,18 +35,21 @@ namespace Spellbound.Modifiers {
         public bool TryGetBehaviour<T>(out T behaviour) where T : SbBehaviour {
             if (_behaviours.TryGetValue(typeof(T), out var b)) {
                 behaviour = (T)b;
+
                 return true;
             }
+
             behaviour = null;
+
             return false;
         }
-        
+
         public IEnumerable<SbBehaviour> GetAll() => _behaviours.Values;
-        
+
         public IEnumerable<T> GetAll<T>() => _behaviours.Values.OfType<T>();
-        
+
         public void Clear() => _behaviours.Clear();
-        
+
         public int Count => _behaviours.Count;
     }
 }
