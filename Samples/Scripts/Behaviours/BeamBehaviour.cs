@@ -30,7 +30,7 @@ namespace Spellbound.Modifiers.Samples {
         private Transform _beamGlow;
         private ParticleSystem _impactParticles;
 
-        public BeamBehaviour() {
+        protected override void SyncStatsFromFields() {
             this.SetBase("beam_range", range);
             this.SetBase("beam_width", width);
         }
@@ -141,23 +141,24 @@ namespace Spellbound.Modifiers.Samples {
             _beamGlow = null;
             _impactParticles = null;
         }
-        
 
-    /// <summary>
-    /// Return value of <see cref="BeamBehaviour.Fire"/>: the hit list, the effective distance the beam
-    /// traveled, the hit point for visual anchoring, and whether anything was actually struck.
-    /// </summary>
-    public readonly struct BeamHitResult {
-        public readonly List<GameObject> Hits;
-        public readonly float Distance;
-        public readonly Vector3 HitPoint;
-        public readonly bool DidHit;
 
-        public BeamHitResult(List<GameObject> hits, float distance, Vector3 hitPoint, bool didHit) {
-            Hits = hits;
-            Distance = distance;
-            HitPoint = hitPoint;
-            DidHit = didHit;
+        /// <summary>
+        /// Return value of <see cref="BeamBehaviour.Fire"/>: the hit list, the effective distance the beam
+        /// traveled, the hit point for visual anchoring, and whether anything was actually struck.
+        /// </summary>
+        public readonly struct BeamHitResult {
+            public readonly List<GameObject> Hits;
+            public readonly float Distance;
+            public readonly Vector3 HitPoint;
+            public readonly bool DidHit;
+
+            public BeamHitResult(List<GameObject> hits, float distance, Vector3 hitPoint, bool didHit) {
+                Hits = hits;
+                Distance = distance;
+                HitPoint = hitPoint;
+                DidHit = didHit;
+            }
         }
     }
 }

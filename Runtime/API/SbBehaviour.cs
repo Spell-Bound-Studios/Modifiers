@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Spellbound.Core.Logging;
 using Spellbound.Core.Packing;
+using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
@@ -35,7 +36,7 @@ namespace Spellbound.Modifiers {
     /// is required so concrete subclasses can ride a <c>[SerializeReference]</c> field for designer authoring.
     /// </remarks>
     [Serializable]
-    public class SbBehaviour {
+    public class SbBehaviour : ISerializationCallbackReceiver {
         // Base values before any modifiers are applied (stored as fixed-point ints)
         private readonly Dictionary<int, int> _baseValues = new();
 
@@ -47,7 +48,16 @@ namespace Spellbound.Modifiers {
 
         // If true, we need to recalculate before returning values
         private bool _isDirty = true;
-        
+
+        /// <summary>
+        /// Default constructor — runs <see cref="SyncStatsFromFields"/> so subclasses created via
+        /// <c>new</c> (e.g. a skill composing its sub-behaviours at runtime) get their typed-field values
+        /// pushed into the base-value table. The deserialize path still re-syncs through
+        /// <see cref="ISerializationCallbackReceiver.OnAfterDeserialize"/>, so this is idempotent on
+        /// SerializeReference-created instances.
+        /// </summary>
+        public SbBehaviour() => SyncStatsFromFields();
+
         /// <summary>
         /// Set the base value for a stat before modifiers.
         /// </summary>
@@ -128,7 +138,60 @@ namespace Spellbound.Modifiers {
         public int StatCount => _baseValues.Count;
 
         public int ModifierCount => _modifiersByStatId.Values.Sum(list => list.Count);
-        
+
+        #region Name-Based Overloads
+
+        /// <summary>Name-keyed <see cref="SetBase(int, float)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
+        public void SetBase(string statName, float value) =>
+                SetBase(StatRegistry.Register(statName), value);
+
+        /// <summary>Name-keyed <see cref="GetBase(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
+        public float GetBase(string statName) =>
+                GetBase(StatRegistry.Register(statName));
+
+        /// <summary>Name-keyed <see cref="HasBase(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
+        public bool HasBase(string statName) =>
+                HasBase(StatRegistry.Register(statName));
+
+        /// <summary>Name-keyed <see cref="GetValue(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
+        public float GetValue(string statName) =>
+                GetValue(StatRegistry.Register(statName));
+
+        /// <summary>
+        /// Add a <see cref="ModifierType.Flat"/> modifier to the named stat. The optional
+        /// <paramref name="uniqueId"/> lets the caller later remove this exact modifier via
+        /// <see cref="RemoveModifierByUniqueId"/>.
+        /// </summary>
+        public void AddFlat(string statName, float value, string uniqueId = null) =>
+                AddModifier(new StatModifier(
+                    StatRegistry.Register(statName),
+                    ModifierType.Flat,
+                    value,
+                    uniqueId));
+
+        /// <summary>
+        /// Add a <see cref="ModifierType.Increased"/> modifier (additive % pool — stacks of Increased sum
+        /// together before the multiplication) to the named stat.
+        /// </summary>
+        public void AddIncreased(string statName, float percent, string uniqueId = null) =>
+                AddModifier(new StatModifier(
+                    StatRegistry.Register(statName),
+                    ModifierType.Increased,
+                    percent,
+                    uniqueId));
+
+        /// <summary>
+        /// Add a <see cref="ModifierType.More"/> modifier (multiplicative — each More multiplies the running
+        /// total) to the named stat.
+        /// </summary>
+        public void AddMore(string statName, float percent, string uniqueId = null) =>
+                AddModifier(new StatModifier(
+                    StatRegistry.Register(statName),
+                    ModifierType.More,
+                    percent,
+                    uniqueId));
+
+        #endregion
 
         /// <summary>
         /// Recalculate all stats by applying modifiers in the correct order.
@@ -193,6 +256,22 @@ namespace Spellbound.Modifiers {
 
             return (int)afterMore;
         }
+
+        #region Serialization Sync
+
+        /// <summary>
+        /// Hook for subclasses to push their typed <c>[SerializeField]</c> values into the stat container
+        /// via <c>this.SetBase("stat_name", typedField)</c>. Runs once after every Unity deserialize so the
+        /// container stays in lockstep with the inspector-edited fields. Override in concrete behaviours;
+        /// the base implementation is a no-op (a behaviour with no stats is valid).
+        /// </summary>
+        protected virtual void SyncStatsFromFields() { }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize() => SyncStatsFromFields();
+
+        #endregion
 
         #region IPacker
 

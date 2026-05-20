@@ -17,14 +17,14 @@ namespace Spellbound.Modifiers.Samples {
             if (!TryGetBehaviour<DurationBehaviour>(target, out var duration))
                 return;
 
-            duration.Stats.AddIncreased("ignite_duration", increasedDurationPercent, UniqueId);
+            duration.AddIncreased("ignite_duration", increasedDurationPercent, UniqueId);
         }
 
         public override void Remove(ICanBeModified target) {
             if (!TryGetBehaviour<DurationBehaviour>(target, out var duration))
                 return;
 
-            duration.Stats.RemoveModifierByUniqueId(UniqueId);
+            duration.RemoveModifierByUniqueId(UniqueId);
         }
     }
 }

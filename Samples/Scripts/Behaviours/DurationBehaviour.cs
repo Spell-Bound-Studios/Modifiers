@@ -16,17 +16,14 @@ namespace Spellbound.Modifiers.Samples {
         [SerializeField] private float chillDuration = 4f;
         [SerializeField] private float skillDuration = 5f;
 
-        public float GetIgniteDuration() => Stats.GetValue("ignite_duration");
-        public float GetChillDuration() => Stats.GetValue("chill_duration");
-        public float GetSkillDuration() => Stats.GetValue("skill_duration");
+        public float GetIgniteDuration() => this.GetValue("ignite_duration");
+        public float GetChillDuration() => this.GetValue("chill_duration");
+        public float GetSkillDuration() => this.GetValue("skill_duration");
 
-        protected override StatContainer InitializeStats() {
-            var stats = new StatContainer();
-            stats.SetBase("ignite_duration", igniteDuration);
-            stats.SetBase("chill_duration", chillDuration);
-            stats.SetBase("skill_duration", skillDuration);
-
-            return stats;
+        protected override void SyncStatsFromFields() {
+            this.SetBase("ignite_duration", igniteDuration);
+            this.SetBase("chill_duration", chillDuration);
+            this.SetBase("skill_duration", skillDuration);
         }
     }
 }

@@ -294,39 +294,11 @@ namespace Spellbound.Modifiers.Editor {
             SerializedProperty resources,
             SerializedProperty stats,
             SerializedProperty modifiers) {
-            var container = new VisualElement {
-                style = {
-                    marginLeft = 4,
-                    marginBottom = 6,
-                    paddingTop = 6,
-                    paddingBottom = 6,
-                    paddingLeft = 10,
-                    paddingRight = 10,
-                    backgroundColor = new Color(0f, 0f, 0f, 0.12f),
-                    borderLeftWidth = 2,
-                    borderLeftColor = new Color(0.7f, 0.7f, 0.4f)
-                }
-            };
-
-            var output = new Label("(computing…)") {
-                style = {
-                    whiteSpace = WhiteSpace.Normal,
-                    fontSize = 12
-                }
-            };
-
-            container.Add(output);
-
-            // The preview reads from the same serialized object the property belongs to. Listening on that
-            // object catches changes to any template field — TrackSerializedObjectValue fires on edits.
             var serializedObject = (resources ?? stats ?? modifiers).serializedObject;
 
-            void Refresh() => output.text = ComputePreviewText(resources, stats, modifiers);
-
-            container.TrackSerializedObjectValue(serializedObject, _ => Refresh());
-            Refresh();
-
-            return container;
+            return EditorListHelpers.BuildLivePreview(
+                serializedObject,
+                () => ComputePreviewText(resources, stats, modifiers));
         }
 
         private static string ComputePreviewText(
@@ -334,7 +306,7 @@ namespace Spellbound.Modifiers.Editor {
             SerializedProperty stats,
             SerializedProperty modifiers) {
             try {
-                /*var container = new StatContainer();
+                var container = new SbBehaviour();
                 var resourceIds = new List<int>();
                 var resourceMins = new Dictionary<int, float>();
                 var statIds = new HashSet<int>();
@@ -416,27 +388,24 @@ namespace Spellbound.Modifiers.Editor {
                 if (statIds.Count <= 0)
                     return sb.ToString().TrimEnd();
 
-                {
-                    if (resourceIds.Count > 0)
-                        sb.Append('\n');
+                if (resourceIds.Count > 0)
+                    sb.Append('\n');
 
-                    sb.Append("Stats:\n");
+                sb.Append("Stats:\n");
 
-                    foreach (var id in statIds) {
-                        var name = StatRegistry.GetName(id);
-                        var baseVal = container.GetBase(id);
-                        var finalVal = container.GetValue(id);
-                        sb.Append("  ").Append(name).Append(": ").Append(finalVal.ToString("F2"));
+                foreach (var id in statIds) {
+                    var name = StatRegistry.GetName(id);
+                    var baseVal = container.GetBase(id);
+                    var finalVal = container.GetValue(id);
+                    sb.Append("  ").Append(name).Append(": ").Append(finalVal.ToString("F2"));
 
-                        if (Mathf.Abs(finalVal - baseVal) > 0.0001f)
-                            sb.Append("  (base ").Append(baseVal.ToString("F2")).Append(")");
+                    if (Mathf.Abs(finalVal - baseVal) > 0.0001f)
+                        sb.Append("  (base ").Append(baseVal.ToString("F2")).Append(")");
 
-                        sb.Append('\n');
-                    }
+                    sb.Append('\n');
                 }
 
-                return sb.ToString().TrimEnd();*/
-                return null;
+                return sb.ToString().TrimEnd();
             }
             catch (Exception ex) {
                 return $"<preview error: {ex.Message}>";

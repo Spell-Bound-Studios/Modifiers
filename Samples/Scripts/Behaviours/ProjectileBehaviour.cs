@@ -30,8 +30,8 @@ namespace Spellbound.Modifiers.Samples {
             if (ProjectilePrefab == null)
                 return spawned;
 
-            var projectileCount = (int)Stats.GetValue("projectile_count");
-            var projectileSpeed = Stats.GetValue("projectile_speed");
+            var projectileCount = (int)this.GetValue("projectile_count");
+            var projectileSpeed = this.GetValue("projectile_speed");
 
             Vector3[] finalDirections;
 
@@ -73,12 +73,9 @@ namespace Spellbound.Modifiers.Samples {
             return directions;
         }
 
-        protected override StatContainer InitializeStats() {
-            var stats = new StatContainer();
-            stats.SetBase("projectile_count", count);
-            stats.SetBase("projectile_speed", speed);
-
-            return stats;
+        protected override void SyncStatsFromFields() {
+            this.SetBase("projectile_count", count);
+            this.SetBase("projectile_speed", speed);
         }
     }
 }

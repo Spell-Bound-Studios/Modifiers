@@ -2,6 +2,7 @@
 
 using System;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -112,5 +113,42 @@ namespace Spellbound.Modifiers.Editor {
                         marginBottom = 2
                     }
                 };
+
+        /// <summary>
+        /// Styled read-only preview box that re-runs <paramref name="compute"/> whenever any field on
+        /// <paramref name="so"/> changes. Caller supplies the text producer; the box, label, and tracking
+        /// hookup are shared so every drawer's "live preview" looks the same.
+        /// </summary>
+        public static VisualElement BuildLivePreview(SerializedObject so, Func<string> compute) {
+            var container = new VisualElement {
+                style = {
+                    marginLeft = 4,
+                    marginBottom = 6,
+                    paddingTop = 6,
+                    paddingBottom = 6,
+                    paddingLeft = 10,
+                    paddingRight = 10,
+                    backgroundColor = new Color(0f, 0f, 0f, 0.12f),
+                    borderLeftWidth = 2,
+                    borderLeftColor = new Color(0.7f, 0.7f, 0.4f)
+                }
+            };
+
+            var output = new Label("(computing…)") {
+                style = {
+                    whiteSpace = WhiteSpace.Normal,
+                    fontSize = 12
+                }
+            };
+
+            container.Add(output);
+
+            container.TrackSerializedObjectValue(so, _ => Refresh());
+            Refresh();
+
+            return container;
+
+            void Refresh() => output.text = compute();
+        }
     }
 }
