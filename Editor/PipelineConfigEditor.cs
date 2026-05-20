@@ -135,73 +135,30 @@ namespace Spellbound.Modifiers.Editor {
             };
             header.Add(typeNameLabel);
 
-            var moveUpBtn = new Button(() => {
-                if (capturedIndex == 0)
-                    return;
+            header.Add(EditorListHelpers.IconButton("▲", () => {
+                if (EditorListHelpers.MoveUp(stagesProp, capturedIndex))
+                    onChanged();
+            }));
 
-                stagesProp.MoveArrayElement(capturedIndex, capturedIndex - 1);
-                serializedObject.ApplyModifiedProperties();
+            header.Add(EditorListHelpers.IconButton("▼", () => {
+                if (EditorListHelpers.MoveDown(stagesProp, capturedIndex))
+                    onChanged();
+            }));
+
+            header.Add(EditorListHelpers.IconButton("✕", () => {
+                EditorListHelpers.RemoveAt(stagesProp, capturedIndex);
                 onChanged();
-            }) {
-                text = "▲",
-                style = {
-                    width = 22,
-                    marginRight = 2
-                }
-            };
+            }));
 
-            header.Add(moveUpBtn);
-
-            var moveDownBtn = new Button(() => {
-                if (capturedIndex >= stagesProp.arraySize - 1)
-                    return;
-
-                stagesProp.MoveArrayElement(capturedIndex, capturedIndex + 1);
-                serializedObject.ApplyModifiedProperties();
-                onChanged();
-            }) {
-                text = "▼",
-                style = {
-                    width = 22,
-                    marginRight = 2
-                }
-            };
-
-            header.Add(moveDownBtn);
-
-            var removeBtn = new Button(() => {
-                var prop = stagesProp.GetArrayElementAtIndex(capturedIndex);
-
-                if (prop.propertyType == SerializedPropertyType.ManagedReference)
-                    prop.managedReferenceValue = null;
-
-                stagesProp.DeleteArrayElementAtIndex(capturedIndex);
-                serializedObject.ApplyModifiedProperties();
-                onChanged();
-            }) {
-                text = "✕",
-                style = { width = 22 }
-            };
-
-            header.Add(removeBtn);
             row.Add(header);
 
             // Expanded fields of the stage value (if any).
             if (elementProp.managedReferenceValue != null) {
-                var iterator = elementProp.Copy();
-                var end = elementProp.GetEndProperty();
-
-                if (!iterator.NextVisible(true)) return row;
-
-                do {
-                    if (SerializedProperty.EqualContents(iterator, end))
-                        break;
-
-                    var field = new PropertyField(iterator.Copy());
+                EditorListHelpers.ForEachVisibleChild(elementProp, child => {
+                    var field = new PropertyField(child.Copy());
                     field.Bind(serializedObject);
                     row.Add(field);
-                } while
-                        (iterator.NextVisible(false));
+                });
             }
             else {
                 var empty = new Label("(null — use + Add Stage to assign)") {
@@ -250,10 +207,6 @@ namespace Spellbound.Modifiers.Editor {
 
             if (dot >= 0)
                 typeSimple = managedTypeName[(dot + 1)..];
-
-            if (PipelineStageRegistry.All is not List<PipelineStageRegistry.StageEntry> _) {
-                // Fall through to type name; registry lookup is by exact full or simple name.
-            }
 
             foreach (var entry in PipelineStageRegistry.All) {
                 if (entry.Type.Name == typeSimple || entry.Type.FullName == managedTypeName)

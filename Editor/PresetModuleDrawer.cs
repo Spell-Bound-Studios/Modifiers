@@ -47,49 +47,41 @@ namespace Spellbound.Modifiers.Editor {
             var moduleInstance = property.managedReferenceValue;
             var moduleType = moduleInstance?.GetType();
 
-            var iterator = property.Copy();
-            var end = property.GetEndProperty();
+            EditorListHelpers.ForEachVisibleChild(property, child => {
+                var current = child.Copy();
+                var info = TryGetInlineTemplateInfo(moduleType, current);
 
-            if (iterator.NextVisible(true)) {
-                while (!SerializedProperty.EqualContents(iterator, end)) {
-                    var current = iterator.Copy();
-                    var info = TryGetInlineTemplateInfo(moduleType, current);
+                if (info.ElementType != null) {
+                    // One header per template list: [Header(...)] when present on the field, otherwise the
+                    // nicified field name. The list itself renders bare so we never double-header.
+                    var headerAttr = info.Field?.GetCustomAttribute<HeaderAttribute>(false);
 
-                    if (info.ElementType != null) {
-                        // One header per template list: [Header(...)] when present on the field, otherwise the
-                        // nicified field name. The list itself renders bare so we never double-header.
-                        var headerAttr = info.Field?.GetCustomAttribute<HeaderAttribute>(false);
+                    var headerText = headerAttr != null && !string.IsNullOrEmpty(headerAttr.header)
+                            ? headerAttr.header
+                            : ObjectNames.NicifyVariableName(current.displayName);
 
-                        var headerText = headerAttr != null && !string.IsNullOrEmpty(headerAttr.header)
-                                ? headerAttr.header
-                                : ObjectNames.NicifyVariableName(current.displayName);
+                    root.Add(EditorListHelpers.SectionHeader(headerText));
+                    root.Add(BuildTemplateList(current, info.ElementType));
 
-                        root.Add(SectionHeader(headerText));
-                        root.Add(BuildTemplateList(current, info.ElementType));
-
-                        if (info.ElementType == typeof(StatTemplate))
-                            statTemplatesProp = current;
-                        else if (info.ElementType == typeof(StatModifierTemplate))
-                            statModifierTemplatesProp = current;
-                        else if (info.ElementType == typeof(ResourceTemplate))
-                            resourceTemplatesProp = current;
-                    }
-                    else {
-                        var pf = new PropertyField(current);
-                        pf.Bind(property.serializedObject);
-                        root.Add(pf);
-                    }
-
-                    if (!iterator.NextVisible(false))
-                        break;
+                    if (info.ElementType == typeof(StatTemplate))
+                        statTemplatesProp = current;
+                    else if (info.ElementType == typeof(StatModifierTemplate))
+                        statModifierTemplatesProp = current;
+                    else if (info.ElementType == typeof(ResourceTemplate))
+                        resourceTemplatesProp = current;
                 }
-            }
+                else {
+                    var pf = new PropertyField(current);
+                    pf.Bind(property.serializedObject);
+                    root.Add(pf);
+                }
+            });
 
             // Computed-stats preview is automatic when stat-relevant templates are present.
             if (resourceTemplatesProp == null && statTemplatesProp == null &&
                 statModifierTemplatesProp == null) return root;
 
-            root.Add(SectionHeader("Computed Stats (read-only preview)"));
+            root.Add(EditorListHelpers.SectionHeader("Computed Stats (read-only preview)"));
             root.Add(BuildComputedPreview(resourceTemplatesProp, statTemplatesProp, statModifierTemplatesProp));
 
             return root;
@@ -231,27 +223,18 @@ namespace Spellbound.Modifiers.Editor {
             FillInlineFields(fieldArea, elementProp);
             row.Add(fieldArea);
 
-            row.Add(IconButton("▲", () => {
-                if (capturedIndex == 0)
-                    return;
-
-                listProp.MoveArrayElement(capturedIndex, capturedIndex - 1);
-                listProp.serializedObject.ApplyModifiedProperties();
-                onChanged();
+            row.Add(EditorListHelpers.IconButton("▲", () => {
+                if (EditorListHelpers.MoveUp(listProp, capturedIndex))
+                    onChanged();
             }));
 
-            row.Add(IconButton("▼", () => {
-                if (capturedIndex >= listProp.arraySize - 1)
-                    return;
-
-                listProp.MoveArrayElement(capturedIndex, capturedIndex + 1);
-                listProp.serializedObject.ApplyModifiedProperties();
-                onChanged();
+            row.Add(EditorListHelpers.IconButton("▼", () => {
+                if (EditorListHelpers.MoveDown(listProp, capturedIndex))
+                    onChanged();
             }));
 
-            row.Add(IconButton("✕", () => {
-                listProp.DeleteArrayElementAtIndex(capturedIndex);
-                listProp.serializedObject.ApplyModifiedProperties();
+            row.Add(EditorListHelpers.IconButton("✕", () => {
+                EditorListHelpers.RemoveAt(listProp, capturedIndex);
                 onChanged();
             }));
 
@@ -266,18 +249,9 @@ namespace Spellbound.Modifiers.Editor {
         /// hardcoding required.
         /// </summary>
         private static void FillInlineFields(VisualElement rowContent, SerializedProperty elementProp) {
-            var iterator = elementProp.Copy();
-            var end = elementProp.GetEndProperty();
-
-            if (!iterator.NextVisible(true))
-                return;
-
             var isFirst = true;
 
-            do {
-                if (SerializedProperty.EqualContents(iterator, end))
-                    break;
-
+            EditorListHelpers.ForEachVisibleChild(elementProp, child => {
                 var cell = new VisualElement {
                     style = {
                         flexGrow = 1,
@@ -288,7 +262,7 @@ namespace Spellbound.Modifiers.Editor {
                 };
 
                 if (!isFirst) {
-                    cell.Add(new Label(iterator.displayName) {
+                    cell.Add(new Label(child.displayName) {
                         style = {
                             marginRight = 4,
                             color = new Color(0.75f, 0.75f, 0.75f),
@@ -300,7 +274,7 @@ namespace Spellbound.Modifiers.Editor {
                     });
                 }
 
-                var pf = new PropertyField(iterator.Copy(), string.Empty) {
+                var pf = new PropertyField(child.Copy(), string.Empty) {
                     style = { flexGrow = 1 }
                 };
 
@@ -309,7 +283,7 @@ namespace Spellbound.Modifiers.Editor {
                 rowContent.Add(cell);
 
                 isFirst = false;
-            } while (iterator.NextVisible(false));
+            });
         }
 
         // ============================================================================================
@@ -468,31 +442,6 @@ namespace Spellbound.Modifiers.Editor {
             }
         }
 
-        // ============================================================================================
-        // Small UI helpers
-        // ============================================================================================
-
-        private static VisualElement SectionHeader(string text) =>
-                new Label(text) {
-                    style = {
-                        unityFontStyleAndWeight = FontStyle.Bold,
-                        fontSize = 12,
-                        color = new Color(0.78f, 0.78f, 0.78f),
-                        marginTop = 8,
-                        marginBottom = 2
-                    }
-                };
-
-        private static Button IconButton(string text, Action onClick) =>
-                new(onClick) {
-                    text = text,
-                    style = {
-                        width = 22,
-                        marginLeft = 2,
-                        paddingLeft = 2,
-                        paddingRight = 2
-                    }
-                };
     }
 }
 #endif
