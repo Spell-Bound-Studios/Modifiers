@@ -144,13 +144,7 @@ namespace Spellbound.Modifiers.Editor {
                     }
 
                     var removeBtn = new Button(() => {
-                        var prop = listProperty.GetArrayElementAtIndex(capturedIndex);
-
-                        if (prop.propertyType == SerializedPropertyType.ManagedReference)
-                            prop.managedReferenceValue = null;
-
-                        listProperty.DeleteArrayElementAtIndex(capturedIndex);
-                        listProperty.serializedObject.ApplyModifiedProperties();
+                        EditorListHelpers.RemoveAt(listProperty, capturedIndex);
                         Refresh();
                     }) {
                         text = "✕",
@@ -224,19 +218,12 @@ namespace Spellbound.Modifiers.Editor {
 
             if (property.managedReferenceValue != null) {
                 var foldout = new Foldout { text = "Properties", value = true };
-                var iterator = property.Copy();
-                var endProperty = property.GetEndProperty();
 
-                if (iterator.NextVisible(true)) {
-                    do {
-                        if (SerializedProperty.EqualContents(iterator, endProperty))
-                            break;
-
-                        var field = new PropertyField(iterator.Copy());
-                        field.Bind(property.serializedObject);
-                        foldout.Add(field);
-                    } while (iterator.NextVisible(false));
-                }
+                EditorListHelpers.ForEachVisibleChild(property, child => {
+                    var field = new PropertyField(child.Copy());
+                    field.Bind(property.serializedObject);
+                    foldout.Add(field);
+                });
 
                 if (foldout.childCount > 0) container.Add(foldout);
             }
@@ -362,18 +349,10 @@ namespace Spellbound.Modifiers.Editor {
             if (property.managedReferenceValue == null)
                 return h;
 
-            var iterator = property.Copy();
-            var endProperty = property.GetEndProperty();
-
-            if (iterator.NextVisible(true)) {
-                do {
-                    if (SerializedProperty.EqualContents(iterator, endProperty))
-                        break;
-
-                    h += EditorGUIUtility.standardVerticalSpacing;
-                    h += EditorGUI.GetPropertyHeight(iterator, true);
-                } while (iterator.NextVisible(false));
-            }
+            EditorListHelpers.ForEachVisibleChild(property, child => {
+                h += EditorGUIUtility.standardVerticalSpacing;
+                h += EditorGUI.GetPropertyHeight(child, true);
+            });
 
             return h;
         }
@@ -417,11 +396,7 @@ namespace Spellbound.Modifiers.Editor {
                     EditorGUI.PropertyField(elementRect, element, new GUIContent($"Element {i}"), true);
 
                 if (GUI.Button(new Rect(removeX, y, removeW, lineH), "✕")) {
-                    if (element.propertyType == SerializedPropertyType.ManagedReference)
-                        element.managedReferenceValue = null;
-
-                    listProperty.DeleteArrayElementAtIndex(i);
-                    listProperty.serializedObject.ApplyModifiedProperties();
+                    EditorListHelpers.RemoveAt(listProperty, i);
                     GUIUtility.ExitGUI();
 
                     return;
@@ -485,22 +460,15 @@ namespace Spellbound.Modifiers.Editor {
                 return;
 
             var y = position.y + lineH;
-            var iterator = property.Copy();
-            var endProperty = property.GetEndProperty();
 
             EditorGUI.indentLevel++;
 
-            if (iterator.NextVisible(true)) {
-                do {
-                    if (SerializedProperty.EqualContents(iterator, endProperty))
-                        break;
-
-                    y += spacing;
-                    var fieldH = EditorGUI.GetPropertyHeight(iterator, true);
-                    EditorGUI.PropertyField(new Rect(position.x, y, position.width, fieldH), iterator, true);
-                    y += fieldH;
-                } while (iterator.NextVisible(false));
-            }
+            EditorListHelpers.ForEachVisibleChild(property, child => {
+                y += spacing;
+                var fieldH = EditorGUI.GetPropertyHeight(child, true);
+                EditorGUI.PropertyField(new Rect(position.x, y, position.width, fieldH), child, true);
+                y += fieldH;
+            });
 
             EditorGUI.indentLevel--;
         }
