@@ -5,11 +5,16 @@ using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Represents the abstract implementation of a modifier.
+    /// Convenience base for the 80% modifier use case: bundles <see cref="IModifier"/> with a generated
+    /// <see cref="IHasUniqueId.UniqueId"/>, a JSON-based default <see cref="Clone"/>, and protected helpers
+    /// (<see cref="TryGetStats"/> / <see cref="TryGetBehaviour{T}"/> / <see cref="TryGetEvents"/>) that reach
+    /// into the target's containers without callers writing the cast boilerplate.
     /// </summary>
     /// <remarks>
-    /// This class simply wraps both IModifier and IHasUniqueId. If a user has their own unique identifier system or
-    /// needs to inherit from something else then they are free to implement IModifier and/or IHasUniqueId directly.
+    /// Concrete subclasses are typically <c>[Serializable] sealed</c> so they can ride a
+    /// <c>[SerializeReference]</c> field and appear in the <c>[DropdownPicker]</c> menu. Power users with
+    /// their own identity or hierarchy needs implement <see cref="IModifier"/> + <see cref="IHasUniqueId"/>
+    /// directly (the README's documented "20% power user" escape hatch).
     /// </remarks>
     [Serializable]
     public abstract class SbModifier : IModifier, IHasUniqueId {

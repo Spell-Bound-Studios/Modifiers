@@ -4,6 +4,11 @@ using TMPro;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample world-space health bar: procedurally builds a background quad + fill quad + TMP text and
+    /// updates them from its bound <see cref="EnemyTarget"/>. Purely a sample concern (lets the demo show
+    /// that modifier-driven damage actually lands) — has nothing to do with the lib itself.
+    /// </summary>
     public class EnemyHealthDisplay : MonoBehaviour {
         private EnemyTarget _enemy;
         private TextMeshPro _healthText;

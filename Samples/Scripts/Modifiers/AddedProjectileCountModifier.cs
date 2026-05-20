@@ -4,6 +4,12 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample modifier: adds N to <c>projectile_count</c> on whichever target owns a
+    /// <see cref="ProjectileBehaviour"/>. The simplest possible <see cref="SbModifier"/> shape — find the
+    /// behaviour, push a flat stat modifier, remove by <see cref="SbModifier.UniqueId"/> on detach. Use this
+    /// pattern for every numeric "+N to X" affix.
+    /// </summary>
     [Serializable]
     public sealed class AddedProjectileCountModifier : SbModifier {
         [SerializeField] private int additionalProjectiles = 6;

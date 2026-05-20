@@ -3,6 +3,12 @@
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
+    /// <summary>
+    /// Immutable payload for "X hit Y at position Z" events — projectile impact, beam strike, melee swing,
+    /// AOE tag, etc. <see cref="Source"/> is the originator (often a skill / behaviour); <see cref="Cause"/>
+    /// is the immediate proximate cause (often the projectile or beam itself), letting modifiers distinguish
+    /// "I shot it" from "my split projectile shot it."
+    /// </summary>
     public readonly struct TargetedPayload {
         public readonly object Source;
         public readonly GameObject Target;

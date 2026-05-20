@@ -4,6 +4,16 @@ using Spellbound.Core.Tooling;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
+    /// <summary>
+    /// Designer-authored asset declaring one stat: its name (the registry key), human-readable display name,
+    /// description, icon, and an optional <see cref="StatDisplayFormat"/> for UI formatting. Aggregated into
+    /// a <see cref="StatDatabase"/> at the project level; referenced directly by preset modules via
+    /// <see cref="StatTemplate"/> / <see cref="StatModifierTemplate"/> / <see cref="ResourceTemplate"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="OnValidate"/> re-formats a preview value (150.55) so designers see what their display
+    /// format does without entering Play mode.
+    /// </remarks>
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Stat Definition")]
     public class StatDefinition : ScriptableObject {
         [Header("Identity"), SerializeField] private string statName;

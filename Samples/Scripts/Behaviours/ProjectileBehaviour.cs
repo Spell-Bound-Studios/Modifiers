@@ -5,6 +5,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample behaviour: spawns N projectiles from a <see cref="PositionalPayload"/>, where N comes from the
+    /// <c>projectile_count</c> stat and speed from <c>projectile_speed</c>. Direction layout is pluggable via
+    /// <see cref="SetDirectionCalculation"/> — that's how <see cref="CircularProjectileModifier"/> turns a
+    /// straight-shot skill into a circular nova without touching the behaviour or the skill.
+    /// </summary>
     [Serializable]
     public sealed class ProjectileBehaviour : SbBehaviour {
         [SerializeField] private int count = 1;

@@ -5,6 +5,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample behaviour: emits a beam — sphere-cast or thin raycast based on the <c>beam_width</c> stat,
+    /// with range from <c>beam_range</c>. Knows HOW to fire and HOW to drive its visual; doesn't know when to
+    /// fire, who can fire it, or what to do with the hits — those are the orchestrating skill's job.
+    /// </summary>
+    /// <remarks>
+    /// Demonstrates the "behaviour owns its stats" pattern: range and width live on the behaviour's own
+    /// <see cref="StatContainer"/>, so modifiers can boost them without the skill knowing the math.
+    /// </remarks>
     [Serializable]
     public sealed class BeamBehaviour : SbBehaviour {
         [SerializeField] private float range = 15f;
@@ -137,6 +146,10 @@ namespace Spellbound.Modifiers.Samples {
         }
     }
 
+    /// <summary>
+    /// Return value of <see cref="BeamBehaviour.Fire"/>: the hit list, the effective distance the beam
+    /// traveled, the hit point for visual anchoring, and whether anything was actually struck.
+    /// </summary>
     public readonly struct BeamHitResult {
         public readonly List<GameObject> Hits;
         public readonly float Distance;

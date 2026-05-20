@@ -1,17 +1,28 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using Spellbound.Core.Logging;
+using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Holds base stat values and modifiers for an entity (character, item, etc.).
-    /// Calculates final stat values by applying modifiers in the correct order.
-    /// Uses dirty flagging to avoid unnecessary recalculation.
-    /// Internally uses fixed-point integers for deterministic math.
+    /// The core engine of the library. Holds base stat values + modifier list for one target (character, item,
+    /// tree, chest — anything) and computes final values in PoE order:
+    /// <c>Base -> Flat -> Increased (additive pool) -> More (multiplicative chain) -> Override (last wins)</c>.
+    /// Stats are addressed by integer id (interned through <see cref="StatRegistry"/>); user code addresses
+    /// them by name via the extension methods in <see cref="ContainerExtensions"/>.
     /// </summary>
-    public class StatContainer {
+    /// <remarks>
+    /// Values are stored as fixed-point ints (scale = <see cref="StatSettings.Precision"/>) so the math is
+    /// deterministic across machines and survives serialization round-trips. Recalculation is dirty-flagged:
+    /// <see cref="GetValue"/> only re-runs <see cref="CalculateStat"/> when a modifier was added/removed since
+    /// the last read. <see cref="IPacker"/> is implemented so a container can ride inside any packed data slot
+    /// (chunk data, save file, network frame); the wire format keys by stat NAME, not registry id, because
+    /// registry ids are process-local.
+    /// </remarks>
+    public class StatContainer : IPacker {
         // Base values before any modifiers are applied (stored as fixed-point ints)
         private readonly Dictionary<int, int> _baseValues = new();
 
@@ -64,7 +75,7 @@ namespace Spellbound.Modifiers {
         /// </summary>
         public void RemoveModifierByUniqueId(string uniqueId) {
             if (string.IsNullOrEmpty(uniqueId)) {
-                Debug.LogError("Attempting to remove a modifier with a null ID.");
+                Log.Error("Attempting to remove a modifier with a null ID.");
 
                 return;
             }
@@ -104,6 +115,50 @@ namespace Spellbound.Modifiers {
         public int StatCount => _baseValues.Count;
 
         public int ModifierCount => _modifiersByStatId.Values.Sum(list => list.Count);
+
+        #region Slicing
+
+        /// <summary>
+        /// Craft a <see cref="StatSlice"/> for the given stat names. Resolves each name to its
+        /// <see cref="StatRegistry"/> id once at the boundary and stores ids in the slice; unknown names are
+        /// skipped silently.
+        /// </summary>
+        public StatSlice GetSlice(params string[] statNames) {
+            var slice = new StatSlice(statNames?.Length ?? 0);
+
+            if (statNames == null)
+                return slice;
+
+            foreach (var name in statNames) {
+                if (string.IsNullOrEmpty(name))
+                    continue;
+
+                if (!StatRegistry.TryGetId(name, out var id))
+                    continue;
+
+                slice.Entries.Add(new StatSliceEntry(id, GetValue(id)));
+            }
+
+            return slice;
+        }
+
+        /// <summary>
+        /// Craft a <see cref="StatSlice"/> directly from ids — for hot-path callers that already hold ids
+        /// and shouldn't pay name resolution cost.
+        /// </summary>
+        public StatSlice GetSlice(params int[] statIds) {
+            var slice = new StatSlice(statIds?.Length ?? 0);
+
+            if (statIds == null)
+                return slice;
+
+            foreach (var id in statIds)
+                slice.Entries.Add(new StatSliceEntry(id, GetValue(id)));
+
+            return slice;
+        }
+
+        #endregion
 
         /// <summary>
         /// Recalculate all stats by applying modifiers in the correct order.
@@ -168,6 +223,74 @@ namespace Spellbound.Modifiers {
 
             return (int)afterMore;
         }
+
+        #region IPacker
+
+        /// <summary>
+        /// Pack the container as base values + flattened modifier list, keyed by stat NAME (not the process-local
+        /// integer id from <see cref="StatRegistry"/>). Names survive load-order changes, database reordering, and
+        /// cross-process transfer.
+        /// </summary>
+        public void Pack(ref Span<byte> buffer) {
+            Packer.WriteInt(ref buffer, _baseValues.Count);
+
+            foreach (var (id, value) in _baseValues) {
+                Packer.WriteString(ref buffer, StatRegistry.GetName(id));
+                Packer.WriteInt(ref buffer, value);
+            }
+
+            Packer.WriteInt(ref buffer, ModifierCount);
+
+            foreach (var (id, modifiers) in _modifiersByStatId) {
+                var name = StatRegistry.GetName(id);
+
+                foreach (var mod in modifiers) {
+                    Packer.WriteString(ref buffer, name);
+                    Packer.WriteByte(ref buffer, (byte)mod.Type);
+                    Packer.WriteFloat(ref buffer, mod.Value);
+                    Packer.WriteString(ref buffer, mod.UniqueId ?? string.Empty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replace the container's contents from the buffer. Re-registers any stat names encountered through
+        /// <see cref="StatRegistry"/>, which means strict validation must already be configured if you want unknown
+        /// stats to throw on unpack.
+        /// </summary>
+        public void Unpack(ref ReadOnlySpan<byte> buffer) {
+            Clear();
+
+            var baseCount = Packer.ReadInt(ref buffer);
+
+            for (var i = 0; i < baseCount; i++) {
+                var name = Packer.ReadString(ref buffer);
+                var value = Packer.ReadInt(ref buffer);
+                var id = StatRegistry.Register(name);
+                _baseValues[id] = value;
+            }
+
+            var modCount = Packer.ReadInt(ref buffer);
+
+            for (var i = 0; i < modCount; i++) {
+                var name = Packer.ReadString(ref buffer);
+                var type = (ModifierType)Packer.ReadByte(ref buffer);
+                var value = Packer.ReadFloat(ref buffer);
+                var uniqueId = Packer.ReadString(ref buffer);
+                var id = StatRegistry.Register(name);
+
+                if (!_modifiersByStatId.TryGetValue(id, out var list)) {
+                    list = new List<StatModifier>();
+                    _modifiersByStatId[id] = list;
+                }
+
+                list.Add(new StatModifier(id, type, value, uniqueId));
+            }
+
+            _isDirty = true;
+        }
+
+        #endregion
 
         #region Display Helpers
 
@@ -254,9 +377,10 @@ namespace Spellbound.Modifiers {
             if (flats.Count > 0)
                 lines.Add($"Flat: {string.Join(", ", flats.Select(f => $"+{f}"))} (Total: +{flats.Sum()})");
 
-            if (increases.Count > 0)
+            if (increases.Count > 0) {
                 lines.Add(
                     $"Increased: {string.Join(", ", increases.Select(i => $"{i}%"))} (Total: {increases.Sum()}%)");
+            }
 
             if (mores.Count > 0) {
                 var moreProduct = mores.Aggregate(1f, (acc, m) => acc * (1f + m / 100f));

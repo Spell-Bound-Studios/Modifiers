@@ -2,7 +2,11 @@
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// General helper methods that wrap capability in a single location.
+    /// The user-facing string-keyed API on top of <see cref="StatContainer"/>'s int-id internals. Hides the
+    /// <see cref="StatRegistry"/> interning step behind <c>SetBase</c> / <c>GetValue</c> / <c>AddFlat</c> /
+    /// <c>AddIncreased</c> / <c>AddMore</c>. Also threads an optional <see cref="StatDatabase"/> through
+    /// <see cref="SetDatabase"/> so callers can resolve <see cref="StatDefinition"/> for pretty-printing via
+    /// <see cref="GetFormattedValue"/>.
     /// </summary>
     public static class ContainerExtensions {
         private static StatDatabase _database;

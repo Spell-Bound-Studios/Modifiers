@@ -1,9 +1,22 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System.Collections.Generic;
+using Spellbound.Core.Logging;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
+    /// <summary>
+    /// Designer-authored asset listing every <see cref="StatDefinition"/> the game knows about plus a global
+    /// decimal precision. Calling <see cref="RegisterAll"/> at boot interns every name into
+    /// <see cref="StatRegistry"/>, configures <see cref="StatSettings.Precision"/>, hands itself to
+    /// <see cref="ContainerExtensions"/> for pretty-printing, and (optionally) flips strict-validation on so
+    /// any later <c>"foo"</c> typo throws instead of silently registering a phantom stat.
+    /// </summary>
+    /// <remarks>
+    /// One database per game (or one master + add-on databases composed at boot). The drop-in
+    /// <see cref="StatDatabaseLoader"/> handles this without code; <c>StatDemo</c> in the samples is the
+    /// hand-written equivalent.
+    /// </remarks>
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Stat Database")]
     public class StatDatabase : ScriptableObject {
         [Header("Settings"), SerializeField,
@@ -30,7 +43,7 @@ namespace Spellbound.Modifiers {
                     continue;
 
                 if (_lookup.ContainsKey(stat.StatName)) {
-                    Debug.LogError($"[StatDatabase] Duplicate stat '{stat.StatName}' detected. Skipping.");
+                    Log.Error($"[StatDatabase] Duplicate stat '{stat.StatName}' detected. Skipping.");
 
                     continue;
                 }
@@ -42,13 +55,13 @@ namespace Spellbound.Modifiers {
             if (strictStatValidation)
                 StatRegistry.EnableStrictValidation(_lookup.Keys);
 
-            Debug.Log(
+            Log.Info(
                 $"[StatDatabase] Registered {_lookup.Count} stats. Precision: {decimalPrecision} decimals. Strict validation: {strictStatValidation}");
         }
 
         public StatDefinition GetDefinition(string statName) {
             if (_lookup == null) {
-                Debug.LogWarning("[StatDatabase] GetDefinition called before RegisterAll()");
+                Log.Warn("[StatDatabase] GetDefinition called before RegisterAll()");
 
                 return null;
             }
@@ -72,12 +85,12 @@ namespace Spellbound.Modifiers {
                     continue;
 
                 if (seen.Contains(stat)) {
-                    Debug.LogWarning($"[StatDatabase] Duplicate reference to '{stat.StatName}' at index {i}. " +
-                                     "Remove the duplicate.");
+                    Log.Warn($"[StatDatabase] Duplicate reference to '{stat.StatName}' at index {i}. " +
+                             "Remove the duplicate.");
                 }
                 else if (seenNames.Contains(stat.StatName)) {
-                    Debug.LogWarning($"[StatDatabase] Duplicate stat name '{stat.StatName}' at index {i}. " +
-                                     "Two different assets have the same stat name.");
+                    Log.Warn($"[StatDatabase] Duplicate stat name '{stat.StatName}' at index {i}. " +
+                             "Two different assets have the same stat name.");
                 }
                 else {
                     seen.Add(stat);

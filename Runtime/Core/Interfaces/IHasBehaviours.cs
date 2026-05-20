@@ -2,7 +2,9 @@
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Composability interface for behaviours.
+    /// Composability contract: "this target owns a <see cref="BehaviourContainer"/>." Modifiers cast through
+    /// this to reach a target's behaviours (see <see cref="SbModifier.TryGetBehaviour{T}"/>). Implement on
+    /// anything that can carry capabilities — characters, weapons, projectiles, scene objects, anything.
     /// </summary>
     /// <example>
     /// if (target is not IHasBehaviours iBehaviours) return;

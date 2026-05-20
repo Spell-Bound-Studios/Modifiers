@@ -2,10 +2,13 @@
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Implement this if you want something to be able to receive modifiers - it simply marks it as being modifiable.
+    /// The empty marker for anything an <see cref="IModifier"/> can target. Implementers typically also
+    /// implement one or more of <see cref="IHasStats"/>, <see cref="IHasBehaviours"/>, <see cref="IHasEvents"/>
+    /// so modifiers have something concrete to mutate; <see cref="ModifiableObject"/> bundles all three.
     /// </summary>
     /// <example>
-    /// Skills, Characters, Items - anything that modifiers can affect.
+    /// Characters, items, trees, chests, terrain tiles, projectiles, transient buff carriers — anything in the
+    /// game that modifiers can touch.
     /// </example>
     public interface ICanBeModified { }
 }

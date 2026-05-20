@@ -2,8 +2,16 @@
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// This is a data transfer object so that we can easily modify our stat container without passing in a long tuple.
+    /// One row inside a <see cref="StatContainer"/>'s modifier list: which stat is affected (by registry id),
+    /// how the value combines (<see cref="ModifierType.Flat"/> / <see cref="ModifierType.Increased"/> /
+    /// <see cref="ModifierType.More"/> / <see cref="ModifierType.Override"/>), the magnitude, and an optional
+    /// <see cref="UniqueId"/> the modifier instance carries so it can be removed by identity later.
     /// </summary>
+    /// <remarks>
+    /// Authored entirely through <see cref="ContainerExtensions"/> (<c>AddFlat</c> / <c>AddIncreased</c> /
+    /// <c>AddMore</c>) and removed via <see cref="StatContainer.RemoveModifierByUniqueId"/>. Game code should
+    /// never construct one directly — go through the extension methods so name-to-id interning happens.
+    /// </remarks>
     public readonly struct StatModifier {
         public readonly int StatId;
         public readonly ModifierType Type;

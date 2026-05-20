@@ -6,8 +6,16 @@ using System.Linq;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Container for behaviours. This is what modifiers target.
+    /// Per-target storage for <see cref="SbBehaviour"/> instances, keyed by concrete type. One entry per
+    /// behaviour subclass; <see cref="Add"/> overwrites silently. This is the surface modifiers reach for when
+    /// they want to read or alter a target's capability (e.g. <c>TryGetBehaviour&lt;ProjectileBehaviour&gt;</c>
+    /// then <c>stats.AddFlat("projectile_count", …)</c>).
     /// </summary>
+    /// <remarks>
+    /// Behaviours are the lib's "what this thing can do" vocabulary — projectile-firing, beam-emitting,
+    /// damage-receiving, resource-pooling. A target may own as many as the game wants; the container is just
+    /// the typed bag.
+    /// </remarks>
     public class BehaviourContainer {
         private readonly Dictionary<Type, SbBehaviour> _behaviours = new();
 

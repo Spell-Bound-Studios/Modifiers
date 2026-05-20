@@ -2,16 +2,18 @@
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// The atomic primitive for a modifier.
-    /// Implement this if you want to create a custom modifier.
-    /// Defines what it means to be a modification that can be applied/removed
+    /// The atomic contract for "something that mutates a target." Two reversible operations
+    /// (<see cref="Apply"/> / <see cref="Remove"/>) plus a <see cref="Clone"/> hook used by asset-driven
+    /// authoring (see <see cref="ModdedCollection"/>). All gear, buffs, debuffs, talents, conversions,
+    /// redirections, and on-event triggers in a PoE-style game are <see cref="IModifier"/> implementations.
     /// </summary>
     /// <example>
     /// NumericModifier (changes stats), OnKillModifier (adds on-kill effects), ConversionModifier (converts damage types)
     /// </example>
     /// <remarks>
-    /// This is a primitive component of the entire architecture. It's very important to remember that IModifier
-    /// represents a single modification in its purest form.
+    /// Most users inherit <see cref="SbModifier"/> — it bundles a generated <see cref="IHasUniqueId.UniqueId"/>
+    /// and helpers for reaching into the target's containers. Implement <see cref="IModifier"/> directly only
+    /// when you need to break out of that hierarchy (the documented "20% power user" escape hatch).
     /// </remarks>
     public interface IModifier {
         /// <summary>

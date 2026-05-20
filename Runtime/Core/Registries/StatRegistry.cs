@@ -3,6 +3,18 @@
 using System.Collections.Generic;
 
 namespace Spellbound.Modifiers {
+    /// <summary>
+    /// Process-global bidirectional table mapping stat <c>name &lt;-&gt; int id</c>. The library uses ints
+    /// internally for fast dictionary lookups; user-facing API surfaces use names (via
+    /// <see cref="ContainerExtensions"/>) and intern them through this registry on first use. Optional
+    /// strict-validation mode rejects any name not declared in the active <see cref="StatDatabase"/>.
+    /// </summary>
+    /// <remarks>
+    /// Because this is global static state, ids are PROCESS-LOCAL — they will not be stable across save/load
+    /// or between client and server, so any container packed for persistence or network transfer must key by
+    /// NAME (which is what <see cref="StatContainer.Pack"/> does). Tests that exercise this state must call
+    /// <see cref="Clear"/> between cases.
+    /// </remarks>
     public static class StatRegistry {
         private static readonly Dictionary<string, int> NameToId = new();
         private static readonly Dictionary<int, string> IdToName = new();
