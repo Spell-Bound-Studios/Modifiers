@@ -62,3 +62,9 @@ sysinfo.txt
 
 # Mac
 .DS_Store
+
+# Claude
+claude.md
+claude.md.meta
+CLAUDE.md
+CLAUDE.md.meta
