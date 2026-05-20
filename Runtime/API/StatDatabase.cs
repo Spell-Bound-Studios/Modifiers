@@ -9,7 +9,7 @@ namespace Spellbound.Modifiers {
     /// Designer-authored asset listing every <see cref="StatDefinition"/> the game knows about plus a global
     /// decimal precision. Calling <see cref="RegisterAll"/> at boot interns every name into
     /// <see cref="StatRegistry"/>, configures <see cref="StatSettings.Precision"/>, hands itself to
-    /// <see cref="ContainerExtensions"/> for pretty-printing, and (optionally) flips strict-validation on so
+    /// <see cref="BehaviourExtensions"/> for pretty-printing, and (optionally) flips strict-validation on so
     /// any later <c>"foo"</c> typo throws instead of silently registering a phantom stat.
     /// </summary>
     /// <remarks>
@@ -34,7 +34,7 @@ namespace Spellbound.Modifiers {
         /// </summary>
         public void RegisterAll(bool strictStatValidation = false) {
             StatSettings.SetDecimalPrecision(decimalPrecision);
-            ContainerExtensions.SetDatabase(this);
+            BehaviourExtensions.SetDatabase(this);
 
             _lookup = new Dictionary<string, StatDefinition>();
 

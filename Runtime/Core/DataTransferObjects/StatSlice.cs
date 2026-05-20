@@ -11,24 +11,6 @@ using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// One entry inside a <see cref="StatSlice"/>: a stat's runtime id paired with its computed value at the
-    /// time the slice was crafted. Ids (not names) ride the wire because slices are ephemeral tick DTOs and
-    /// the registry is deterministic when both ends share the same loaded <see cref="StatDatabase"/>.
-    /// </summary>
-    [Serializable]
-    public struct StatSliceEntry {
-        public int id;
-        public float value;
-
-        public StatSliceEntry(int id, float value) {
-            this.id = id;
-            this.value = value;
-        }
-
-        public override string ToString() => $"#{id}: {value:F2}";
-    }
-
-    /// <summary>
     /// Lightweight value-type DTO carrying a subset of a <see cref="StatContainer"/>'s computed values, packable
     /// for network transmission and chunk-data persistence. Use <see cref="StatContainer.GetSlice(string[])"/>
     /// or <see cref="StatContainer.GetSlice(int[])"/> to craft one.

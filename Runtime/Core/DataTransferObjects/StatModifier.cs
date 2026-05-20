@@ -8,7 +8,7 @@ namespace Spellbound.Modifiers {
     /// <see cref="UniqueId"/> the modifier instance carries so it can be removed by identity later.
     /// </summary>
     /// <remarks>
-    /// Authored entirely through <see cref="ContainerExtensions"/> (<c>AddFlat</c> / <c>AddIncreased</c> /
+    /// Authored entirely through <see cref="BehaviourExtensions"/> (<c>AddFlat</c> / <c>AddIncreased</c> /
     /// <c>AddMore</c>) and removed via <see cref="StatContainer.RemoveModifierByUniqueId"/>. Game code should
     /// never construct one directly — go through the extension methods so name-to-id interning happens.
     /// </remarks>

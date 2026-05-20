@@ -8,14 +8,14 @@ namespace Spellbound.Modifiers {
     /// <see cref="SetDatabase"/> so callers can resolve <see cref="StatDefinition"/> for pretty-printing via
     /// <see cref="GetFormattedValue"/>.
     /// </summary>
-    public static class ContainerExtensions {
+    public static class BehaviourExtensions {
         private static StatDatabase _database;
 
         public static void SetDatabase(StatDatabase database) => _database = database;
 
         #region Stat Definition Extensions
 
-        public static string GetFormattedValue(this StatContainer container, string statName) {
+        public static string GetFormattedValue(this SbBehaviour container, string statName) {
             var value = container.GetValue(statName);
 
             if (_database == null)
@@ -28,21 +28,21 @@ namespace Spellbound.Modifiers {
                     : value.ToString("F0");
         }
 
-        public static StatDefinition GetDefinition(this StatContainer container, string statName) =>
+        public static StatDefinition GetDefinition(this SbBehaviour container, string statName) =>
                 _database?.GetDefinition(statName);
 
         #endregion
 
         #region Stat Container Extensions
 
-        public static void SetBase(this StatContainer container, string statName, float value) =>
+        public static void SetBase(this SbBehaviour container, string statName, float value) =>
                 container.SetBase(StatRegistry.Register(statName), value);
 
-        public static float GetValue(this StatContainer container, string statName) =>
+        public static float GetValue(this SbBehaviour container, string statName) =>
                 container.GetValue(StatRegistry.Register(statName));
 
         public static void AddFlat(
-            this StatContainer container, string statName, float value, string uniqueId = null) =>
+            this SbBehaviour container, string statName, float value, string uniqueId = null) =>
                 container.AddModifier(new StatModifier(
                     StatRegistry.Register(statName),
                     ModifierType.Flat,
@@ -51,7 +51,7 @@ namespace Spellbound.Modifiers {
                 ));
 
         public static void AddIncreased(
-            this StatContainer container, string statName, float percent, string uniqueId = null) =>
+            this SbBehaviour container, string statName, float percent, string uniqueId = null) =>
                 container.AddModifier(new StatModifier(
                     StatRegistry.Register(statName),
                     ModifierType.Increased,
@@ -60,7 +60,7 @@ namespace Spellbound.Modifiers {
                 ));
 
         public static void AddMore(
-            this StatContainer container, string statName, float percent, string uniqueId = null) =>
+            this SbBehaviour container, string statName, float percent, string uniqueId = null) =>
                 container.AddModifier(new StatModifier(
                     StatRegistry.Register(statName),
                     ModifierType.More,

@@ -30,14 +30,19 @@ namespace Spellbound.Modifiers.Samples {
         private Transform _beamGlow;
         private ParticleSystem _impactParticles;
 
-        public float GetRange() => Stats.GetValue("beam_range");
-        public float GetWidth() => Stats.GetValue("beam_width");
+        public BeamBehaviour() {
+            this.SetBase("beam_range", range);
+            this.SetBase("beam_width", width);
+        }
+
+        public float GetRange() => GetValue("beam_range");
+        public float GetWidth() => GetValue("beam_width");
 
         public BeamHitResult Fire(PositionalPayload payload) {
             var hits = new List<GameObject>();
 
-            var beamRange = Stats.GetValue("beam_range");
-            var beamWidth = Stats.GetValue("beam_width");
+            var beamRange = GetValue("beam_range");
+            var beamWidth = GetValue("beam_width");
 
             var hitDistance = beamRange;
             var hitPoint = payload.Position + payload.Direction * beamRange;
@@ -136,15 +141,7 @@ namespace Spellbound.Modifiers.Samples {
             _beamGlow = null;
             _impactParticles = null;
         }
-
-        protected override StatContainer InitializeStats() {
-            var stats = new StatContainer();
-            stats.SetBase("beam_range", range);
-            stats.SetBase("beam_width", width);
-
-            return stats;
-        }
-    }
+        
 
     /// <summary>
     /// Return value of <see cref="BeamBehaviour.Fire"/>: the hit list, the effective distance the beam

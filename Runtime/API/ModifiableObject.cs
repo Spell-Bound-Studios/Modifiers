@@ -13,9 +13,8 @@ namespace Spellbound.Modifiers {
     /// <c>RayOfFrost</c> when they're re-added) are just <see cref="ModifiableObject"/>s that add behaviours
     /// in their constructor and wire them in <see cref="Initialize"/>.
     /// </remarks>
-    public abstract class ModifiableObject : ICanBeModified, IHasStats, IHasBehaviours, IHasEvents {
+    public abstract class ModifiableObject : ICanBeModified, IHasBehaviours, IHasEvents {
         public abstract string Name { get; }
-        public StatContainer Stats { get; } = new();
         public BehaviourContainer Behaviours { get; } = new();
         public EventContainer Events { get; } = new();
 

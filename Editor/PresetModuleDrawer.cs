@@ -360,7 +360,7 @@ namespace Spellbound.Modifiers.Editor {
             SerializedProperty stats,
             SerializedProperty modifiers) {
             try {
-                var container = new StatContainer();
+                /*var container = new StatContainer();
                 var resourceIds = new List<int>();
                 var resourceMins = new Dictionary<int, float>();
                 var statIds = new HashSet<int>();
@@ -461,7 +461,8 @@ namespace Spellbound.Modifiers.Editor {
                     }
                 }
 
-                return sb.ToString().TrimEnd();
+                return sb.ToString().TrimEnd();*/
+                return null;
             }
             catch (Exception ex) {
                 return $"<preview error: {ex.Message}>";

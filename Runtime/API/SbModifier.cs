@@ -33,26 +33,7 @@ namespace Spellbound.Modifiers {
         }
 
         #region Convenience Methods
-
-        /// <summary>
-        /// Attempts to get the StatContainer from the ICanBeModified target if an IHasStats exists on the target.
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="stats"></param>
-        /// <returns>
-        /// bool - True if a stat container is found and false if it's not.
-        /// </returns>
-        protected bool TryGetStats(ICanBeModified target, out StatContainer stats) {
-            stats = null;
-
-            if (target is not IHasStats hs)
-                return false;
-
-            stats = hs.Stats;
-
-            return true;
-        }
-
+        
         /// <summary>
         /// Attempts to get the SbBehaviour from the ICanBeModified target if an IHasBehaviour exists on the target.
         /// </summary>

@@ -6,7 +6,7 @@ namespace Spellbound.Modifiers {
     /// <summary>
     /// Process-global bidirectional table mapping stat <c>name &lt;-&gt; int id</c>. The library uses ints
     /// internally for fast dictionary lookups; user-facing API surfaces use names (via
-    /// <see cref="ContainerExtensions"/>) and intern them through this registry on first use. Optional
+    /// <see cref="BehaviourExtensions"/>) and intern them through this registry on first use. Optional
     /// strict-validation mode rejects any name not declared in the active <see cref="StatDatabase"/>.
     /// </summary>
     /// <remarks>
