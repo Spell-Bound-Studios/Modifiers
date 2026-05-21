@@ -33,10 +33,10 @@ namespace Spellbound.Modifiers.Editor {
                 }
             };
 
-            var listProp = property.FindPropertyRelative("_behaviours");
+            var listProp = FindSerializedBehavioursList(property);
 
             if (listProp == null) {
-                root.Add(new Label($"BehaviourContainer: missing '_behaviours' field at {property.propertyPath}") {
+                root.Add(new Label($"BehaviourContainer: no SerializeReference array found at {property.propertyPath}") {
                     style = { color = Color.red }
                 });
 
@@ -264,6 +264,25 @@ namespace Spellbound.Modifiers.Editor {
         // ============================================================================================
         // Helpers
         // ============================================================================================
+
+        /// <summary>
+        /// Locate the <see cref="BehaviourContainer"/>'s serialized behaviour list by shape rather than name:
+        /// the first visible child that is a generic array (i.e. a <c>List&lt;T&gt;</c> or <c>T[]</c>). Lets
+        /// the field on <see cref="BehaviourContainer"/> get renamed freely without touching this drawer.
+        /// </summary>
+        private static SerializedProperty FindSerializedBehavioursList(SerializedProperty containerProperty) {
+            SerializedProperty found = null;
+
+            EditorListHelpers.ForEachVisibleChild(containerProperty, child => {
+                if (found != null)
+                    return;
+
+                if (child.isArray && child.propertyType == SerializedPropertyType.Generic)
+                    found = child.Copy();
+            });
+
+            return found;
+        }
 
         private static string GetSimpleTypeName(string managedReferenceFullTypename) {
             if (string.IsNullOrEmpty(managedReferenceFullTypename))

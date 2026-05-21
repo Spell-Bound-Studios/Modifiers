@@ -28,9 +28,6 @@ namespace Spellbound.Modifiers {
     /// </remarks>
     [Serializable]
     public class BehaviourContainer : ISerializationCallbackReceiver {
-        [SerializeReference, DropdownPicker(typeof(PickableBehaviourAttribute))]
-        private List<SbBehaviour> _behaviours = new();
-
         private readonly Dictionary<Type, SbBehaviour> _lookup = new();
 
         public void Add(SbBehaviour behaviour) => _lookup[behaviour.GetType()] = behaviour;
@@ -74,18 +71,28 @@ namespace Spellbound.Modifiers {
 
         public int Count => _lookup.Count;
 
-        void ISerializationCallbackReceiver.OnBeforeSerialize() {
-            // No-op. The serialized list is the authoring source of truth; runtime mutations to _lookup are
-            // intentionally not persisted so transient buffs don't stick to the scene asset on save.
-        }
+        #region Inspector Authoring
+
+        // This list and the ISerializationCallbackReceiver methods below exist ONLY because Unity can't
+        // serialize the _lookup dictionary directly. Nothing in runtime gameplay code reads or writes this
+        // list — it's the persisted-and-inspector-editable form of _lookup, bridged into the dictionary on
+        // load. Runtime mutations to _lookup are intentionally NOT mirrored back, so transient buffs added
+        // during playmode don't stick to the scene asset on save.
+
+        [SerializeReference, DropdownPicker(typeof(PickableBehaviourAttribute))]
+        private List<SbBehaviour> behaviours = new();
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize() {
             _lookup.Clear();
 
-            foreach (var b in _behaviours) {
+            foreach (var b in behaviours) {
                 if (b != null)
                     _lookup[b.GetType()] = b;
             }
         }
+
+        #endregion
     }
 }
