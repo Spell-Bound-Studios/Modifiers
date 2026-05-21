@@ -14,9 +14,18 @@ namespace Spellbound.Modifiers {
     /// <see cref="StatDefinition"/> if anywhere — not here. Current at spawn is always the max; no override.
     /// </remarks>
     [Serializable, InlineTemplate]
-    public struct ResourceTemplate {
-        public StatDefinition definition;
+    public struct ResourceBaseEntry {
+        public StatDefinition stat;
         public float baseValue;
         public float min;
+
+        public override string ToString() {
+            if (stat == null)
+                return $"(no stat): {baseValue:G} (min {min:G})";
+
+            var name = string.IsNullOrEmpty(stat.DisplayName) ? stat.StatName : stat.DisplayName;
+
+            return $"{name}: {baseValue:G} (min {min:G})";
+        }
     }
 }

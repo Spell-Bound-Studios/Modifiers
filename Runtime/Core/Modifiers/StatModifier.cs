@@ -24,5 +24,13 @@ namespace Spellbound.Modifiers {
             Value = value;
             UniqueId = uniqueId;
         }
+
+        public override string ToString() {
+            var name = StatRegistry.TryGetName(StatId, out var n) ? n : $"#{StatId}";
+
+            return string.IsNullOrEmpty(UniqueId)
+                    ? $"{name} {Type}({Value:G})"
+                    : $"{name} {Type}({Value:G}) [{UniqueId}]";
+        }
     }
 }

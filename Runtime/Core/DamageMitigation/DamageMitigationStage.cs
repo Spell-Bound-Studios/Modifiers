@@ -23,7 +23,7 @@ namespace Spellbound.Modifiers {
         [SerializeField] private List<DamageMitigation> mappings = new();
 
         public void Process(in DamageMitigationContext ctx) {
-            var delta = ctx.Delta;
+            /*var delta = ctx.Delta;
 
             if (delta.Entries == null || mappings == null)
                 return;
@@ -31,9 +31,7 @@ namespace Spellbound.Modifiers {
             for (var i = 0; i < delta.Entries.Count; i++) {
                 var entry = delta.Entries[i];
 
-                for (var m = 0; m < mappings.Count; m++) {
-                    var map = mappings[m];
-
+                foreach (var map in mappings) {
                     if (map.damageStat == null || map.defensiveStat == null || map.strategy == null)
                         continue;
 
@@ -52,7 +50,7 @@ namespace Spellbound.Modifiers {
 
                     break;
                 }
-            }
+            }*/
         }
     }
 }

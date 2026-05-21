@@ -31,7 +31,11 @@ namespace Spellbound.Modifiers {
 
         public float Ratio => max > 0f ? current / max : 0f;
 
-        public override string ToString() => $"#{id}: {current:F2} / {max:F2}";
+        public override string ToString() {
+            var name = StatRegistry.TryGetName(id, out var n) ? n : $"#{id}";
+
+            return $"{name}: {current:F2} / {max:F2}";
+        }
     }
 
     /// <summary>
@@ -90,8 +94,7 @@ namespace Spellbound.Modifiers {
             if (Entries == null)
                 return;
 
-            for (var i = 0; i < Entries.Count; i++) {
-                var e = Entries[i];
+            foreach (var e in Entries) {
                 Packer.WriteInt(ref buffer, e.id);
                 Packer.WriteFloat(ref buffer, e.current);
                 Packer.WriteFloat(ref buffer, e.min);

@@ -13,11 +13,11 @@ namespace Spellbound.Modifiers {
     /// then <c>stats.AddFlat("projectile_count", …)</c>).
     /// </summary>
     /// <remarks>
-    /// Behaviours are the lib's "what this thing can do" vocabulary — projectile-firing, beam-emitting,
+    /// Behaviours are the libraries "what this thing can do" vocabulary — projectile-firing, beam-emitting,
     /// damage-receiving, resource-pooling. A target may own as many as the game wants; the container is just
     /// the typed bag.
     /// <para>
-    /// Unity-serializable: the <c>_behaviours</c> list carries <see cref="DropdownPickerAttribute"/> so
+    /// Unity-serializable: the <c>behaviours</c> list carries <see cref="DropdownPickerAttribute"/> so
     /// designers pick concrete subclasses from a dropdown when this container is a <c>[SerializeField]</c>
     /// on a <see cref="MonoBehaviour"/> or <see cref="ScriptableObject"/>.
     /// <see cref="ISerializationCallbackReceiver.OnAfterDeserialize"/> mirrors that list into the runtime
@@ -87,10 +87,9 @@ namespace Spellbound.Modifiers {
         void ISerializationCallbackReceiver.OnAfterDeserialize() {
             _lookup.Clear();
 
-            foreach (var b in behaviours) {
+            foreach (var b in behaviours)
                 if (b != null)
                     _lookup[b.GetType()] = b;
-            }
         }
 
         #endregion

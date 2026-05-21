@@ -19,8 +19,8 @@ namespace Spellbound.Modifiers.Editor {
     [CustomPropertyDrawer(typeof(StatBaseEntry))]
     public sealed class StatBaseEntryDrawer : PropertyDrawer {
         public override VisualElement CreatePropertyGUI(SerializedProperty property) {
-            var statProp = property.FindPropertyRelative("stat");
-            var baseValueProp = property.FindPropertyRelative("baseValue");
+            var statProp = property.FindPropertyRelative(nameof(StatBaseEntry.stat));
+            var baseValueProp = property.FindPropertyRelative(nameof(StatBaseEntry.baseValue));
 
             var row = new VisualElement {
                 style = {
@@ -120,7 +120,7 @@ namespace Spellbound.Modifiers.Editor {
                     continue;
 
                 var entry = listProp.GetArrayElementAtIndex(i);
-                var siblingStat = entry.FindPropertyRelative("stat").objectReferenceValue as StatDefinition;
+                var siblingStat = entry.FindPropertyRelative(nameof(StatBaseEntry.stat)).objectReferenceValue as StatDefinition;
 
                 if (siblingStat != null)
                     used.Add(siblingStat);

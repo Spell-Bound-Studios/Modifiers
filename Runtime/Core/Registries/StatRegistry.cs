@@ -77,6 +77,8 @@ namespace Spellbound.Modifiers {
 
         public static string GetName(int id) => IdToName[id];
 
+        public static bool TryGetName(int id, out string name) => IdToName.TryGetValue(id, out name);
+
         public static bool IsRegistered(string statName) => NameToId.ContainsKey(statName);
 
         public static IEnumerable<string> GetAllStatNames() => NameToId.Keys;

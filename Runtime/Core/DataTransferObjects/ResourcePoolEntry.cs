@@ -15,6 +15,6 @@ namespace Spellbound.Modifiers {
             Max = maxValue;
         }
 
-        public override string ToString() => $"{Value:F2}";
+        public override string ToString() => $"{Value:F2} / {Max:F2}";
     }
 }

@@ -21,7 +21,7 @@ namespace Spellbound.Modifiers.Editor {
     /// element. Otherwise, render via Unity's default <c>PropertyField</c>, which honors <c>[Header]</c>,
     /// <c>[Tooltip]</c>, and any per-field custom drawers.</item>
     /// <item>After all fields, if the module declares any stat-relevant template lists
-    /// (<see cref="StatTemplate"/>, <see cref="StatModifierTemplate"/>), append a read-only computed-stats
+    /// (<see cref="StatBaseEntry"/>, <see cref="ModifierEntry"/>), append a read-only computed-stats
     /// preview that updates whenever any template value changes.</item>
     /// </list>
     /// New module types and new template structs both work without touching this file — declare fields,
@@ -40,9 +40,9 @@ namespace Spellbound.Modifiers.Editor {
             };
 
             // Track which stat-relevant template lists we saw so we can attach the preview at the end.
-            SerializedProperty resourceTemplatesProp = null;
-            SerializedProperty statTemplatesProp = null;
-            SerializedProperty statModifierTemplatesProp = null;
+            SerializedProperty resourceEntriesProp = null;
+            SerializedProperty statEntriesProp = null;
+            SerializedProperty modifierEntriesProp = null;
 
             var moduleInstance = property.managedReferenceValue;
             var moduleType = moduleInstance?.GetType();
@@ -63,12 +63,12 @@ namespace Spellbound.Modifiers.Editor {
                     root.Add(EditorListHelpers.SectionHeader(headerText));
                     root.Add(BuildTemplateList(current, info.ElementType));
 
-                    if (info.ElementType == typeof(StatTemplate))
-                        statTemplatesProp = current;
-                    else if (info.ElementType == typeof(StatModifierTemplate))
-                        statModifierTemplatesProp = current;
-                    else if (info.ElementType == typeof(ResourceTemplate))
-                        resourceTemplatesProp = current;
+                    if (info.ElementType == typeof(StatBaseEntry))
+                        statEntriesProp = current;
+                    else if (info.ElementType == typeof(ModifierEntry))
+                        modifierEntriesProp = current;
+                    else if (info.ElementType == typeof(ResourceBaseEntry))
+                        resourceEntriesProp = current;
                 }
                 else {
                     var pf = new PropertyField(current);
@@ -78,11 +78,11 @@ namespace Spellbound.Modifiers.Editor {
             });
 
             // Computed-stats preview is automatic when stat-relevant templates are present.
-            if (resourceTemplatesProp == null && statTemplatesProp == null &&
-                statModifierTemplatesProp == null) return root;
+            if (resourceEntriesProp == null && statEntriesProp == null &&
+                modifierEntriesProp == null) return root;
 
             root.Add(EditorListHelpers.SectionHeader("Computed Stats (read-only preview)"));
-            root.Add(BuildComputedPreview(resourceTemplatesProp, statTemplatesProp, statModifierTemplatesProp));
+            root.Add(BuildComputedPreview(resourceEntriesProp, statEntriesProp, modifierEntriesProp));
 
             return root;
         }
@@ -314,14 +314,14 @@ namespace Spellbound.Modifiers.Editor {
                 if (resources != null) {
                     for (var i = 0; i < resources.arraySize; i++) {
                         var entry = resources.GetArrayElementAtIndex(i);
-                        var def = entry.FindPropertyRelative("definition").objectReferenceValue as StatDefinition;
+                        var def = entry.FindPropertyRelative(nameof(ResourceBaseEntry.stat)).objectReferenceValue as StatDefinition;
 
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
 
                         var id = StatRegistry.Register(def.StatName);
-                        container.SetBase(id, entry.FindPropertyRelative("baseValue").floatValue);
-                        resourceMins[id] = entry.FindPropertyRelative("min").floatValue;
+                        container.SetBase(id, entry.FindPropertyRelative(nameof(ResourceBaseEntry.baseValue)).floatValue);
+                        resourceMins[id] = entry.FindPropertyRelative(nameof(ResourceBaseEntry.min)).floatValue;
 
                         if (!resourceIds.Contains(id))
                             resourceIds.Add(id);
@@ -331,13 +331,13 @@ namespace Spellbound.Modifiers.Editor {
                 if (stats != null) {
                     for (var i = 0; i < stats.arraySize; i++) {
                         var entry = stats.GetArrayElementAtIndex(i);
-                        var def = entry.FindPropertyRelative("definition").objectReferenceValue as StatDefinition;
+                        var def = entry.FindPropertyRelative(nameof(StatBaseEntry.stat)).objectReferenceValue as StatDefinition;
 
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
 
                         var id = StatRegistry.Register(def.StatName);
-                        container.SetBase(id, entry.FindPropertyRelative("baseValue").floatValue);
+                        container.SetBase(id, entry.FindPropertyRelative(nameof(StatBaseEntry.baseValue)).floatValue);
                         statIds.Add(id);
                     }
                 }
@@ -345,14 +345,14 @@ namespace Spellbound.Modifiers.Editor {
                 if (modifiers != null) {
                     for (var i = 0; i < modifiers.arraySize; i++) {
                         var entry = modifiers.GetArrayElementAtIndex(i);
-                        var def = entry.FindPropertyRelative("definition").objectReferenceValue as StatDefinition;
+                        var def = entry.FindPropertyRelative(nameof(ModifierEntry.stat)).objectReferenceValue as StatDefinition;
 
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
 
                         var id = StatRegistry.Register(def.StatName);
-                        var type = (ModifierType)entry.FindPropertyRelative("type").enumValueIndex;
-                        var value = entry.FindPropertyRelative("value").floatValue;
+                        var type = (ModifierType)entry.FindPropertyRelative(nameof(ModifierEntry.type)).enumValueIndex;
+                        var value = entry.FindPropertyRelative(nameof(ModifierEntry.value)).floatValue;
                         container.AddModifier(new StatModifier(id, type, value));
 
                         // A modifier that targets a resource's backing stat moves the resource's max, not a
