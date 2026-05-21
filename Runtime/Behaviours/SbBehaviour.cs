@@ -77,6 +77,10 @@ namespace Spellbound.Modifiers {
         /// </example>
         public void SetBase(int statId, float value) {
             _baseValues[statId] = StatSettings.ToInternal(value);
+            NotifyDirty();
+        }
+
+        protected virtual void NotifyDirty() {
             _isDirty = true;
         }
 
@@ -100,7 +104,7 @@ namespace Spellbound.Modifiers {
                 _modifiersByStatId[modifierEntry.StatId] = new List<StatModifierEntry>();
 
             _modifiersByStatId[modifierEntry.StatId].Add(modifierEntry);
-            _isDirty = true;
+            NotifyDirty();
         }
 
         /// <summary>
@@ -117,7 +121,7 @@ namespace Spellbound.Modifiers {
             foreach (var modifierList in _modifiersByStatId.Values)
                 modifierList.RemoveAll(m => m.UniqueId == uniqueId);
 
-            _isDirty = true;
+            NotifyDirty();
         }
 
         /// <summary>
@@ -136,14 +140,14 @@ namespace Spellbound.Modifiers {
 
         public void ClearModifiers() {
             _modifiersByStatId.Clear();
-            _isDirty = true;
+            NotifyDirty();
         }
 
         public void Clear() {
             _baseValues.Clear();
             _modifiersByStatId.Clear();
             _calculatedValues.Clear();
-            _isDirty = true;
+            NotifyDirty();
         }
 
         public int StatCount => _baseValues.Count;
