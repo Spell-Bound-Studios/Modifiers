@@ -116,6 +116,26 @@ namespace Spellbound.Modifiers.Editor {
                     }
                 };
 
+        /// <summary>
+        /// Walk <paramref name="parent"/>'s visible children and return the first one that's a generic
+        /// array (i.e. a <c>List&lt;T&gt;</c> or <c>T[]</c>). Used by container drawers to locate their
+        /// inner serialized list by SHAPE rather than by field name — so the container's list field can be
+        /// renamed without breaking the drawer.
+        /// </summary>
+        public static SerializedProperty FindFirstGenericArrayChild(SerializedProperty parent) {
+            SerializedProperty found = null;
+
+            ForEachVisibleChild(parent, child => {
+                if (found != null)
+                    return;
+
+                if (child.isArray && child.propertyType == SerializedPropertyType.Generic)
+                    found = child.Copy();
+            });
+
+            return found;
+        }
+
         // ============================================================================================
         // Type discovery
         // ============================================================================================

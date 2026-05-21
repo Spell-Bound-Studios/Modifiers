@@ -7,15 +7,16 @@ using UnityEngine.UIElements;
 
 namespace Spellbound.Modifiers.Editor {
     /// <summary>
-    /// Inline row for a <see cref="StatBaseEntry"/>: a searchable <see cref="StatDefinition"/> picker on the
-    /// left and a float input for the base value on the right. The picker is the shared
-    /// <see cref="StatDefinitionPicker"/> — same UX as <see cref="ResourceBaseEntryDrawer"/>.
+    /// Inline row for a <see cref="ResourceBaseEntry"/>: searchable <see cref="StatDefinition"/> picker on
+    /// the left, then float inputs for <c>base</c> and <c>min</c>. Picker is the shared
+    /// <see cref="StatDefinitionPicker"/> — same UX as <see cref="StatBaseEntryDrawer"/>.
     /// </summary>
-    [CustomPropertyDrawer(typeof(StatBaseEntry))]
-    public sealed class StatBaseEntryDrawer : PropertyDrawer {
+    [CustomPropertyDrawer(typeof(ResourceBaseEntry))]
+    public sealed class ResourceBaseEntryDrawer : PropertyDrawer {
         public override VisualElement CreatePropertyGUI(SerializedProperty property) {
-            var statProp = property.FindPropertyRelative(nameof(StatBaseEntry.stat));
-            var baseValueProp = property.FindPropertyRelative(nameof(StatBaseEntry.baseValue));
+            var statProp = property.FindPropertyRelative(nameof(ResourceBaseEntry.stat));
+            var baseValueProp = property.FindPropertyRelative(nameof(ResourceBaseEntry.baseValue));
+            var minProp = property.FindPropertyRelative(nameof(ResourceBaseEntry.min));
 
             var row = new VisualElement {
                 style = {
@@ -36,7 +37,7 @@ namespace Spellbound.Modifiers.Editor {
             };
 
             pickerButton.clicked += () => {
-                var siblings = StatDefinitionPicker.CollectSiblings(property, nameof(StatBaseEntry.stat));
+                var siblings = StatDefinitionPicker.CollectSiblings(property, nameof(ResourceBaseEntry.stat));
 
                 StatDefinitionPicker.Open(pickerButton.worldBound, siblings, picked => {
                     statProp.objectReferenceValue = picked;
@@ -45,24 +46,43 @@ namespace Spellbound.Modifiers.Editor {
                 });
             };
 
-            var valueField = new FloatField {
+            var baseField = new FloatField("base") {
                 value = baseValueProp.floatValue,
                 style = {
-                    width = 80
+                    width = 120,
+                    marginRight = 4
                 }
             };
 
-            valueField.RegisterValueChangedCallback(evt => {
+            baseField.labelElement.style.minWidth = 32;
+
+            baseField.RegisterValueChangedCallback(evt => {
                 baseValueProp.floatValue = evt.newValue;
                 baseValueProp.serializedObject.ApplyModifiedProperties();
             });
 
-            valueField.TrackPropertyValue(baseValueProp, p => valueField.SetValueWithoutNotify(p.floatValue));
+            var minField = new FloatField("min") {
+                value = minProp.floatValue,
+                style = {
+                    width = 110
+                }
+            };
+
+            minField.labelElement.style.minWidth = 28;
+
+            minField.RegisterValueChangedCallback(evt => {
+                minProp.floatValue = evt.newValue;
+                minProp.serializedObject.ApplyModifiedProperties();
+            });
+
+            baseField.TrackPropertyValue(baseValueProp, p => baseField.SetValueWithoutNotify(p.floatValue));
+            minField.TrackPropertyValue(minProp, p => minField.SetValueWithoutNotify(p.floatValue));
             pickerButton.TrackPropertyValue(statProp,
                 p => pickerButton.text = StatDefinitionPicker.FormatLabel(p.objectReferenceValue as StatDefinition));
 
             row.Add(pickerButton);
-            row.Add(valueField);
+            row.Add(baseField);
+            row.Add(minField);
 
             return row;
         }

@@ -44,7 +44,7 @@ namespace Spellbound.Modifiers {
         private readonly Dictionary<int, int> _calculatedValues = new();
 
         // All active modifiers affecting this entity
-        private readonly Dictionary<int, List<StatModifier>> _modifiersByStatId = new();
+        private readonly Dictionary<int, List<StatModifierEntry>> _modifiersByStatId = new();
 
         // If true, we need to recalculate before returning values
         private bool _isDirty = true;
@@ -95,11 +95,11 @@ namespace Spellbound.Modifiers {
         /// Add a modifier to this container.
         /// The modifier will be applied during the next calculation.
         /// </summary>
-        public void AddModifier(StatModifier modifier) {
-            if (!_modifiersByStatId.ContainsKey(modifier.StatId))
-                _modifiersByStatId[modifier.StatId] = new List<StatModifier>();
+        public void AddModifier(StatModifierEntry modifierEntry) {
+            if (!_modifiersByStatId.ContainsKey(modifierEntry.StatId))
+                _modifiersByStatId[modifierEntry.StatId] = new List<StatModifierEntry>();
 
-            _modifiersByStatId[modifier.StatId].Add(modifier);
+            _modifiersByStatId[modifierEntry.StatId].Add(modifierEntry);
             _isDirty = true;
         }
 
@@ -174,7 +174,7 @@ namespace Spellbound.Modifiers {
         /// <see cref="RemoveModifierByUniqueId"/>.
         /// </summary>
         public void AddFlat(string statName, float value, string uniqueId = null) =>
-                AddModifier(new StatModifier(
+                AddModifier(new StatModifierEntry(
                     StatRegistry.Register(statName),
                     ModifierType.Flat,
                     value,
@@ -185,7 +185,7 @@ namespace Spellbound.Modifiers {
         /// together before the multiplication) to the named stat.
         /// </summary>
         public void AddIncreased(string statName, float percent, string uniqueId = null) =>
-                AddModifier(new StatModifier(
+                AddModifier(new StatModifierEntry(
                     StatRegistry.Register(statName),
                     ModifierType.Increased,
                     percent,
@@ -196,7 +196,7 @@ namespace Spellbound.Modifiers {
         /// total) to the named stat.
         /// </summary>
         public void AddMore(string statName, float percent, string uniqueId = null) =>
-                AddModifier(new StatModifier(
+                AddModifier(new StatModifierEntry(
                     StatRegistry.Register(statName),
                     ModifierType.More,
                     percent,
@@ -221,7 +221,7 @@ namespace Spellbound.Modifiers {
         /// Calculate a single stat's final value by applying modifiers in PoE order.
         /// Uses fixed-point integer math for deterministic calculations.
         /// </summary>
-        private int CalculateStat(int statId, List<StatModifier> modifiers) {
+        private int CalculateStat(int statId, List<StatModifierEntry> modifiers) {
             var baseValue = _baseValues.GetValueOrDefault(statId, 0);
             var precision = StatSettings.Precision;
 
@@ -324,11 +324,11 @@ namespace Spellbound.Modifiers {
                 var id = StatRegistry.Register(name);
 
                 if (!_modifiersByStatId.TryGetValue(id, out var list)) {
-                    list = new List<StatModifier>();
+                    list = new List<StatModifierEntry>();
                     _modifiersByStatId[id] = list;
                 }
 
-                list.Add(new StatModifier(id, type, value, uniqueId));
+                list.Add(new StatModifierEntry(id, type, value, uniqueId));
             }
 
             _isDirty = true;

@@ -353,7 +353,7 @@ namespace Spellbound.Modifiers.Editor {
                         var id = StatRegistry.Register(def.StatName);
                         var type = (ModifierType)entry.FindPropertyRelative(nameof(ModifierEntry.type)).enumValueIndex;
                         var value = entry.FindPropertyRelative(nameof(ModifierEntry.value)).floatValue;
-                        container.AddModifier(new StatModifier(id, type, value));
+                        container.AddModifier(new StatModifierEntry(id, type, value));
 
                         // A modifier that targets a resource's backing stat moves the resource's max, not a
                         // separate stat — don't list it twice.
