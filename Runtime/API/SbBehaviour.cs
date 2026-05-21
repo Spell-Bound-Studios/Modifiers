@@ -48,15 +48,26 @@ namespace Spellbound.Modifiers {
 
         // If true, we need to recalculate before returning values
         private bool _isDirty = true;
+        
+        #region Inspector Authoring
 
-        /// <summary>
-        /// Default constructor — runs <see cref="SyncStatsFromFields"/> so subclasses created via
-        /// <c>new</c> (e.g. a skill composing its sub-behaviours at runtime) get their typed-field values
-        /// pushed into the base-value table. The deserialize path still re-syncs through
-        /// <see cref="ISerializationCallbackReceiver.OnAfterDeserialize"/>, so this is idempotent on
-        /// SerializeReference-created instances.
-        /// </summary>
-        public SbBehaviour() => SyncStatsFromFields();
+        [SerializeField] private List<StatBaseEntry> stats = new();
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize() {
+            if (stats == null)
+                return;
+
+            foreach (var entry in stats) {
+                if (entry.stat == null || string.IsNullOrEmpty(entry.stat.StatName))
+                    continue;
+
+                SetBase(entry.stat.StatName, entry.baseValue);
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Set the base value for a stat before modifiers.
@@ -256,22 +267,6 @@ namespace Spellbound.Modifiers {
 
             return (int)afterMore;
         }
-
-        #region Serialization Sync
-
-        /// <summary>
-        /// Hook for subclasses to push their typed <c>[SerializeField]</c> values into the stat container
-        /// via <c>this.SetBase("stat_name", typedField)</c>. Runs once after every Unity deserialize so the
-        /// container stays in lockstep with the inspector-edited fields. Override in concrete behaviours;
-        /// the base implementation is a no-op (a behaviour with no stats is valid).
-        /// </summary>
-        protected virtual void SyncStatsFromFields() { }
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize() => SyncStatsFromFields();
-
-        #endregion
 
         #region IPacker
 

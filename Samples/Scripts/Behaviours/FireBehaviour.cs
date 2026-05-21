@@ -13,10 +13,6 @@ namespace Spellbound.Modifiers.Samples {
     /// </summary>
     [Serializable]
     public sealed class FireBehaviour : SbBehaviour {
-        [SerializeField] private float fireDamage = 20f;
-        [SerializeField] private float igniteChance = 100f;
-        [SerializeField] private float increasedIgniteDamage = 0f;
-
         public DamagePayload DealFireDamage(TargetedPayload payload) {
             var damage = GetValue("fire_damage");
 
@@ -42,10 +38,5 @@ namespace Spellbound.Modifiers.Samples {
             enemy?.ApplyIgnite(duration, igniteDps);
         }
 
-        protected override void SyncStatsFromFields() {
-            this.SetBase("fire_damage", fireDamage);
-            this.SetBase("ignite_chance", igniteChance);
-            this.SetBase("increased_ignite_damage", increasedIgniteDamage);
-        }
     }
 }

@@ -13,9 +13,6 @@ namespace Spellbound.Modifiers.Samples {
     /// </summary>
     [Serializable]
     public sealed class ColdBehaviour : SbBehaviour {
-        [SerializeField] private float coldDamage = 15f;
-        [SerializeField] private float chillChance = 100f;
-
         public DamagePayload DealColdDamage(TargetedPayload payload) {
             var damage = GetValue("cold_damage");
 
@@ -37,9 +34,5 @@ namespace Spellbound.Modifiers.Samples {
             enemy?.ApplyChill(duration);
         }
 
-        protected override void SyncStatsFromFields() {
-            this.SetBase("cold_damage", coldDamage);
-            this.SetBase("chill_chance", chillChance);
-        }
     }
 }

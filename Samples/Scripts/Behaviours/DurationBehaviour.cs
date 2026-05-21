@@ -12,18 +12,8 @@ namespace Spellbound.Modifiers.Samples {
     /// </summary>
     [Serializable]
     public sealed class DurationBehaviour : SbBehaviour {
-        [SerializeField] private float igniteDuration = 4f;
-        [SerializeField] private float chillDuration = 4f;
-        [SerializeField] private float skillDuration = 5f;
-
-        public float GetIgniteDuration() => this.GetValue("ignite_duration");
-        public float GetChillDuration() => this.GetValue("chill_duration");
-        public float GetSkillDuration() => this.GetValue("skill_duration");
-
-        protected override void SyncStatsFromFields() {
-            this.SetBase("ignite_duration", igniteDuration);
-            this.SetBase("chill_duration", chillDuration);
-            this.SetBase("skill_duration", skillDuration);
-        }
+        public float GetIgniteDuration() => GetValue("ignite_duration");
+        public float GetChillDuration() => GetValue("chill_duration");
+        public float GetSkillDuration() => GetValue("skill_duration");
     }
 }

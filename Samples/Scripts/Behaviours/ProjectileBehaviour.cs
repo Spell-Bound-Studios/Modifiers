@@ -13,9 +13,6 @@ namespace Spellbound.Modifiers.Samples {
     /// </summary>
     [Serializable]
     public sealed class ProjectileBehaviour : SbBehaviour {
-        [SerializeField] private int count = 1;
-        [SerializeField] private float speed = 10f;
-
         public GameObject ProjectilePrefab { get; set; }
 
         private Func<int, Vector3[]> _directionOverride;
@@ -73,9 +70,5 @@ namespace Spellbound.Modifiers.Samples {
             return directions;
         }
 
-        protected override void SyncStatsFromFields() {
-            this.SetBase("projectile_count", count);
-            this.SetBase("projectile_speed", speed);
-        }
     }
 }

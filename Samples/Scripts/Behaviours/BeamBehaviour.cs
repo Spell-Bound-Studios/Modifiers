@@ -16,8 +16,6 @@ namespace Spellbound.Modifiers.Samples {
     /// </remarks>
     [Serializable]
     public sealed class BeamBehaviour : SbBehaviour {
-        [SerializeField] private float range = 15f;
-        [SerializeField] private float width = 0.5f;
         [SerializeField] private LayerMask targetMask = -1;
 
         private readonly RaycastHit[] _hitBuffer = new RaycastHit[32];
@@ -29,11 +27,6 @@ namespace Spellbound.Modifiers.Samples {
         private Transform _beamCoreB;
         private Transform _beamGlow;
         private ParticleSystem _impactParticles;
-
-        protected override void SyncStatsFromFields() {
-            this.SetBase("beam_range", range);
-            this.SetBase("beam_width", width);
-        }
 
         public float GetRange() => GetValue("beam_range");
         public float GetWidth() => GetValue("beam_width");

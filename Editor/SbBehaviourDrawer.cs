@@ -16,8 +16,8 @@ namespace Spellbound.Modifiers.Editor {
     /// </summary>
     /// <remarks>
     /// Operates on the live managed-reference instance: <see cref="ISerializationCallbackReceiver.OnAfterDeserialize"/>
-    /// is invoked manually before each refresh so <see cref="SbBehaviour.SyncStatsFromFields"/> runs and the
-    /// preview matches what the runtime will see post-deserialize.
+    /// is invoked manually before each refresh so the behaviour's authored <c>StatBaseEntry</c> list is
+    /// applied to <c>_baseValues</c> and the preview matches what the runtime will see post-deserialize.
     /// </remarks>
     [CustomPropertyDrawer(typeof(SbBehaviour), useForChildren: true)]
     public sealed class SbBehaviourDrawer : PropertyDrawer {
@@ -53,7 +53,7 @@ namespace Spellbound.Modifiers.Editor {
                 ((ISerializationCallbackReceiver)behaviour).OnAfterDeserialize();
 
                 return behaviour.StatCount == 0
-                        ? "(no stats — override SyncStatsFromFields to seed base values)"
+                        ? "(no stats — add entries to the Stats list above)"
                         : behaviour.GetCalculatedStatList();
             }
             catch (Exception ex) {
