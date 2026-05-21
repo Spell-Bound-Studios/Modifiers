@@ -1,6 +1,8 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -113,6 +115,49 @@ namespace Spellbound.Modifiers.Editor {
                         marginBottom = 2
                     }
                 };
+
+        // ============================================================================================
+        // Type discovery
+        // ============================================================================================
+
+        /// <summary>
+        /// Walk every loaded assembly and return concrete, serializable types assignable to
+        /// <paramref name="baseType"/>. Optionally filter by a required class-level attribute — useful for
+        /// opt-in picker lists (e.g. only types tagged <see cref="PickableBehaviourAttribute"/>).
+        /// </summary>
+        public static List<Type> GetAssignableTypes(Type baseType, Type requiredAttribute = null) {
+            var types = new List<Type>();
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                try {
+                    foreach (var type in assembly.GetTypes()) {
+                        if (type.IsAbstract || type.IsInterface)
+                            continue;
+
+                        if (!baseType.IsAssignableFrom(type))
+                            continue;
+
+                        if (type.GetConstructor(Type.EmptyTypes) == null)
+                            continue;
+
+                        if (!type.IsSerializable &&
+                            type.GetCustomAttributes(typeof(SerializableAttribute), true).Length == 0)
+                            continue;
+
+                        if (requiredAttribute != null &&
+                            type.GetCustomAttributes(requiredAttribute, true).Length == 0)
+                            continue;
+
+                        types.Add(type);
+                    }
+                }
+                catch {
+                    // Skip problematic assemblies
+                }
+            }
+
+            return types.OrderBy(t => t.Name).ToList();
+        }
 
         /// <summary>
         /// Styled read-only preview box that re-runs <paramref name="compute"/> whenever any field on

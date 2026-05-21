@@ -217,15 +217,29 @@ namespace Spellbound.Modifiers.Editor {
             container.Add(row);
 
             if (property.managedReferenceValue != null) {
-                var foldout = new Foldout { text = "Properties", value = true };
-
-                EditorListHelpers.ForEachVisibleChild(property, child => {
-                    var field = new PropertyField(child.Copy());
+                if (IsListElement(property)) {
+                    // List-element context: the element property does NOT carry the [DropdownPicker]
+                    // attribute (that's on the parent list), so a PropertyField here resolves drawers by
+                    // the element's declared type — e.g. SbBehaviourDrawer fires for SbBehaviour
+                    // subclasses, giving us the typed fields + Stats preview panel.
+                    var field = new PropertyField(property);
                     field.Bind(property.serializedObject);
-                    foldout.Add(field);
-                });
+                    container.Add(field);
+                }
+                else {
+                    // Top-level context: the property itself carries [DropdownPicker]; calling
+                    // PropertyField here would re-fire this same drawer recursively. Fall back to children
+                    // iteration so default per-field rendering happens without re-entering.
+                    var foldout = new Foldout { text = "Properties", value = true };
 
-                if (foldout.childCount > 0) container.Add(foldout);
+                    EditorListHelpers.ForEachVisibleChild(property, child => {
+                        var field = new PropertyField(child.Copy());
+                        field.Bind(property.serializedObject);
+                        foldout.Add(field);
+                    });
+
+                    if (foldout.childCount > 0) container.Add(foldout);
+                }
             }
 
             return container;
@@ -463,12 +477,21 @@ namespace Spellbound.Modifiers.Editor {
 
             EditorGUI.indentLevel++;
 
-            EditorListHelpers.ForEachVisibleChild(property, child => {
+            if (IsListElement(property)) {
+                // See CreateSerializeReferencePicker_UITK for the rationale — list elements don't carry the
+                // [DropdownPicker] attribute, so we can defer to the element's type-specific drawer.
                 y += spacing;
-                var fieldH = EditorGUI.GetPropertyHeight(child, true);
-                EditorGUI.PropertyField(new Rect(position.x, y, position.width, fieldH), child, true);
-                y += fieldH;
-            });
+                var fieldH = EditorGUI.GetPropertyHeight(property, true);
+                EditorGUI.PropertyField(new Rect(position.x, y, position.width, fieldH), property, true);
+            }
+            else {
+                EditorListHelpers.ForEachVisibleChild(property, child => {
+                    y += spacing;
+                    var fieldH = EditorGUI.GetPropertyHeight(child, true);
+                    EditorGUI.PropertyField(new Rect(position.x, y, position.width, fieldH), child, true);
+                    y += fieldH;
+                });
+            }
 
             EditorGUI.indentLevel--;
         }
@@ -502,6 +525,14 @@ namespace Spellbound.Modifiers.Editor {
         // ============================================================================================
         // Shared helpers
         // ============================================================================================
+
+        /// <summary>
+        /// True when the serialized property is an element inside a list / array (path contains
+        /// <c>.Array.data[</c>). Used to decide whether <see cref="PropertyField"/> on the property itself is
+        /// safe — list elements don't inherit the parent's [DropdownPicker] attribute, so no drawer recursion.
+        /// </summary>
+        private static bool IsListElement(SerializedProperty property) =>
+                property.propertyPath.Contains(".Array.data[");
 
         private Type ResolveAssetFieldType() {
             var t = fieldInfo.FieldType;
@@ -548,33 +579,9 @@ namespace Spellbound.Modifiers.Editor {
         }
 
         private List<Type> GetAssignableTypes(Type baseType) {
-            var types = new List<Type>();
+            var requiredAttribute = (attribute as DropdownPickerAttribute)?.RequiredAttribute;
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                try {
-                    foreach (var type in assembly.GetTypes()) {
-                        if (type.IsAbstract || type.IsInterface)
-                            continue;
-
-                        if (!baseType.IsAssignableFrom(type))
-                            continue;
-
-                        if (type.GetConstructor(Type.EmptyTypes) == null)
-                            continue;
-
-                        if (!type.IsSerializable &&
-                            type.GetCustomAttributes(typeof(SerializableAttribute), true).Length == 0)
-                            continue;
-
-                        types.Add(type);
-                    }
-                }
-                catch {
-                    // Skip problematic assemblies
-                }
-            }
-
-            return types.OrderBy(t => t.Name).ToList();
+            return EditorListHelpers.GetAssignableTypes(baseType, requiredAttribute);
         }
 
         private List<UnityEngine.Object> FindAssetsOfType(Type type) {

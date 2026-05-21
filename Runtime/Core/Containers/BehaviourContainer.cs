@@ -1,8 +1,9 @@
-﻿// Copyright 2026 Spellbound Studio Inc.
+// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
@@ -15,13 +16,26 @@ namespace Spellbound.Modifiers {
     /// Behaviours are the lib's "what this thing can do" vocabulary — projectile-firing, beam-emitting,
     /// damage-receiving, resource-pooling. A target may own as many as the game wants; the container is just
     /// the typed bag.
+    /// <para>
+    /// Unity-serializable: the <c>_behaviours</c> list carries <see cref="DropdownPickerAttribute"/> so
+    /// designers pick concrete subclasses from a dropdown when this container is a <c>[SerializeField]</c>
+    /// on a <see cref="MonoBehaviour"/> or <see cref="ScriptableObject"/>.
+    /// <see cref="ISerializationCallbackReceiver.OnAfterDeserialize"/> mirrors that list into the runtime
+    /// <c>_lookup</c> dictionary so type-keyed reads stay O(1). Runtime <see cref="Add"/> /
+    /// <see cref="Remove{T}"/> mutate the dictionary only — they are intentionally NOT written back into the
+    /// serialized list, so a transient buff added during playmode does not stick to the scene asset on save.
+    /// </para>
     /// </remarks>
-    public class BehaviourContainer {
-        private readonly Dictionary<Type, SbBehaviour> _behaviours = new();
+    [Serializable]
+    public class BehaviourContainer : ISerializationCallbackReceiver {
+        [SerializeReference, DropdownPicker(typeof(PickableBehaviourAttribute))]
+        private List<SbBehaviour> _behaviours = new();
 
-        public void Add(SbBehaviour behaviour) => _behaviours[behaviour.GetType()] = behaviour;
+        private readonly Dictionary<Type, SbBehaviour> _lookup = new();
 
-        public void Remove<T>() where T : SbBehaviour => _behaviours.Remove(typeof(T));
+        public void Add(SbBehaviour behaviour) => _lookup[behaviour.GetType()] = behaviour;
+
+        public void Remove<T>() where T : SbBehaviour => _lookup.Remove(typeof(T));
 
         /// <summary>
         /// Trys to get a value from the dictionary. Can return null.
@@ -30,7 +44,7 @@ namespace Spellbound.Modifiers {
         /// Behaviours are expected to be SbBehaviour types.
         /// </typeparam>
         public T GetBehaviour<T>() where T : SbBehaviour =>
-                _behaviours.TryGetValue(typeof(T), out var b)
+                _lookup.TryGetValue(typeof(T), out var b)
                         ? (T)b
                         : null;
 
@@ -41,7 +55,7 @@ namespace Spellbound.Modifiers {
         /// <typeparam name="T">Outs an SbBehaviour type if bool is true but otherwise outs behaviour as null.</typeparam>
         /// <returns>True or false.</returns>
         public bool TryGetBehaviour<T>(out T behaviour) where T : SbBehaviour {
-            if (_behaviours.TryGetValue(typeof(T), out var b)) {
+            if (_lookup.TryGetValue(typeof(T), out var b)) {
                 behaviour = (T)b;
 
                 return true;
@@ -52,12 +66,26 @@ namespace Spellbound.Modifiers {
             return false;
         }
 
-        public IEnumerable<SbBehaviour> GetAll() => _behaviours.Values;
+        public IEnumerable<SbBehaviour> GetAll() => _lookup.Values;
 
-        public IEnumerable<T> GetAll<T>() => _behaviours.Values.OfType<T>();
+        public IEnumerable<T> GetAll<T>() => _lookup.Values.OfType<T>();
 
-        public void Clear() => _behaviours.Clear();
+        public void Clear() => _lookup.Clear();
 
-        public int Count => _behaviours.Count;
+        public int Count => _lookup.Count;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() {
+            // No-op. The serialized list is the authoring source of truth; runtime mutations to _lookup are
+            // intentionally not persisted so transient buffs don't stick to the scene asset on save.
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize() {
+            _lookup.Clear();
+
+            foreach (var b in _behaviours) {
+                if (b != null)
+                    _lookup[b.GetType()] = b;
+            }
+        }
     }
 }
