@@ -29,6 +29,8 @@ namespace Spellbound.Modifiers {
 
         public IReadOnlyList<StatDefinition> Stats => stats;
 
+        public bool logVerbosely;
+
         /// <summary>
         /// Registers all stats and configures precision.
         /// </summary>
@@ -50,6 +52,10 @@ namespace Spellbound.Modifiers {
 
                 stat.Register();
                 _lookup[stat.StatName] = stat;
+
+                if (logVerbosely) {
+                    Log.Debug($"Registered the stat '{stat.StatName}'.");
+                }
             }
 
             if (strictStatValidation)
