@@ -206,6 +206,18 @@ namespace Spellbound.Modifiers {
                     percent,
                     uniqueId));
 
+        /// <summary>
+        /// Add a <see cref="ModifierType.Override"/> modifier (last-Override-wins; ignores Base / Flat /
+        /// Increased / More entirely) to the named stat. Useful for absolute setters — debug console
+        /// "SetSpeed 10", talents that force a stat to a fixed value, etc.
+        /// </summary>
+        public void AddOverride(string statName, float value, string uniqueId = null) =>
+                AddModifier(new StatModifierEntry(
+                    StatRegistry.Register(statName),
+                    ModifierType.Override,
+                    value,
+                    uniqueId));
+
         #endregion
 
         /// <summary>
