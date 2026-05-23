@@ -7,9 +7,9 @@ using System.Reflection;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Reflects over loaded assemblies once and exposes every concrete <see cref="SbBehaviour"/> subclass tagged
-    /// with <see cref="PipelineStageAttribute"/>, grouped by their declared context type. Editor tools query this
-    /// to populate type pickers for each <see cref="PipelineConfig{TContext}"/>.
+    /// Reflects over loaded assemblies once and exposes every concrete type tagged with
+    /// <see cref="PipelineStageAttribute"/>, grouped by their declared context type. Editor tools query this
+    /// to populate type pickers for each <see cref="PipelineTemplate{TContext}"/>.
     /// </summary>
     public static class PipelineStageRegistry {
         public readonly struct StageEntry {
@@ -59,9 +59,6 @@ namespace Spellbound.Modifiers {
 
                 foreach (var type in types) {
                     if (type.IsAbstract || type.IsInterface)
-                        continue;
-
-                    if (!typeof(SbBehaviour).IsAssignableFrom(type))
                         continue;
 
                     var attr = type.GetCustomAttribute<PipelineStageAttribute>(false);

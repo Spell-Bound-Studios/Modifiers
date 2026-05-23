@@ -4,10 +4,10 @@ using System;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Marks an <see cref="SbBehaviour"/> subclass as a pipeline stage and binds it to a concrete context type.
-    /// The <see cref="PipelineStageRegistry"/> uses this attribute to discover stages, and editor pickers filter
-    /// to the matching <see cref="ContextType"/> so a `DamageReceiveContext` stage never appears in a
-    /// `DamageOutgoingContext` config.
+    /// Marks an <see cref="IPipelineStage{TContext}"/> implementation as a pipeline stage and binds it to a
+    /// concrete context type. The <see cref="PipelineStageRegistry"/> uses this attribute to discover stages,
+    /// and editor pickers filter to the matching <see cref="ContextType"/> so a `DamageContext` stage never
+    /// appears in a `HealingContext` template.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class PipelineStageAttribute : Attribute {

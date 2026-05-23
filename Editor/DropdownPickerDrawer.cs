@@ -551,13 +551,15 @@ namespace Spellbound.Modifiers.Editor {
             if (string.IsNullOrEmpty(typeName))
                 return null;
 
-            var parts = typeName.Split(' ');
+            // Format is "<assembly> <fully-qualified-type-name>". For closed generics the type name itself
+            // contains spaces inside the `[[Arg, ArgAssembly]]` brackets, so split only on the FIRST space.
+            var firstSpace = typeName.IndexOf(' ');
 
-            if (parts.Length < 2)
+            if (firstSpace < 0)
                 return null;
 
-            var assemblyName = parts[0];
-            var className = parts[1];
+            var assemblyName = typeName[..firstSpace];
+            var className = typeName[(firstSpace + 1)..];
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
                 if (assembly.GetName().Name == assemblyName || assemblyName == "Assembly-CSharp") {
