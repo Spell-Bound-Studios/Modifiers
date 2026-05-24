@@ -154,6 +154,12 @@ namespace Spellbound.Modifiers {
 
         public int ModifierCount => _modifiersByStatId.Values.Sum(list => list.Count);
 
+        /// <summary>
+        /// Read-only enumeration of every stat id with a base value set. Used by UI / debug surfaces to walk
+        /// the live stat list without bypassing the engine's dictionaries.
+        /// </summary>
+        public IEnumerable<int> StatIds => _baseValues.Keys;
+
         #region Name-Based Overloads
 
         /// <summary>Name-keyed <see cref="SetBase(int, float)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
