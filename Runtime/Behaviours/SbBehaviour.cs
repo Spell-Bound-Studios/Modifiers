@@ -80,8 +80,16 @@ namespace Spellbound.Modifiers {
             NotifyDirty();
         }
 
+        /// <summary>
+        /// Fires whenever stats may have changed (base set, modifier added/removed, etc.). UI / debug
+        /// surfaces subscribe and re-read values; the engine itself only flips the dirty flag and
+        /// recomputes lazily on next <see cref="GetValue"/>.
+        /// </summary>
+        public event Action OnStatsDirty;
+
         protected virtual void NotifyDirty() {
             _isDirty = true;
+            OnStatsDirty?.Invoke();
         }
 
         /// <summary>
