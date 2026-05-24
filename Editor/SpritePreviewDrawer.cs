@@ -4,6 +4,12 @@ using UnityEditor;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Editor {
+    /// <summary>
+    /// Property drawer powering <see cref="SpritePreviewAttribute"/>. Renders the default sprite picker on
+    /// line one and a square preview thumbnail below it (sized from <see cref="SpritePreviewAttribute.Size"/>)
+    /// when a sprite is assigned. IMGUI-only — drawn fields don't currently appear inside UI Toolkit
+    /// inspectors.
+    /// </summary>
     [CustomPropertyDrawer(typeof(SpritePreviewAttribute))]
     public class SpritePreviewDrawer : PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {

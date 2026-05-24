@@ -1,9 +1,15 @@
-﻿// Copyright 2026 Spellbound Studio Inc.
+// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample skill: a <see cref="ModifiableObject"/> that composes a <see cref="BeamBehaviour"/>, a
+    /// <c>ColdBehaviour</c>, and a <see cref="DurationBehaviour"/> into a channeled cold beam. Orchestrates
+    /// the <c>"channel"</c> → <c>"hit"</c> → <c>"damage"</c> event chain and owns the start / update / stop
+    /// state of the channel itself — the lib does not know about channeling, Ray of Frost does.
+    /// </summary>
     [Serializable]
     public sealed class RayOfFrost : ModifiableObject {
         public override string Name => "Ray of Frost";

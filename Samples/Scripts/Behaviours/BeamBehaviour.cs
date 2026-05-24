@@ -5,10 +5,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample behaviour: emits a beam — sphere-cast or thin raycast based on the <c>beam_width</c> stat,
+    /// with range from <c>beam_range</c>. Knows HOW to fire and HOW to drive its visual; doesn't know when to
+    /// fire, who can fire it, or what to do with the hits — those are the orchestrating skill's job.
+    /// </summary>
+    /// <remarks>
+    /// Demonstrates the "behaviour owns its stats" pattern: range and width live on the behaviour's own
+    /// <see cref="StatContainer"/>, so modifiers can boost them without the skill knowing the math.
+    /// </remarks>
     [Serializable]
     public sealed class BeamBehaviour : SbBehaviour {
-        [SerializeField] private float range = 15f;
-        [SerializeField] private float width = 0.5f;
         [SerializeField] private LayerMask targetMask = -1;
 
         private readonly RaycastHit[] _hitBuffer = new RaycastHit[32];
@@ -21,14 +28,14 @@ namespace Spellbound.Modifiers.Samples {
         private Transform _beamGlow;
         private ParticleSystem _impactParticles;
 
-        public float GetRange() => Stats.GetValue("beam_range");
-        public float GetWidth() => Stats.GetValue("beam_width");
+        public float GetRange() => GetValue("beam_range");
+        public float GetWidth() => GetValue("beam_width");
 
         public BeamHitResult Fire(PositionalPayload payload) {
             var hits = new List<GameObject>();
 
-            var beamRange = Stats.GetValue("beam_range");
-            var beamWidth = Stats.GetValue("beam_width");
+            var beamRange = GetValue("beam_range");
+            var beamWidth = GetValue("beam_width");
 
             var hitDistance = beamRange;
             var hitPoint = payload.Position + payload.Direction * beamRange;
@@ -128,26 +135,23 @@ namespace Spellbound.Modifiers.Samples {
             _impactParticles = null;
         }
 
-        protected override StatContainer InitializeStats() {
-            var stats = new StatContainer();
-            stats.SetBase("beam_range", range);
-            stats.SetBase("beam_width", width);
 
-            return stats;
-        }
-    }
+        /// <summary>
+        /// Return value of <see cref="BeamBehaviour.Fire"/>: the hit list, the effective distance the beam
+        /// traveled, the hit point for visual anchoring, and whether anything was actually struck.
+        /// </summary>
+        public readonly struct BeamHitResult {
+            public readonly List<GameObject> Hits;
+            public readonly float Distance;
+            public readonly Vector3 HitPoint;
+            public readonly bool DidHit;
 
-    public readonly struct BeamHitResult {
-        public readonly List<GameObject> Hits;
-        public readonly float Distance;
-        public readonly Vector3 HitPoint;
-        public readonly bool DidHit;
-
-        public BeamHitResult(List<GameObject> hits, float distance, Vector3 hitPoint, bool didHit) {
-            Hits = hits;
-            Distance = distance;
-            HitPoint = hitPoint;
-            DidHit = didHit;
+            public BeamHitResult(List<GameObject> hits, float distance, Vector3 hitPoint, bool didHit) {
+                Hits = hits;
+                Distance = distance;
+                HitPoint = hitPoint;
+                DidHit = didHit;
+            }
         }
     }
 }

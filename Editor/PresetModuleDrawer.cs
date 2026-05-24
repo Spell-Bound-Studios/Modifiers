@@ -1,0 +1,417 @@
+// Copyright 2026 Spellbound Studio Inc.
+
+#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
+using Spellbound.Core.Modules;
+using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace Spellbound.Modifiers.Editor {
+    /// <summary>
+    /// Single UI Toolkit property drawer for every <see cref="PresetModule"/> subclass — current and future.
+    /// Behaviour:
+    /// <list type="bullet">
+    /// <item>For each serialized field on the module: if the field is a <c>List&lt;T&gt;</c> (or <c>T[]</c>)
+    /// where <c>T</c> carries <see cref="InlineTemplateAttribute"/>, render a compact list with one row per
+    /// element. Otherwise, render via Unity's default <c>PropertyField</c>, which honors <c>[Header]</c>,
+    /// <c>[Tooltip]</c>, and any per-field custom drawers.</item>
+    /// <item>After all fields, if the module declares any stat-relevant template lists
+    /// (<see cref="StatBaseEntry"/>, <see cref="ModifierEntry"/>), append a read-only computed-stats
+    /// preview that updates whenever any template value changes.</item>
+    /// </list>
+    /// New module types and new template structs both work without touching this file — declare fields,
+    /// mark your template with <see cref="InlineTemplateAttribute"/>, done.
+    /// </summary>
+    [CustomPropertyDrawer(typeof(PresetModule), true)]
+    public sealed class PresetModuleDrawer : PropertyDrawer {
+        private const BindingFlags FieldFlags =
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
+        public override VisualElement CreatePropertyGUI(SerializedProperty property) {
+            var root = new VisualElement {
+                style = {
+                    marginTop = 2
+                }
+            };
+
+            // Track which stat-relevant template lists we saw so we can attach the preview at the end.
+            SerializedProperty resourceEntriesProp = null;
+            SerializedProperty statEntriesProp = null;
+            SerializedProperty modifierEntriesProp = null;
+
+            var moduleInstance = property.managedReferenceValue;
+            var moduleType = moduleInstance?.GetType();
+
+            EditorListHelpers.ForEachVisibleChild(property, child => {
+                var current = child.Copy();
+                var info = TryGetInlineTemplateInfo(moduleType, current);
+
+                if (info.ElementType != null) {
+                    // One header per template list: [Header(...)] when present on the field, otherwise the
+                    // nicified field name. The list itself renders bare so we never double-header.
+                    var headerAttr = info.Field?.GetCustomAttribute<HeaderAttribute>(false);
+
+                    var headerText = headerAttr != null && !string.IsNullOrEmpty(headerAttr.header)
+                            ? headerAttr.header
+                            : ObjectNames.NicifyVariableName(current.displayName);
+
+                    root.Add(EditorListHelpers.SectionHeader(headerText));
+                    root.Add(BuildTemplateList(current, info.ElementType));
+
+                    if (info.ElementType == typeof(StatBaseEntry))
+                        statEntriesProp = current;
+                    else if (info.ElementType == typeof(ModifierEntry))
+                        modifierEntriesProp = current;
+                    else if (info.ElementType == typeof(ResourceBaseEntry))
+                        resourceEntriesProp = current;
+                }
+                else {
+                    var pf = new PropertyField(current);
+                    pf.Bind(property.serializedObject);
+                    root.Add(pf);
+                }
+            });
+
+            // Computed-stats preview is automatic when stat-relevant templates are present.
+            if (resourceEntriesProp == null && statEntriesProp == null &&
+                modifierEntriesProp == null) return root;
+
+            root.Add(EditorListHelpers.SectionHeader("Computed Stats (read-only preview)"));
+            root.Add(BuildComputedPreview(resourceEntriesProp, statEntriesProp, modifierEntriesProp));
+
+            return root;
+        }
+
+        // ============================================================================================
+        // Field-type detection
+        // ============================================================================================
+
+        private readonly struct InlineTemplateInfo {
+            public readonly Type ElementType;
+            public readonly FieldInfo Field;
+
+            public InlineTemplateInfo(Type elementType, FieldInfo field) {
+                ElementType = elementType;
+                Field = field;
+            }
+        }
+
+        /// <summary>
+        /// If <paramref name="listProp"/> is a serialized list/array whose element type is a struct tagged with
+        /// <see cref="InlineTemplateAttribute"/>, returns the element type and the resolved <see cref="FieldInfo"/>
+        /// (so callers can read <c>[Header]</c>/<c>[Tooltip]</c>/etc.). Otherwise the returned struct is default.
+        /// </summary>
+        private static InlineTemplateInfo TryGetInlineTemplateInfo(Type moduleType, SerializedProperty listProp) {
+            if (!listProp.isArray)
+                return default;
+
+            // Strings are technically arrays under the hood; explicitly exclude.
+            if (listProp.propertyType == SerializedPropertyType.String)
+                return default;
+
+            if (moduleType == null)
+                return default;
+
+            // Walk the module's inheritance chain to find the FieldInfo for this serialized field.
+            FieldInfo field = null;
+            var t = moduleType;
+
+            while (t != null && t != typeof(object) && field == null) {
+                field = t.GetField(listProp.name, FieldFlags);
+                t = t.BaseType;
+            }
+
+            if (field == null)
+                return default;
+
+            var fieldType = field.FieldType;
+
+            Type elementType = null;
+
+            if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
+                elementType = fieldType.GetGenericArguments()[0];
+            else if (fieldType.IsArray)
+                elementType = fieldType.GetElementType();
+
+            if (elementType == null)
+                return default;
+
+            return elementType.GetCustomAttribute<InlineTemplateAttribute>(false) != null
+                    ? new InlineTemplateInfo(elementType, field)
+                    : default;
+        }
+
+        // ============================================================================================
+        // Template list rendering
+        // ============================================================================================
+
+        private static VisualElement BuildTemplateList(SerializedProperty listProp, Type elementType) {
+            var container = new VisualElement {
+                style = {
+                    marginTop = 2,
+                    marginBottom = 4,
+                    paddingLeft = 6
+                }
+            };
+
+            var itemsContainer = new VisualElement();
+            container.Add(itemsContainer);
+
+            void Refresh() {
+                listProp.serializedObject.Update();
+                itemsContainer.Clear();
+
+                for (var i = 0; i < listProp.arraySize; i++)
+                    itemsContainer.Add(BuildListRow(listProp, i, Refresh));
+            }
+
+            Refresh();
+
+            var addBtn = new Button(() => {
+                listProp.arraySize++;
+                listProp.serializedObject.ApplyModifiedProperties();
+                Refresh();
+            }) {
+                text = $"+ Add {ObjectNames.NicifyVariableName(elementType.Name)}",
+                style = {
+                    marginTop = 2,
+                    alignSelf = Align.FlexStart,
+                    paddingLeft = 8,
+                    paddingRight = 8
+                }
+            };
+
+            container.Add(addBtn);
+
+            return container;
+        }
+
+        private static VisualElement BuildListRow(SerializedProperty listProp, int index, Action onChanged) {
+            var capturedIndex = index;
+            var elementProp = listProp.GetArrayElementAtIndex(index);
+
+            var row = new VisualElement {
+                style = {
+                    flexDirection = FlexDirection.Row,
+                    alignItems = Align.Center,
+                    marginBottom = 2
+                }
+            };
+
+            var indexLabel = new Label($"{index + 1}.") {
+                style = {
+                    minWidth = 22,
+                    unityTextAlign = TextAnchor.MiddleLeft
+                }
+            };
+
+            row.Add(indexLabel);
+
+            var fieldArea = new VisualElement {
+                style = {
+                    flexDirection = FlexDirection.Row,
+                    alignItems = Align.Center,
+                    flexGrow = 1
+                }
+            };
+
+            FillInlineFields(fieldArea, elementProp);
+            row.Add(fieldArea);
+
+            row.Add(EditorListHelpers.IconButton("▲", () => {
+                if (EditorListHelpers.MoveUp(listProp, capturedIndex))
+                    onChanged();
+            }));
+
+            row.Add(EditorListHelpers.IconButton("▼", () => {
+                if (EditorListHelpers.MoveDown(listProp, capturedIndex))
+                    onChanged();
+            }));
+
+            row.Add(EditorListHelpers.IconButton("✕", () => {
+                EditorListHelpers.RemoveAt(listProp, capturedIndex);
+                onChanged();
+            }));
+
+            return row;
+        }
+
+        /// <summary>
+        /// Render each child field of the element struct inline (horizontally). The first field (typically a
+        /// <c>StatDefinition</c> object reference) renders unlabelled — the dropdown itself names the entry,
+        /// so a "Definition:" prefix would be pure noise. Every subsequent field gets a compact inline label
+        /// so designers can tell which 0 is base-value vs. min. Works for any struct shape — no per-template
+        /// hardcoding required.
+        /// </summary>
+        private static void FillInlineFields(VisualElement rowContent, SerializedProperty elementProp) {
+            var isFirst = true;
+
+            EditorListHelpers.ForEachVisibleChild(elementProp, child => {
+                var cell = new VisualElement {
+                    style = {
+                        flexGrow = 1,
+                        marginRight = 4,
+                        flexDirection = FlexDirection.Row,
+                        alignItems = Align.Center
+                    }
+                };
+
+                if (!isFirst) {
+                    cell.Add(new Label(child.displayName) {
+                        style = {
+                            marginRight = 4,
+                            color = new Color(0.75f, 0.75f, 0.75f),
+                            unityTextAlign = TextAnchor.MiddleLeft,
+                            minWidth = 0,
+                            paddingLeft = 0,
+                            paddingRight = 0
+                        }
+                    });
+                }
+
+                var pf = new PropertyField(child.Copy(), string.Empty) {
+                    style = { flexGrow = 1 }
+                };
+
+                pf.Bind(elementProp.serializedObject);
+                cell.Add(pf);
+                rowContent.Add(cell);
+
+                isFirst = false;
+            });
+        }
+
+        // ============================================================================================
+        // Computed-stats preview
+        // ============================================================================================
+
+        private static VisualElement BuildComputedPreview(
+            SerializedProperty resources,
+            SerializedProperty stats,
+            SerializedProperty modifiers) {
+            var serializedObject = (resources ?? stats ?? modifiers).serializedObject;
+
+            return EditorListHelpers.BuildLivePreview(
+                serializedObject,
+                () => ComputePreviewText(resources, stats, modifiers));
+        }
+
+        private static string ComputePreviewText(
+            SerializedProperty resources,
+            SerializedProperty stats,
+            SerializedProperty modifiers) {
+            try {
+                var container = new SbBehaviour();
+                var resourceIds = new List<int>();
+                var resourceMins = new Dictionary<int, float>();
+                var statIds = new HashSet<int>();
+
+                if (resources != null) {
+                    for (var i = 0; i < resources.arraySize; i++) {
+                        var entry = resources.GetArrayElementAtIndex(i);
+                        var def = entry.FindPropertyRelative(nameof(ResourceBaseEntry.stat)).objectReferenceValue as StatDefinition;
+
+                        if (def == null || string.IsNullOrEmpty(def.StatName))
+                            continue;
+
+                        var id = StatRegistry.Register(def.StatName);
+                        container.SetBase(id, entry.FindPropertyRelative(nameof(ResourceBaseEntry.baseValue)).floatValue);
+                        resourceMins[id] = entry.FindPropertyRelative(nameof(ResourceBaseEntry.min)).floatValue;
+
+                        if (!resourceIds.Contains(id))
+                            resourceIds.Add(id);
+                    }
+                }
+
+                if (stats != null) {
+                    for (var i = 0; i < stats.arraySize; i++) {
+                        var entry = stats.GetArrayElementAtIndex(i);
+                        var def = entry.FindPropertyRelative(nameof(StatBaseEntry.stat)).objectReferenceValue as StatDefinition;
+
+                        if (def == null || string.IsNullOrEmpty(def.StatName))
+                            continue;
+
+                        var id = StatRegistry.Register(def.StatName);
+                        container.SetBase(id, entry.FindPropertyRelative(nameof(StatBaseEntry.baseValue)).floatValue);
+                        statIds.Add(id);
+                    }
+                }
+
+                if (modifiers != null) {
+                    for (var i = 0; i < modifiers.arraySize; i++) {
+                        var entry = modifiers.GetArrayElementAtIndex(i);
+                        var def = entry.FindPropertyRelative(nameof(ModifierEntry.stat)).objectReferenceValue as StatDefinition;
+
+                        if (def == null || string.IsNullOrEmpty(def.StatName))
+                            continue;
+
+                        var id = StatRegistry.Register(def.StatName);
+                        var type = (ModifierType)entry.FindPropertyRelative(nameof(ModifierEntry.type)).enumValueIndex;
+                        var value = entry.FindPropertyRelative(nameof(ModifierEntry.value)).floatValue;
+                        container.AddModifier(new StatModifierEntry(id, type, value));
+
+                        // A modifier that targets a resource's backing stat moves the resource's max, not a
+                        // separate stat — don't list it twice.
+                        if (!resourceIds.Contains(id))
+                            statIds.Add(id);
+                    }
+                }
+
+                var sb = new StringBuilder();
+
+                if (resourceIds.Count == 0 && statIds.Count == 0) {
+                    sb.Append("(no stats declared — add templates above to see computed values)");
+
+                    return sb.ToString().TrimEnd();
+                }
+
+                if (resourceIds.Count > 0) {
+                    sb.Append("Resources:\n");
+
+                    foreach (var id in resourceIds) {
+                        var name = StatRegistry.GetName(id);
+                        var max = container.GetValue(id);
+                        var min = resourceMins.GetValueOrDefault(id, 0f);
+
+                        sb.Append("  ").Append(name)
+                                .Append(": max ").Append(max.ToString("F2"))
+                                .Append(", min ").Append(min.ToString("F2"))
+                                .Append('\n');
+                    }
+                }
+
+                if (statIds.Count <= 0)
+                    return sb.ToString().TrimEnd();
+
+                if (resourceIds.Count > 0)
+                    sb.Append('\n');
+
+                sb.Append("Stats:\n");
+
+                foreach (var id in statIds) {
+                    var name = StatRegistry.GetName(id);
+                    var baseVal = container.GetBase(id);
+                    var finalVal = container.GetValue(id);
+                    sb.Append("  ").Append(name).Append(": ").Append(finalVal.ToString("F2"));
+
+                    if (Mathf.Abs(finalVal - baseVal) > 0.0001f)
+                        sb.Append("  (base ").Append(baseVal.ToString("F2")).Append(")");
+
+                    sb.Append('\n');
+                }
+
+                return sb.ToString().TrimEnd();
+            }
+            catch (Exception ex) {
+                return $"<preview error: {ex.Message}>";
+            }
+        }
+
+    }
+}
+#endif

@@ -5,11 +5,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample behaviour: spawns N projectiles from a <see cref="PositionalPayload"/>, where N comes from the
+    /// <c>projectile_count</c> stat and speed from <c>projectile_speed</c>. Direction layout is pluggable via
+    /// <see cref="SetDirectionCalculation"/> — that's how <see cref="CircularProjectileModifier"/> turns a
+    /// straight-shot skill into a circular nova without touching the behaviour or the skill.
+    /// </summary>
     [Serializable]
     public sealed class ProjectileBehaviour : SbBehaviour {
-        [SerializeField] private int count = 1;
-        [SerializeField] private float speed = 10f;
-
         public GameObject ProjectilePrefab { get; set; }
 
         private Func<int, Vector3[]> _directionOverride;
@@ -24,8 +27,8 @@ namespace Spellbound.Modifiers.Samples {
             if (ProjectilePrefab == null)
                 return spawned;
 
-            var projectileCount = (int)Stats.GetValue("projectile_count");
-            var projectileSpeed = Stats.GetValue("projectile_speed");
+            var projectileCount = (int)this.GetValue("projectile_count");
+            var projectileSpeed = this.GetValue("projectile_speed");
 
             Vector3[] finalDirections;
 
@@ -67,12 +70,5 @@ namespace Spellbound.Modifiers.Samples {
             return directions;
         }
 
-        protected override StatContainer InitializeStats() {
-            var stats = new StatContainer();
-            stats.SetBase("projectile_count", count);
-            stats.SetBase("projectile_speed", speed);
-
-            return stats;
-        }
     }
 }

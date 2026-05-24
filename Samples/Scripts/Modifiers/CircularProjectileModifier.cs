@@ -4,6 +4,12 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample modifier: replaces the projectile direction calculation on a target's
+    /// <see cref="ProjectileBehaviour"/> with a 360° fan. Demonstrates that a modifier can change BEHAVIOUR
+    /// (the algorithm for picking directions), not just stat numbers — the projectile count and speed are
+    /// untouched; only the geometry shifts.
+    /// </summary>
     [Serializable]
     public sealed class CircularProjectileModifier : SbModifier {
         private ProjectileBehaviour _modifiedBehaviour;

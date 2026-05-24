@@ -4,6 +4,11 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample modifier: pushes an <see cref="ModifierType.Increased"/> entry onto <c>ignite_duration</c> on
+    /// whichever target owns a <see cref="DurationBehaviour"/>. Demonstrates the additive % pool — multiple
+    /// stacks of this modifier add their percents together (PoE "increased" math), not multiply.
+    /// </summary>
     [Serializable]
     public sealed class IncreasedDurationModifier : SbModifier {
         [SerializeField] private float increasedDurationPercent = .5f;
@@ -12,14 +17,14 @@ namespace Spellbound.Modifiers.Samples {
             if (!TryGetBehaviour<DurationBehaviour>(target, out var duration))
                 return;
 
-            duration.Stats.AddIncreased("ignite_duration", increasedDurationPercent, UniqueId);
+            duration.AddIncreased("ignite_duration", increasedDurationPercent, UniqueId);
         }
 
         public override void Remove(ICanBeModified target) {
             if (!TryGetBehaviour<DurationBehaviour>(target, out var duration))
                 return;
 
-            duration.Stats.RemoveModifierByUniqueId(UniqueId);
+            duration.RemoveModifierByUniqueId(UniqueId);
         }
     }
 }

@@ -4,6 +4,12 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample modifier: adds N to <c>projectile_count</c> on whichever target owns a
+    /// <see cref="ProjectileBehaviour"/>. The simplest possible <see cref="SbModifier"/> shape — find the
+    /// behaviour, push a flat stat modifier, remove by <see cref="SbModifier.UniqueId"/> on detach. Use this
+    /// pattern for every numeric "+N to X" affix.
+    /// </summary>
     [Serializable]
     public sealed class AddedProjectileCountModifier : SbModifier {
         [SerializeField] private int additionalProjectiles = 6;
@@ -13,9 +19,9 @@ namespace Spellbound.Modifiers.Samples {
             if (!TryGetBehaviour<ProjectileBehaviour>(target, out var projectile))
                 return;
 
-            // Now I can actually add this modification to the targeted behaviours stat container.
+            // Now I can actually add this modification to the targeted behaviour.
             // In this example modifier I simply want to increase a stat value on the behaviour in an additive way.
-            projectile.Stats.AddFlat("projectile_count", additionalProjectiles, UniqueId);
+            projectile.AddFlat("projectile_count", additionalProjectiles, UniqueId);
         }
 
         public override void Remove(ICanBeModified target) {
@@ -24,7 +30,7 @@ namespace Spellbound.Modifiers.Samples {
                 return;
 
             // Then I can remove this modifier by its unique ID that we have access to via the SbModifier base class.
-            projectile.Stats.RemoveModifierByUniqueId(UniqueId);
+            projectile.RemoveModifierByUniqueId(UniqueId);
         }
     }
 }

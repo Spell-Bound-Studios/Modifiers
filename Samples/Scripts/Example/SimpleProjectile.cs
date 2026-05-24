@@ -5,11 +5,14 @@ using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
     /// <summary>
-    /// A simple projectile example script.
+    /// Sample projectile: travels in a straight line at a set speed, dies after <c>maxDistance</c>, and on
+    /// trigger-enter with a tagged target raises <see cref="ITriggersTargetedEvent.OnTargetHit"/> with a
+    /// <see cref="TargetedPayload"/>. Whoever spawned it (typically a <c>ProjectileBehaviour</c>) wires the
+    /// handler that turns the hit into damage / status / split / whatever.
     /// </summary>
     /// <remarks>
-    /// This script is intended to show the user how to implement a specific ITrigger and then invoke it with the
-    /// appropriate payload struct.
+    /// Sample-only. A production projectile would use pooling, layer-mask filters instead of tag string
+    /// compares, deterministic motion (no per-frame floats), and probably no per-instance allocation.
     /// </remarks>
     public sealed class SimpleProjectile : MonoBehaviour, ITriggersTargetedEvent {
         [SerializeField] private float maxDistance = 20f;

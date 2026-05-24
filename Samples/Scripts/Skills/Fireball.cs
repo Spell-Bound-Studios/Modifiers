@@ -1,9 +1,15 @@
-﻿// Copyright 2026 Spellbound Studio Inc.
+// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample skill: a <see cref="ModifiableObject"/> that composes a <see cref="ProjectileBehaviour"/>,
+    /// a <c>FireBehaviour</c>, and a <see cref="DurationBehaviour"/>, then wires them together via the
+    /// <c>"cast"</c> → <c>"hit"</c> → <c>"damage"</c> event chain. The library does not orchestrate — Fireball
+    /// does — which is the canonical demo of "the GAME orchestrates" from the README.
+    /// </summary>
     [Serializable]
     public sealed class Fireball : ModifiableObject {
         public override string Name => "Fireball";

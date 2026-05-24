@@ -2,10 +2,22 @@
 
 using System;
 using System.Collections;
+using Spellbound.Core.Logging;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
-    public sealed class EnemyTarget : MonoBehaviour, IHasStats {
+    /// <summary>
+    /// Sample enemy: a MonoBehaviour that composes its own <see cref="SbBehaviour"/> as a stat surface,
+    /// tracks current life and mana, handles incoming damage / heal / death / respawn, and runs ignite + chill
+    /// status coroutines. Demonstrates the simplest "modifier-aware MonoBehaviour" — own an
+    /// <see cref="SbBehaviour"/> and read <c>stats.GetValue("health")</c> as the live max.
+    /// </summary>
+    /// <remarks>
+    /// Sample-specific: ignite and chill are wired here directly so the demo has something to show. A real
+    /// game would lift those status effects into <see cref="SbModifier"/>s instead of hand-rolling coroutines
+    /// on the target. Treat as a stage prop, not a production blueprint.
+    /// </remarks>
+    public sealed class EnemyTarget : MonoBehaviour {
         [Header("Stats"), SerializeField] private float baseHealth = 100f;
         [SerializeField] private float baseMana = 50f;
 
@@ -21,7 +33,7 @@ namespace Spellbound.Modifiers.Samples {
         [Header("DoT Settings"), SerializeField]
         private float dotTickRate = 0.5f;
 
-        private StatContainer _stats;
+        private SbBehaviour _stats;
         private Coroutine _igniteCoroutine;
         private Coroutine _chillCoroutine;
         private EnemyHealthDisplay _healthDisplay;
@@ -29,7 +41,7 @@ namespace Spellbound.Modifiers.Samples {
         private float _currentHealth;
         private float _currentMana;
 
-        public StatContainer Stats => _stats;
+        public SbBehaviour Stats => _stats;
         public bool IsIgnited { get; private set; }
         public bool IsChilled { get; private set; }
         public bool IsDead { get; private set; }
@@ -56,7 +68,7 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private void InitializeStats() {
-            _stats = new StatContainer();
+            _stats = new SbBehaviour();
             _stats.SetBase("health", baseHealth);
             _stats.SetBase("mana", baseMana);
 
@@ -84,7 +96,7 @@ namespace Spellbound.Modifiers.Samples {
 
             _currentHealth -= damage;
 
-            Debug.Log(
+            Log.Info(
                 $"[{gameObject.name}] Took {damage:F1} {damageType} damage! ({_currentHealth:F0}/{MaxHealth:F0})");
 
             OnDamageTaken?.Invoke(this, damage, damageType);
@@ -119,7 +131,7 @@ namespace Spellbound.Modifiers.Samples {
             if (targetRenderer != null)
                 targetRenderer.material.color = deadColor;
 
-            Debug.Log($"[{gameObject.name}] DIED!");
+            Log.Info($"[{gameObject.name}] DIED!");
 
             OnDeath?.Invoke(this);
 
@@ -138,7 +150,7 @@ namespace Spellbound.Modifiers.Samples {
 
             _healthDisplay?.UpdateDisplay();
 
-            Debug.Log($"[{gameObject.name}] Respawned!");
+            Log.Info($"[{gameObject.name}] Respawned!");
         }
 
         public void ApplyIgnite(float duration, float damagePerSecond) {
@@ -158,7 +170,7 @@ namespace Spellbound.Modifiers.Samples {
             var damagePerTick = damagePerSecond * dotTickRate;
             var elapsed = 0f;
 
-            Debug.Log($"[{gameObject.name}] IGNITED for {duration}s! ({damagePerSecond:F1} dps)");
+            Log.Info($"[{gameObject.name}] IGNITED for {duration}s! ({damagePerSecond:F1} dps)");
 
             while (elapsed < duration && !IsDead) {
                 yield return new WaitForSeconds(dotTickRate);
@@ -172,7 +184,7 @@ namespace Spellbound.Modifiers.Samples {
             UpdateColor();
 
             if (!IsDead)
-                Debug.Log($"[{gameObject.name}] Ignite expired.");
+                Log.Info($"[{gameObject.name}] Ignite expired.");
 
             _igniteCoroutine = null;
         }
@@ -191,7 +203,7 @@ namespace Spellbound.Modifiers.Samples {
             IsChilled = true;
             UpdateColor();
 
-            Debug.Log($"[{gameObject.name}] CHILLED for {duration}s!");
+            Log.Info($"[{gameObject.name}] CHILLED for {duration}s!");
 
             yield return new WaitForSeconds(duration);
 
@@ -199,7 +211,7 @@ namespace Spellbound.Modifiers.Samples {
             UpdateColor();
 
             if (!IsDead)
-                Debug.Log($"[{gameObject.name}] Chill expired.");
+                Log.Info($"[{gameObject.name}] Chill expired.");
 
             _chillCoroutine = null;
         }

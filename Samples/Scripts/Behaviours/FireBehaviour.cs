@@ -1,17 +1,20 @@
-﻿// Copyright 2026 Spellbound Studio Inc.
+// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample behaviour: deals fire damage to a <see cref="TargetedPayload"/>'s target via
+    /// <see cref="EnemyTarget.TakeDamage"/>, and (on a chance roll) applies an ignite that scales by the
+    /// <c>increased_ignite_damage</c> stat on top of the landed hit. Stats: <c>fire_damage</c>,
+    /// <c>ignite_chance</c>, <c>increased_ignite_damage</c>. Knows HOW to land a fire hit; the skill
+    /// orchestrates when, against whom, and what to do with the returned <c>DamagePayload</c>.
+    /// </summary>
     [Serializable]
     public sealed class FireBehaviour : SbBehaviour {
-        [SerializeField] private float fireDamage = 20f;
-        [SerializeField] private float igniteChance = 100f;
-        [SerializeField] private float increasedIgniteDamage = 0f;
-
         public DamagePayload DealFireDamage(TargetedPayload payload) {
-            var damage = Stats.GetValue("fire_damage");
+            var damage = GetValue("fire_damage");
 
             var enemy = payload.Target.GetComponent<EnemyTarget>();
 
@@ -22,12 +25,12 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         public void TryIgnite(TargetedPayload payload, float duration, float hitDamage) {
-            var chance = Stats.GetValue("ignite_chance");
+            var chance = GetValue("ignite_chance");
 
             if (UnityEngine.Random.value * 100f >= chance)
                 return;
 
-            var increasedIgnite = Stats.GetValue("increased_ignite_damage");
+            var increasedIgnite = GetValue("increased_ignite_damage");
             var totalIgniteDamage = hitDamage * (1f + increasedIgnite / 100f);
             var igniteDps = totalIgniteDamage / duration;
 
@@ -35,13 +38,5 @@ namespace Spellbound.Modifiers.Samples {
             enemy?.ApplyIgnite(duration, igniteDps);
         }
 
-        protected override StatContainer InitializeStats() {
-            var stats = new StatContainer();
-            stats.SetBase("fire_damage", fireDamage);
-            stats.SetBase("ignite_chance", igniteChance);
-            stats.SetBase("increased_ignite_damage", increasedIgniteDamage);
-
-            return stats;
-        }
     }
 }

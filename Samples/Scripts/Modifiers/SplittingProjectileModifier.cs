@@ -5,6 +5,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+    /// <summary>
+    /// Sample modifier: subscribes to the target's <c>"hit"</c> event and, on each hit, fires a fan of new
+    /// projectiles outward from the impact point. Demonstrates the third axis of modification — listening to
+    /// the target's <see cref="EventContainer"/> and reacting with new gameplay, not just stat changes or
+    /// algorithm swaps. Tracks its own spawned projectiles so split-on-hit doesn't recurse infinitely.
+    /// </summary>
     [Serializable]
     public sealed class SplittingProjectileModifier : SbModifier {
         [SerializeField] private int splitCount = 2;
