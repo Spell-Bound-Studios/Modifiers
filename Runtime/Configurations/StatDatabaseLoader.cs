@@ -16,31 +16,28 @@ namespace Spellbound.Modifiers {
     /// </remarks>
     [AddComponentMenu("Spellbound/Modifiers/Stat Database Loader"), DefaultExecutionOrder(-1000)]
     public sealed class StatDatabaseLoader : MonoBehaviour {
-        [SerializeField,
-         Tooltip("StatDatabase asset to register at startup. " +
-                 "If null, the first StatDatabase found in any Resources folder is used.")]
-        private StatDatabase statDatabase;
-
-        [SerializeField,
-         Tooltip("When true, registering a stat that is not declared in the database throws at runtime. " +
-                 "Recommended for shipping builds.")]
-        private bool strictStatValidation = true;
+        [SerializeField] private StatDatabase statDatabase;
+        [SerializeField] private bool strictStatValidation = true;
 
         public StatDatabase Database => statDatabase;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void EarlyInit() {
+            var found = Resources.LoadAll<StatDatabase>("");
+            if (found.Length > 0)
+                found[0].RegisterAll();
+        }
+
         private void Awake() {
+            // Full init with inspector-assigned database + strict validation
             if (statDatabase == null) {
                 var found = Resources.LoadAll<StatDatabase>("");
-
                 if (found.Length > 0)
                     statDatabase = found[0];
             }
 
             if (statDatabase == null) {
-                Log.Error(
-                    "[StatDatabaseLoader] StatDatabase is null and none was found in any Resources folder. " +
-                    "Assign a database in the inspector or place one under Resources/.");
-
+                Log.Error("[StatDatabaseLoader] StatDatabase not found.");
                 return;
             }
 
