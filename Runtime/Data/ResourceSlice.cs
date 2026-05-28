@@ -47,7 +47,7 @@ namespace Spellbound.Modifiers {
     /// Focused on resources only. If you want stats, use <see cref="StatSlice"/>. The two are orthogonal DTOs;
     /// callers crafting one don't pay the cost of the other.
     /// </remarks>
-    public struct ResourceSlice : IDecodableData {
+    public struct ResourceSlice : IPackerObjectData {
         public static readonly string ID = "resource_slice";
 
         public static class Context {
@@ -68,13 +68,13 @@ namespace Spellbound.Modifiers {
 
         public string PackerId => ID;
 
-        public IDecodableData GetEmptyData() => new ResourceSlice(0);
+        public IPackerObjectData GetEmptyData() => new ResourceSlice(0);
 
-        public IDecodableData InvokeApplyDelta(
-            IDecodableData delta, ObjectPreset preset, int surfaceIndex, out byte context) =>
+        public IPackerObjectData InvokeApplyDelta(
+            IPackerObjectData delta, ObjectPreset preset, int surfaceIndex, out byte context) =>
                 this.ApplyDelta((ResourceSlice)delta, preset, surfaceIndex, out context);
 
-        public IDecodableData InvokeGetDefaultData(ObjectPreset preset, int surfaceIndex, byte level = 1) =>
+        public IPackerObjectData InvokeGetDefaultData(ObjectPreset preset, int surfaceIndex, byte level = 1) =>
                 this.GetDefaultData(preset, surfaceIndex, level);
 
         public void InvokeChangeCallback(
