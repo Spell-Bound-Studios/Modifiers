@@ -10,13 +10,14 @@ namespace Spellbound.Modifiers {
     /// of on the first console command / talent application.
     /// </summary>
     /// <remarks>
-    /// When <see cref="verbose"/> is set, every registered name is printed via <see cref="Log.Debug"/> so
-    /// you can confirm at boot that every <see cref="NamedModifierAttribute"/>-tagged type was picked up.
+    /// When <see cref="verbose"/> is set, every registered key is printed via <see cref="Log.Debug"/> so
+    /// you can confirm at boot that every <see cref="NamedModifier"/> asset under
+    /// <c>Resources/NamedModifiers/</c> was picked up.
     /// </remarks>
     [AddComponentMenu("Spellbound/Modifiers/Named Modifier Registry Loader"), DefaultExecutionOrder(-1000)]
     public sealed class NamedModifierRegistryLoader : MonoBehaviour {
         [SerializeField,
-         Tooltip("When true, prints every discovered NamedModifier name via Log.Debug after the scan.")]
+         Tooltip("When true, prints every discovered NamedModifier key via Log.Debug after the scan.")]
         private bool verbose;
 
         private void Awake() {
@@ -25,8 +26,8 @@ namespace Spellbound.Modifiers {
             if (!verbose)
                 return;
 
-            foreach (var mod in NamedModifierRegistry.Names)
-                Log.Debug($"[NamedModifierRegistry] Registered: {mod}");
+            foreach (var key in NamedModifierRegistry.Keys)
+                Log.Debug($"[NamedModifierRegistry] Registered: {key}");
         }
     }
 }

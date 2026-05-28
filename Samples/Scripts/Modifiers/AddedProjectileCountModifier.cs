@@ -1,6 +1,7 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using Spellbound.Core.Packing;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
@@ -32,5 +33,11 @@ namespace Spellbound.Modifiers.Samples {
             // Then I can remove this modifier by its unique ID that we have access to via the SbModifier base class.
             projectile.RemoveModifierByUniqueId(UniqueId);
         }
+
+        public override void Pack(ref Span<byte> buffer) =>
+                Packer.WriteInt(ref buffer, additionalProjectiles);
+
+        public override void Unpack(ref ReadOnlySpan<byte> buffer) =>
+                additionalProjectiles = Packer.ReadInt(ref buffer);
     }
 }

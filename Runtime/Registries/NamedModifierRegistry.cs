@@ -1,95 +1,124 @@
 // Copyright 2026 Spellbound Studio Inc.
 
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Spellbound.Core.Logging;
+using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Reflects across loaded assemblies and indexes every concrete <see cref="SbModifier"/> subclass tagged
-    /// with <see cref="NamedModifierAttribute"/> by its declared name. Duplicate names are logged as errors
-    /// at discovery time so collisions surface immediately rather than at first use.
+    /// Asset-based registry for <see cref="NamedModifier"/> SOs. Discovers every asset under
+    /// <c>Resources/NamedModifiers/</c> at first query, indexes them by string key and by a
+    /// stable uint hash of the key (FNV-1a 32-bit). Hash is deterministic — same key, same hash,
+    /// every run — so save files and network payloads can pack a 4-byte id and resolve back to
+    /// the asset on any machine.
     /// </summary>
     /// <remarks>
-    /// Lazy-loads on first query; the static cache is wiped naturally by Unity's domain reload on script
-    /// recompile. The drop-in <c>NamedModifierRegistryLoader</c> can be added to a bootstrap scene to force
-    /// eager load (and optional debug printing of discovered names). Modifiers must have a parameterless
-    /// constructor — runtime instantiation is via <see cref="Activator.CreateInstance(Type)"/>.
+    /// Lazy-loaded on first query. Call <see cref="Refresh"/> to force a rescan (e.g. after
+    /// runtime asset import). Collisions on key OR id are logged as errors at discovery time so
+    /// they surface immediately rather than at first save-load.
     /// </remarks>
     public static class NamedModifierRegistry {
-        private static Dictionary<string, Type> _byName;
+        private static Dictionary<string, NamedModifier> _byKey;
+        private static Dictionary<uint, NamedModifier> _byId;
 
-        public static bool TryCreate(string name, out SbModifier modifier) {
+        public static NamedModifier GetByKey(string key) {
             EnsureLoaded();
-            modifier = null;
 
-            if (!_byName.TryGetValue(name, out var type))
-                return false;
-
-            modifier = (SbModifier)Activator.CreateInstance(type);
-
-            return true;
+            return _byKey.TryGetValue(key, out var asset) ? asset : null;
         }
 
-        public static IEnumerable<string> Names {
+        public static NamedModifier GetById(uint id) {
+            EnsureLoaded();
+
+            return _byId.TryGetValue(id, out var asset) ? asset : null;
+        }
+
+        public static IEnumerable<string> Keys {
             get {
                 EnsureLoaded();
 
-                return _byName.Keys;
+                return _byKey.Keys;
+            }
+        }
+
+        public static IEnumerable<NamedModifier> All {
+            get {
+                EnsureLoaded();
+
+                return _byKey.Values;
             }
         }
 
         /// <summary>
-        /// Force a rescan of loaded assemblies. The lazy path is normally enough; call this from a loader
-        /// component to eagerly populate the cache before first use, or after dynamic assembly load.
+        /// Force a rescan of <c>Resources/NamedModifiers/</c>. The lazy path is normally enough;
+        /// call this after editor-time asset changes or dynamic asset load.
         /// </summary>
         public static void Refresh() {
-            _byName = null;
+            _byKey = null;
+            _byId = null;
             EnsureLoaded();
         }
 
+        /// <summary>
+        /// FNV-1a 32-bit hash of a key string. Stable, deterministic, identical across runs and
+        /// machines. Use this to compute the uint id for any string key (e.g. when packing a
+        /// modifier reference into a save or network frame before lookup).
+        /// </summary>
+        public static uint Hash(string key) {
+            if (string.IsNullOrEmpty(key))
+                return 0u;
+
+            const uint offsetBasis = 2166136261u;
+            const uint prime = 16777619u;
+            var hash = offsetBasis;
+
+            for (var i = 0; i < key.Length; i++) {
+                hash ^= key[i];
+                hash *= prime;
+            }
+
+            return hash;
+        }
+
         private static void EnsureLoaded() {
-            if (_byName != null)
+            if (_byKey != null)
                 return;
 
-            _byName = new Dictionary<string, Type>();
+            _byKey = new Dictionary<string, NamedModifier>();
+            _byId = new Dictionary<uint, NamedModifier>();
 
-            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
-                Type[] types;
+            var assets = Resources.LoadAll<NamedModifier>("NamedModifiers");
 
-                try {
-                    types = asm.GetTypes();
-                }
-                catch {
+            foreach (var asset in assets) {
+                if (asset == null)
+                    continue;
+
+                if (string.IsNullOrEmpty(asset.Key)) {
+                    Log.Error($"[NamedModifierRegistry] Asset '{asset.name}' has no Key; skipping.");
+
                     continue;
                 }
 
-                foreach (var type in types) {
-                    if (type.IsAbstract || type.IsInterface)
-                        continue;
+                if (_byKey.TryGetValue(asset.Key, out var existing)) {
+                    Log.Error(
+                        $"[NamedModifierRegistry] Duplicate Key '{asset.Key}'. " +
+                        $"Existing: {existing.name}; ignored: {asset.name}.");
 
-                    if (!typeof(SbModifier).IsAssignableFrom(type))
-                        continue;
-
-                    if (type.GetConstructor(Type.EmptyTypes) == null)
-                        continue;
-
-                    var attr = type.GetCustomAttribute<NamedModifierAttribute>(false);
-
-                    if (attr == null)
-                        continue;
-
-                    if (_byName.TryGetValue(attr.Name, out var existing)) {
-                        Log.Error(
-                            $"[NamedModifierRegistry] Duplicate name '{attr.Name}'. " +
-                            $"Existing: {existing.FullName}; ignored: {type.FullName}.");
-
-                        continue;
-                    }
-
-                    _byName[attr.Name] = type;
+                    continue;
                 }
+
+                var id = Hash(asset.Key);
+
+                if (_byId.TryGetValue(id, out var collidingAsset)) {
+                    Log.Error(
+                        $"[NamedModifierRegistry] Hash collision: '{asset.Key}' (id={id}) collides with " +
+                        $"existing '{collidingAsset.Key}'. Rename one of them. Ignoring '{asset.name}'.");
+
+                    continue;
+                }
+
+                _byKey[asset.Key] = asset;
+                _byId[id] = asset;
             }
         }
     }

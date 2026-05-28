@@ -35,7 +35,11 @@ namespace Spellbound.Modifiers {
         public Sprite Icon => icon;
         public StatDisplayFormat DisplayFormat => displayFormat;
 
-        public int Register() => StatRegistry.Register(statName);
+        public int Register() {
+            StatDefinitionRegistry.Register(this);
+
+            return StatRegistry.Register(statName);
+        }
 
         public string FormatValue(float value) =>
                 displayFormat != null

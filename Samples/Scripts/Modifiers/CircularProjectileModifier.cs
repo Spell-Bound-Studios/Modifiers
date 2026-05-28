@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
+
     /// <summary>
     /// Sample modifier: replaces the projectile direction calculation on a target's
     /// <see cref="ProjectileBehaviour"/> with a 360° fan. Demonstrates that a modifier can change BEHAVIOUR
@@ -26,6 +27,12 @@ namespace Spellbound.Modifiers.Samples {
             _modifiedBehaviour?.ClearDirectionCalculation();
             _modifiedBehaviour = null;
         }
+
+        // No serialized state — the behaviour reference is set in Apply and the direction
+        // calculation is hardcoded. Empty Pack/Unpack; Activator-built clones get a default
+        // instance with the same algorithm.
+        public override void Pack(ref Span<byte> buffer) { }
+        public override void Unpack(ref ReadOnlySpan<byte> buffer) { }
 
         private Vector3[] CalculateCircularDirections(int count) {
             if (count <= 0)

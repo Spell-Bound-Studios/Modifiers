@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Spellbound.Core.Packing;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
@@ -43,6 +44,18 @@ namespace Spellbound.Modifiers.Samples {
             _target = null;
             _targetedPayloadAction = null;
             _myProjectiles.Clear();
+        }
+
+        // Serialized tuning data round-trips; the runtime references (_target, event handler,
+        // active-projectile set) reset in Apply per-equip and don't need packing.
+        public override void Pack(ref Span<byte> buffer) {
+            Packer.WriteInt(ref buffer, splitCount);
+            Packer.WriteInt(ref buffer, splitAngle);
+        }
+
+        public override void Unpack(ref ReadOnlySpan<byte> buffer) {
+            splitCount = Packer.ReadInt(ref buffer);
+            splitAngle = Packer.ReadInt(ref buffer);
         }
 
         private void SplitProjectiles(TargetedPayload payload) {

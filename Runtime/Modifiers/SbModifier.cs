@@ -1,7 +1,7 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
-using UnityEngine;
+using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers {
     /// <summary>
@@ -17,16 +17,39 @@ namespace Spellbound.Modifiers {
     /// directly (the README's documented "20% power user" escape hatch).
     /// </remarks>
     [Serializable]
-    public abstract class SbModifier : IModifier, IHasUniqueId {
+    public abstract class SbModifier : IModifier, IHasUniqueId, IPacker {
         public abstract void Apply(ICanBeModified target);
 
         public abstract void Remove(ICanBeModified target);
 
         public string UniqueId { get; set; } = Guid.NewGuid().ToString();
 
+        /// <summary>
+        /// Write this modifier's state into <paramref name="buffer"/>. Concrete subclasses pack
+        /// whatever they need to round-trip an equivalent instance — typically a few primitives.
+        /// Stateless modifiers (IronWill, ImmuneToFireDamage) leave the body empty. UniqueId is
+        /// NOT packed: it's a process-local apply/remove handle, freshly generated on each
+        /// constructed instance.
+        /// </summary>
+        public abstract void Pack(ref Span<byte> buffer);
+
+        /// <summary>
+        /// Read state from <paramref name="buffer"/> into this instance. Mirror of <see cref="Pack"/>.
+        /// </summary>
+        public abstract void Unpack(ref ReadOnlySpan<byte> buffer);
+
+        /// <summary>
+        /// Deep-clone via the project's binary packer. Round-trips the modifier through
+        /// <see cref="Packer.ToBytes{T}"/> + <see cref="Activator.CreateInstance(Type)"/> +
+        /// <see cref="Unpack"/>, then stamps a fresh <see cref="UniqueId"/>. Replaces the previous
+        /// JsonUtility-based clone — same in-process deep-copy semantics, but rides the same
+        /// IPacker pipeline the rest of the codebase uses for save / network / inventory data.
+        /// </summary>
         public virtual IModifier Clone() {
-            var json = JsonUtility.ToJson(this);
-            var clone = (SbModifier)JsonUtility.FromJson(json, GetType());
+            var bytes = Packer.ToBytes(this);
+            ReadOnlySpan<byte> span = bytes;
+            var clone = (SbModifier)Activator.CreateInstance(GetType());
+            clone.Unpack(ref span);
             clone.UniqueId = Guid.NewGuid().ToString();
 
             return clone;
