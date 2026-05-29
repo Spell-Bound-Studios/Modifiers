@@ -6,28 +6,22 @@ using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Asset-based registry for <see cref="NamedModifier"/> SOs. Discovers every asset under
-    /// <c>Resources/NamedModifiers/</c> at first query, indexes them by string key and by a
-    /// stable uint hash of the key (FNV-1a 32-bit). Hash is deterministic — same key, same hash,
-    /// every run — so save files and network payloads can pack a 4-byte id and resolve back to
-    /// the asset on any machine.
+    /// Asset-based registry for <see cref="Trait"/> SOs. Scans <c>Resources/Traits/</c> on first
+    /// query, indexes by string Key AND by stable uint hash (FNV-1a 32-bit) for compact save /
+    /// network packing. Collisions on key or hash are logged at discovery so they surface
+    /// immediately.
     /// </summary>
-    /// <remarks>
-    /// Lazy-loaded on first query. Call <see cref="Refresh"/> to force a rescan (e.g. after
-    /// runtime asset import). Collisions on key OR id are logged as errors at discovery time so
-    /// they surface immediately rather than at first save-load.
-    /// </remarks>
-    public static class NamedModifierRegistry {
-        private static Dictionary<string, NamedModifier> _byKey;
-        private static Dictionary<uint, NamedModifier> _byId;
+    public static class TraitRegistry {
+        private static Dictionary<string, Trait> _byKey;
+        private static Dictionary<uint, Trait> _byId;
 
-        public static NamedModifier GetByKey(string key) {
+        public static Trait GetByKey(string key) {
             EnsureLoaded();
 
             return _byKey.TryGetValue(key, out var asset) ? asset : null;
         }
 
-        public static NamedModifier GetById(uint id) {
+        public static Trait GetById(uint id) {
             EnsureLoaded();
 
             return _byId.TryGetValue(id, out var asset) ? asset : null;
@@ -41,7 +35,7 @@ namespace Spellbound.Modifiers {
             }
         }
 
-        public static IEnumerable<NamedModifier> All {
+        public static IEnumerable<Trait> All {
             get {
                 EnsureLoaded();
 
@@ -49,10 +43,6 @@ namespace Spellbound.Modifiers {
             }
         }
 
-        /// <summary>
-        /// Force a rescan of <c>Resources/NamedModifiers/</c>. The lazy path is normally enough;
-        /// call this after editor-time asset changes or dynamic asset load.
-        /// </summary>
         public static void Refresh() {
             _byKey = null;
             _byId = null;
@@ -60,9 +50,7 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// FNV-1a 32-bit hash of a key string. Stable, deterministic, identical across runs and
-        /// machines. Use this to compute the uint id for any string key (e.g. when packing a
-        /// modifier reference into a save or network frame before lookup).
+        /// FNV-1a 32-bit hash of a key string. Deterministic, stable across runs and machines.
         /// </summary>
         public static uint Hash(string key) {
             if (string.IsNullOrEmpty(key))
@@ -84,24 +72,24 @@ namespace Spellbound.Modifiers {
             if (_byKey != null)
                 return;
 
-            _byKey = new Dictionary<string, NamedModifier>();
-            _byId = new Dictionary<uint, NamedModifier>();
+            _byKey = new Dictionary<string, Trait>();
+            _byId = new Dictionary<uint, Trait>();
 
-            var assets = Resources.LoadAll<NamedModifier>("NamedModifiers");
+            var assets = Resources.LoadAll<Trait>("Traits");
 
             foreach (var asset in assets) {
                 if (asset == null)
                     continue;
 
                 if (string.IsNullOrEmpty(asset.Key)) {
-                    Log.Error($"[NamedModifierRegistry] Asset '{asset.name}' has no Key; skipping.");
+                    Log.Error($"[TraitRegistry] Asset '{asset.name}' has no Key; skipping.");
 
                     continue;
                 }
 
                 if (_byKey.TryGetValue(asset.Key, out var existing)) {
                     Log.Error(
-                        $"[NamedModifierRegistry] Duplicate Key '{asset.Key}'. " +
+                        $"[TraitRegistry] Duplicate Key '{asset.Key}'. " +
                         $"Existing: {existing.name}; ignored: {asset.name}.");
 
                     continue;
@@ -111,7 +99,7 @@ namespace Spellbound.Modifiers {
 
                 if (_byId.TryGetValue(id, out var collidingAsset)) {
                     Log.Error(
-                        $"[NamedModifierRegistry] Hash collision: '{asset.Key}' (id={id}) collides with " +
+                        $"[TraitRegistry] Hash collision: '{asset.Key}' (id={id}) collides with " +
                         $"existing '{collidingAsset.Key}'. Rename one of them. Ignoring '{asset.name}'.");
 
                     continue;
