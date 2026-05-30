@@ -10,10 +10,17 @@ namespace Spellbound.Modifiers {
     /// strict-validation mode rejects any name not declared in the active <see cref="StatDatabase"/>.
     /// </summary>
     /// <remarks>
-    /// Because this is global static state, ids are PROCESS-LOCAL — they will not be stable across save/load
-    /// or between client and server, so any container packed for persistence or network transfer must key by
-    /// NAME (which is what <see cref="StatContainer.Pack"/> does). Tests that exercise this state must call
-    /// <see cref="Clear"/> between cases.
+    /// <para>Ids are <b>deterministic across builds</b> when registration always goes through
+    /// <see cref="StatDatabase.RegisterAll"/> — the database iterates its serialized stat list in field
+    /// order and assigns ids sequentially, so every client / server / build that loads the same asset
+    /// assigns identical ids. Ad-hoc <see cref="Register"/> calls outside that path will shift every later
+    /// id; lock down registration if you depend on id stability.</para>
+    /// <para>Today's <see cref="SbBehaviour.Pack"/> defensively packs stat <b>names</b>, not ids, so
+    /// serialized data survives an ad-hoc <see cref="Register"/> shifting the id table. Long-term direction
+    /// is to pack ids once registration is locked to the database path — smaller wire format, no string
+    /// interning on the hot unpack path.</para>
+    /// <para>Because this is global static state, tests that exercise it must call <see cref="Clear"/>
+    /// between cases.</para>
     /// </remarks>
     public static class StatRegistry {
         private static readonly Dictionary<string, int> NameToId = new();
