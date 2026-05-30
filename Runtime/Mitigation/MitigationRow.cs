@@ -17,8 +17,9 @@ namespace Spellbound.Modifiers {
         public readonly IMitigationStrategy Strategy;
         public readonly string UniqueId;
 
-        public MitigationRow(int defenseStatId, int[] coveredDamageStatIds, IMitigationStrategy strategy,
-                             string uniqueId) {
+        public MitigationRow(
+            int defenseStatId, int[] coveredDamageStatIds, IMitigationStrategy strategy,
+            string uniqueId) {
             DefenseStatId = defenseStatId;
             CoveredDamageStatIds = coveredDamageStatIds;
             Strategy = strategy;

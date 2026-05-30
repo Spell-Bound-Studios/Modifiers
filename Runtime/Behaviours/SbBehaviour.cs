@@ -23,7 +23,6 @@ namespace Spellbound.Modifiers {
     /// (chunk data, save file, network frame); the wire format keys by stat NAME, not registry id, because
     /// registry ids are process-local.
     /// </remarks>
-    
     /// <summary>
     /// Base class for a pure capability. A behaviour knows HOW to do exactly one thing (fire a projectile,
     /// receive damage, emit a beam, hold a resource pool, run a duration effect) and owns its own
@@ -48,7 +47,7 @@ namespace Spellbound.Modifiers {
 
         // If true, we need to recalculate before returning values
         private bool _isDirty = true;
-        
+
         #region Inspector Authoring
 
         [SerializeField] private List<StatBaseEntry> stats = new();
@@ -171,20 +170,16 @@ namespace Spellbound.Modifiers {
         #region Name-Based Overloads
 
         /// <summary>Name-keyed <see cref="SetBase(int, float)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public void SetBase(string statName, float value) =>
-                SetBase(StatRegistry.Register(statName), value);
+        public void SetBase(string statName, float value) => SetBase(StatRegistry.Register(statName), value);
 
         /// <summary>Name-keyed <see cref="GetBase(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public float GetBase(string statName) =>
-                GetBase(StatRegistry.Register(statName));
+        public float GetBase(string statName) => GetBase(StatRegistry.Register(statName));
 
         /// <summary>Name-keyed <see cref="HasBase(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public bool HasBase(string statName) =>
-                HasBase(StatRegistry.Register(statName));
+        public bool HasBase(string statName) => HasBase(StatRegistry.Register(statName));
 
         /// <summary>Name-keyed <see cref="GetValue(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public float GetValue(string statName) =>
-                GetValue(StatRegistry.Register(statName));
+        public float GetValue(string statName) => GetValue(StatRegistry.Register(statName));
 
         /// <summary>
         /// Add a <see cref="ModifierType.Flat"/> modifier to the named stat. The optional

@@ -16,7 +16,6 @@ namespace Spellbound.Modifiers {
         public StatDefinition defenseStat;
         public List<StatDefinition> coveredDamageStats = new();
 
-        [SerializeReference, DropdownPicker]
-        public IMitigationStrategy strategy;
+        [SerializeReference, DropdownPicker] public IMitigationStrategy strategy;
     }
 }

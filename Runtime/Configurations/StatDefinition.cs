@@ -35,7 +35,18 @@ namespace Spellbound.Modifiers {
         public Sprite Icon => icon;
         public StatDisplayFormat DisplayFormat => displayFormat;
 
-        public int Register() => StatRegistry.Register(statName);
+        /// <summary>
+        /// Threads this definition into both <see cref="StatDefinitionRegistry"/> (for name→asset
+        /// lookup) and <see cref="StatRegistry"/> (which interns the name to a process-local int
+        /// id), returning the assigned id. Idempotent — subsequent calls return the same id and
+        /// re-set the asset reference. <see cref="StatDatabase.RegisterAll"/> calls this on every
+        /// stat at boot; ad-hoc callers (tests, runtime stat introduction) can use it directly.
+        /// </summary>
+        public int Register() {
+            StatDefinitionRegistry.Register(this);
+
+            return StatRegistry.Register(statName);
+        }
 
         public string FormatValue(float value) =>
                 displayFormat != null

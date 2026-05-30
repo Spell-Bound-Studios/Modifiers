@@ -1,6 +1,7 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using Spellbound.Core.Packing;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
@@ -26,5 +27,10 @@ namespace Spellbound.Modifiers.Samples {
 
             duration.RemoveModifierByUniqueId(UniqueId);
         }
+
+        public override void Pack(ref Span<byte> buffer) => Packer.WriteFloat(ref buffer, increasedDurationPercent);
+
+        public override void Unpack(ref ReadOnlySpan<byte> buffer) =>
+                increasedDurationPercent = Packer.ReadFloat(ref buffer);
     }
 }

@@ -26,9 +26,8 @@ namespace Spellbound.Modifiers.Editor {
         /// Open the picker at <paramref name="anchor"/>; on selection, invoke <paramref name="onPicked"/>.
         /// Stats present in <paramref name="exclude"/> are filtered out (used for sibling-deduplication).
         /// </summary>
-        public static void Open(Rect anchor, HashSet<StatDefinition> exclude, Action<StatDefinition> onPicked) {
-            new Dropdown(new AdvancedDropdownState(), exclude, onPicked).Show(anchor);
-        }
+        public static void Open(Rect anchor, HashSet<StatDefinition> exclude, Action<StatDefinition> onPicked) =>
+                new Dropdown(new AdvancedDropdownState(), exclude, onPicked).Show(anchor);
 
         /// <summary>
         /// Format a <see cref="StatDefinition"/> as a designer-friendly button label — prefers
@@ -141,9 +140,11 @@ namespace Spellbound.Modifiers.Editor {
                 switch (item) {
                     case NullItem:
                         _onPicked(null);
+
                         break;
                     case CandidateItem c:
                         _onPicked(_candidates[c.Index]);
+
                         break;
                 }
             }

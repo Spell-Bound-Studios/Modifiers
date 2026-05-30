@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Spellbound.Core.Packing;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
@@ -18,6 +19,12 @@ namespace Spellbound.Modifiers.Samples {
 
         private ICanBeModified _target;
         private Action<TargetedPayload> _targetedPayloadAction;
+
+        // Tracks split-spawned projectiles so SplitProjectiles can skip them on hit (prevents
+        // recursive splitting). Entries are removed when a tracked projectile causes a hit — but
+        // projectiles that despawn without hitting (lifetime expired, left scene) leave stale
+        // entries that accumulate over the modifier's lifetime. Production code copying this
+        // pattern should hook a projectile-destroyed callback to clean up.
         private readonly HashSet<SimpleProjectile> _myProjectiles = new();
 
         public override void Apply(ICanBeModified target) {
@@ -43,6 +50,18 @@ namespace Spellbound.Modifiers.Samples {
             _target = null;
             _targetedPayloadAction = null;
             _myProjectiles.Clear();
+        }
+
+        // Serialized tuning data round-trips; the runtime references (_target, event handler,
+        // active-projectile set) reset in Apply per-equip and don't need packing.
+        public override void Pack(ref Span<byte> buffer) {
+            Packer.WriteInt(ref buffer, splitCount);
+            Packer.WriteInt(ref buffer, splitAngle);
+        }
+
+        public override void Unpack(ref ReadOnlySpan<byte> buffer) {
+            splitCount = Packer.ReadInt(ref buffer);
+            splitAngle = Packer.ReadInt(ref buffer);
         }
 
         private void SplitProjectiles(TargetedPayload payload) {

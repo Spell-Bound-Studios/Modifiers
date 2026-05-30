@@ -1,7 +1,6 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -116,6 +115,7 @@ namespace Spellbound.Modifiers.Editor {
             void Refresh() {
                 listProp.serializedObject.Update();
                 itemsContainer.Clear();
+
                 countBadge.text = listProp.arraySize == 0
                         ? "empty"
                         : listProp.arraySize == 1

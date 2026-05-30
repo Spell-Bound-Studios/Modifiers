@@ -19,7 +19,7 @@ namespace Spellbound.Modifiers.Editor {
     /// is invoked manually before each refresh so the behaviour's authored <c>StatBaseEntry</c> list is
     /// applied to <c>_baseValues</c> and the preview matches what the runtime will see post-deserialize.
     /// </remarks>
-    [CustomPropertyDrawer(typeof(SbBehaviour), useForChildren: true)]
+    [CustomPropertyDrawer(typeof(SbBehaviour), true)]
     public sealed class SbBehaviourDrawer : PropertyDrawer {
         public override VisualElement CreatePropertyGUI(SerializedProperty property) {
             var root = new VisualElement {
@@ -36,6 +36,7 @@ namespace Spellbound.Modifiers.Editor {
             });
 
             root.Add(EditorListHelpers.SectionHeader("Stats (read-only preview)"));
+
             root.Add(EditorListHelpers.BuildLivePreview(
                 property.serializedObject,
                 () => ComputePreviewText(property)));

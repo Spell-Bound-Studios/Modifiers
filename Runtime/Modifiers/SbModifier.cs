@@ -1,14 +1,14 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
-using UnityEngine;
+using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers {
     /// <summary>
     /// Convenience base for the 80% modifier use case: bundles <see cref="IModifier"/> with a generated
-    /// <see cref="IHasUniqueId.UniqueId"/>, a JSON-based default <see cref="Clone"/>, and protected helpers
-    /// (<see cref="TryGetStats"/> / <see cref="TryGetBehaviour{T}"/> / <see cref="TryGetEvents"/>) that reach
-    /// into the target's containers without callers writing the cast boilerplate.
+    /// <see cref="IHasUniqueId.UniqueId"/>, an <see cref="IPacker"/>-based default <see cref="Clone"/>, and
+    /// protected helpers (<see cref="TryGetBehaviour{T}"/> / <see cref="TryGetEvents"/>) that reach into
+    /// the target's containers without callers writing the cast boilerplate.
     /// </summary>
     /// <remarks>
     /// Concrete subclasses are typically <c>[Serializable] sealed</c> so they can ride a
@@ -17,32 +17,48 @@ namespace Spellbound.Modifiers {
     /// directly (the README's documented "20% power user" escape hatch).
     /// </remarks>
     [Serializable]
-    public abstract class SbModifier : IModifier, IHasUniqueId {
+    public abstract class SbModifier : IModifier, IHasUniqueId, IPacker {
         public abstract void Apply(ICanBeModified target);
 
         public abstract void Remove(ICanBeModified target);
 
         public string UniqueId { get; set; } = Guid.NewGuid().ToString();
 
+        /// <summary>
+        /// Write this modifier's state into <paramref name="buffer"/>. Concrete subclasses pack
+        /// whatever they need to round-trip an equivalent instance — typically a few primitives.
+        /// Stateless modifiers (IronWill, ImmuneToFireDamage) leave the body empty. UniqueId is
+        /// NOT packed: it's a process-local apply/remove handle, freshly generated on each
+        /// constructed instance.
+        /// </summary>
+        public abstract void Pack(ref Span<byte> buffer);
+
+        /// <summary>
+        /// Read state from <paramref name="buffer"/> into this instance. Mirror of <see cref="Pack"/>.
+        /// </summary>
+        public abstract void Unpack(ref ReadOnlySpan<byte> buffer);
+
+        /// <summary>
+        /// Deep-clone via the project's binary packer. Round-trips the modifier through
+        /// <see cref="Packer.ToBytes{T}"/> + <see cref="Activator.CreateInstance(Type)"/> +
+        /// <see cref="Unpack"/>, then stamps a fresh <see cref="UniqueId"/>. Concrete subclasses
+        /// must expose a parameterless constructor for the <c>Activator.CreateInstance</c> path.
+        /// </summary>
         public virtual IModifier Clone() {
-            var json = JsonUtility.ToJson(this);
-            var clone = (SbModifier)JsonUtility.FromJson(json, GetType());
+            var bytes = Packer.ToBytes(this);
+            ReadOnlySpan<byte> span = bytes;
+            var clone = (SbModifier)Activator.CreateInstance(GetType());
+            clone.Unpack(ref span);
             clone.UniqueId = Guid.NewGuid().ToString();
 
             return clone;
         }
 
         #region Convenience Methods
-        
+
         /// <summary>
         /// Attempts to get the SbBehaviour from the ICanBeModified target if an IHasBehaviour exists on the target.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="behaviour"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>
-        ///
-        /// </returns>
         protected bool TryGetBehaviour<T>(ICanBeModified target, out T behaviour) where T : SbBehaviour {
             behaviour = null;
 
@@ -52,11 +68,6 @@ namespace Spellbound.Modifiers {
         /// <summary>
         /// Attempts to get the EventContainer from the ICanBeModified target if an IHasEvents exists on the target.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="events"></param>
-        /// <returns>
-        ///
-        /// </returns>
         protected bool TryGetEvents(ICanBeModified target, out EventContainer events) {
             events = null;
 
