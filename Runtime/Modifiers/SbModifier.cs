@@ -55,7 +55,7 @@ namespace Spellbound.Modifiers {
         }
 
         #region Convenience Methods
-        
+
         /// <summary>
         /// Attempts to get the SbBehaviour from the ICanBeModified target if an IHasBehaviour exists on the target.
         /// </summary>

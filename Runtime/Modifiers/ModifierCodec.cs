@@ -118,16 +118,14 @@ namespace Spellbound.Modifiers {
 
             SbModifier mod;
 
-            if (tag == Tag.TraitRef) {
+            if (tag == Tag.TraitRef)
                 mod = new TraitRef();
-            }
             else if (tag == Tag.Affix) {
                 var typeName = Packer.ReadString(ref buffer);
                 mod = InstantiateByTypeName(typeName);
             }
-            else {
+            else
                 throw new InvalidOperationException($"Unknown tag {tag}");
-            }
 
             if (mod == null)
                 throw new InvalidOperationException($"Failed to instantiate for tag {tag}");
@@ -137,13 +135,12 @@ namespace Spellbound.Modifiers {
             return mod;
         }
 
-        private static byte ResolveTag(SbModifier mod) {
-            return mod switch {
-                TraitRef _ => Tag.TraitRef,
-                Affix _ => Tag.Affix,
-                _ => throw new InvalidOperationException($"Unsupported modifier type: {mod.GetType().Name}")
-            };
-        }
+        private static byte ResolveTag(SbModifier mod) =>
+                mod switch {
+                    TraitRef _ => Tag.TraitRef,
+                    Affix _ => Tag.Affix,
+                    _ => throw new InvalidOperationException($"Unsupported modifier type: {mod.GetType().Name}")
+                };
 
         // Cache populated lazily on first lookup. Negative results (type-not-found) also cached
         // so repeated decodes of corrupt data don't re-walk every assembly each time.

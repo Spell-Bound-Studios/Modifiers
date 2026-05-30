@@ -53,9 +53,7 @@ namespace Spellbound.Modifiers {
                 stat.Register();
                 _lookup[stat.StatName] = stat;
 
-                if (logVerbosely) {
-                    Log.Debug($"Registered the stat '{stat.StatName}'.");
-                }
+                if (logVerbosely) Log.Debug($"Registered the stat '{stat.StatName}'.");
             }
 
             if (strictStatValidation)

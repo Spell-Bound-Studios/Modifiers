@@ -18,8 +18,7 @@ namespace Spellbound.Modifiers {
     /// </remarks>
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Modifier Pool")]
     public class ModifierPool : ScriptableObject {
-        [SerializeReference, DropdownPicker]
-        private List<PoolSlot> slots = new();
+        [SerializeReference, DropdownPicker] private List<PoolSlot> slots = new();
 
         public IReadOnlyList<PoolSlot> Slots => slots;
 

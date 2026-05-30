@@ -13,8 +13,8 @@ namespace Spellbound.Modifiers {
     [Serializable]
     public abstract class PoolSlot {
         [Tooltip("Selection weight — higher = picked more often when sampling from the pool. " +
-                 "Only the ratio between slots matters: 100/100 = 50/50; 1000/10 = ~99%/~1%.")]
-        [Min(0)] public int Weight;
+                 "Only the ratio between slots matters: 100/100 = 50/50; 1000/10 = ~99%/~1%."), Min(0)]
+        public int Weight;
 
         /// <summary>
         /// Produce a fresh <see cref="SbModifier"/> instance from this slot. Stat-flavor slots

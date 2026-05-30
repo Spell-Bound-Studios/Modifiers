@@ -23,8 +23,8 @@ namespace Spellbound.Modifiers {
     /// </remarks>
     [Serializable]
     public sealed class TraitRef : SbModifier {
-        [Tooltip("The Trait asset this reference points at. Apply clones the asset's Effect.")]
-        [SerializeField] private Trait trait;
+        [Tooltip("The Trait asset this reference points at. Apply clones the asset's Effect."), SerializeField]
+        private Trait trait;
 
         // Runtime — the cloned modifier we applied, so Remove can undo it. Not serialized.
         private SbModifier _appliedClone;
@@ -47,7 +47,8 @@ namespace Spellbound.Modifiers {
                 return;
 
             if (_appliedClone != null)
-                Log.Warn($"TraitRef.Apply called twice without an intervening Remove (trait='{trait.Key}'); the previous clone is being orphaned on the target.");
+                Log.Warn(
+                    $"TraitRef.Apply called twice without an intervening Remove (trait='{trait.Key}'); the previous clone is being orphaned on the target.");
 
             _appliedClone = (SbModifier)trait.Effect.Clone();
             _appliedClone.Apply(target);

@@ -18,7 +18,6 @@ namespace Spellbound.Modifiers {
     /// than mutating it in place.
     /// </remarks>
     public abstract class PipelineTemplate<TContext> : ScriptableObject where TContext : struct {
-        [SerializeReference, DropdownPicker]
-        public List<IPipelineStage<TContext>> stages = new();
+        [SerializeReference, DropdownPicker] public List<IPipelineStage<TContext>> stages = new();
     }
 }

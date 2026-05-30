@@ -26,10 +26,11 @@ namespace Spellbound.Modifiers {
             if (definition == null || string.IsNullOrEmpty(definition.StatName))
                 return;
 
-            if (_byName.TryGetValue(definition.StatName, out var existing) && existing != definition)
+            if (_byName.TryGetValue(definition.StatName, out var existing) && existing != definition) {
                 Log.Warn(
                     $"Duplicate stat name '{definition.StatName}'. " +
                     $"Existing asset '{existing.name}' is being replaced by '{definition.name}'.");
+            }
 
             _byName[definition.StatName] = definition;
         }

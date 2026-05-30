@@ -22,24 +22,24 @@ namespace Spellbound.Modifiers {
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Trait")]
     public class Trait : ScriptableObject {
         [Tooltip("Stable registry key, snake_case (e.g. \"iron_will_t1\"). Hashed to a uint for " +
-                 "compact save / wire encoding. Must be unique across all Trait assets.")]
-        [SerializeField] private string key;
+                 "compact save / wire encoding. Must be unique across all Trait assets."), SerializeField]
+        private string key;
 
         [Tooltip("Player-facing display name shown on nameplates and tooltips (e.g. \"Iron Will\"). " +
                  "Multiple tiers of the same identity typically share the DisplayName but differ " +
-                 "in Icon and Effect tuning.")]
-        [SerializeField] private string displayName;
+                 "in Icon and Effect tuning."), SerializeField]
+        private string displayName;
 
         [Tooltip("Icon shown on nameplates / tooltips. Tier variants typically use copper / silver " +
-                 "/ gold colorations to communicate strength at a glance.")]
-        [SerializeField] private Sprite icon;
+                 "/ gold colorations to communicate strength at a glance."), SerializeField]
+        private Sprite icon;
 
-        [Tooltip("Tooltip / nameplate hover description.")]
-        [SerializeField, TextArea(2, 5)] private string description;
+        [Tooltip("Tooltip / nameplate hover description."), SerializeField, TextArea(2, 5)]
+        private string description;
 
         [Tooltip("The actual SbModifier behavior cloned-and-applied when this Trait reaches a " +
-                 "target. Configure the behavior's parameters here per-tier.")]
-        [SerializeReference, DropdownPicker] private SbModifier effect;
+                 "target. Configure the behavior's parameters here per-tier."), SerializeReference, DropdownPicker]
+        private SbModifier effect;
 
         public string Key => key;
         public string DisplayName => string.IsNullOrEmpty(displayName) ? key : displayName;

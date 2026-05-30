@@ -1,7 +1,6 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System;
-using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
     /// <summary>
@@ -37,6 +36,5 @@ namespace Spellbound.Modifiers.Samples {
             var enemy = payload.Target.GetComponent<EnemyTarget>();
             enemy?.ApplyIgnite(duration, igniteDps);
         }
-
     }
 }

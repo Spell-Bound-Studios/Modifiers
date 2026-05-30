@@ -34,8 +34,7 @@ namespace Spellbound.Modifiers.Samples {
             projectile.RemoveModifierByUniqueId(UniqueId);
         }
 
-        public override void Pack(ref Span<byte> buffer) =>
-                Packer.WriteInt(ref buffer, additionalProjectiles);
+        public override void Pack(ref Span<byte> buffer) => Packer.WriteInt(ref buffer, additionalProjectiles);
 
         public override void Unpack(ref ReadOnlySpan<byte> buffer) =>
                 additionalProjectiles = Packer.ReadInt(ref buffer);

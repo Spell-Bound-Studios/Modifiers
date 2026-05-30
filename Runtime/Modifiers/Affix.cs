@@ -56,14 +56,14 @@ namespace Spellbound.Modifiers {
         public override void Unpack(ref ReadOnlySpan<byte> buffer) {
             var statName = Packer.ReadString(ref buffer);
 
-            if (string.IsNullOrEmpty(statName)) {
+            if (string.IsNullOrEmpty(statName))
                 stat = null;
-            }
             else {
                 stat = StatDefinitionRegistry.GetByName(statName);
 
                 if (stat == null)
-                    Log.Warn($"Affix.Unpack: stat '{statName}' is not registered in StatDefinitionRegistry; affix will no-op on Apply.");
+                    Log.Warn(
+                        $"Affix.Unpack: stat '{statName}' is not registered in StatDefinitionRegistry; affix will no-op on Apply.");
             }
 
             modifierType = (ModifierType)Packer.ReadByte(ref buffer);

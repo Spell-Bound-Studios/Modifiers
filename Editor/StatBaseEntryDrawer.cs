@@ -58,6 +58,7 @@ namespace Spellbound.Modifiers.Editor {
             });
 
             valueField.TrackPropertyValue(baseValueProp, p => valueField.SetValueWithoutNotify(p.floatValue));
+
             pickerButton.TrackPropertyValue(statProp,
                 p => pickerButton.text = StatDefinitionPicker.FormatLabel(p.objectReferenceValue as StatDefinition));
 
