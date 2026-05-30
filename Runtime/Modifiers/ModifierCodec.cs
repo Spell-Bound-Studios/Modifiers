@@ -8,21 +8,38 @@ using UnityEngine.Scripting;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Polymorphic codec for <see cref="SbModifier"/> lists in byte[]-shaped storage (inventory
-    /// item data, save sections, network frames). Each entry is encoded with a 1-byte type tag
-    /// followed by that subclass's <c>Pack</c> bytes; decode flips the tag back into an
-    /// instantiated subclass and calls <c>Unpack</c>.
+    /// <b>Why this exists:</b> inventory item data, save sections, and network frames each need
+    /// to round-trip a <c>List&lt;SbModifier&gt;</c> where individual entries are different
+    /// concrete subclasses (<c>StatAffix</c>, <see cref="TraitRef"/>, future game-specific Affix
+    /// types). Without this codec, every consumer would hand-roll a switch on type name to encode
+    /// and decode their lists. With it, consumers call <see cref="Encode"/> / <see cref="Decode"/>
+    /// and get a byte[] payload that round-trips faithfully.
     /// </summary>
     /// <remarks>
-    /// <para>Type tags are <see cref="byte"/>-sized (0–255) and centralized in
-    /// <see cref="Tag"/>. Adding a new modifier shape to the codec is one new tag + one new case
-    /// in <see cref="ReadTagged"/>. The tag is THE wire identity for the subclass — never
-    /// renumber existing tags or saved data breaks.</para>
-    /// <para><b>Affix entries</b> carry their concrete subclass's full type name as part of the
-    /// encoded payload (<c>[Tag.Affix][type-name-string][Pack-bytes]</c>), so any concrete
-    /// <see cref="Affix"/> subclass shipped by a consumer can ride the same tag without the codec
-    /// hard-knowing each one. The named type is instantiated via reflection on decode.
-    /// <b>TraitRef entries</b> don't carry a type name — there is only one TraitRef class.</para>
+    /// <para><b>Wire format per entry:</b></para>
+    /// <list type="bullet">
+    /// <item><c>[Tag.TraitRef][TraitRef.Pack-bytes]</c> — 1-byte tag, then the TraitRef's
+    /// hashed-id payload (4 bytes). One class, no type-name needed; the tag IS the type.</item>
+    /// <item><c>[Tag.Affix][typeName length-prefixed string][Affix.Pack-bytes]</c> — 1-byte tag,
+    /// then the concrete subclass's full type name, then its packed state. The type name lets
+    /// consumer-side Affix subclasses ride the same tag — the codec doesn't need to know them at
+    /// compile time; reflection instantiates on decode.</item>
+    /// </list>
+    /// <para><b>Tag stability is load-bearing:</b> the byte values in <see cref="Tag"/> are THE
+    /// wire identity for each subclass family. <b>Never renumber existing tags</b> or every saved
+    /// item / save file / queued network frame breaks. Adding a new modifier shape is additive: a
+    /// new tag constant + a new case in <see cref="ReadTagged"/> + a new branch in
+    /// <see cref="ResolveTag"/>.</para>
+    /// <para><b>IL2CPP stripping caveat:</b> the codec instantiates concrete <see cref="Affix"/>
+    /// subclasses by reflection (<see cref="Activator.CreateInstance(Type)"/>), so on IL2CPP
+    /// builds the linker may strip subclasses that have no compile-time reference. Consumer-side
+    /// Affix subclasses must be <c>[Preserve]</c>-marked (or covered by a <c>link.xml</c> entry)
+    /// to survive build-time stripping. Lib-side types ride the codec's existing
+    /// <c>[Preserve]</c>.</para>
+    /// <para><b>Known concerns / scheduled rework:</b> see
+    /// <c>_GameLogic/Docs/ModifierCodecRework.md</c> for the open architectural questions —
+    /// type-name string bloat, repeated reflection lookups, no format-version byte, and whether
+    /// the polymorphic-list-codec pattern should be a Core primitive instead of lib-local.</para>
     /// </remarks>
     public static class ModifierCodec {
         /// <summary>
@@ -75,8 +92,8 @@ namespace Spellbound.Modifiers {
 
                 return result;
             }
-            catch {
-                Log.Warn("[ModifierCodec] Malformed payload; returning empty list.");
+            catch (Exception ex) {
+                Log.Error($"Malformed payload; returning empty list. ({ex.Message})");
 
                 return new List<SbModifier>();
             }
@@ -109,11 +126,11 @@ namespace Spellbound.Modifiers {
                 mod = InstantiateByTypeName(typeName);
             }
             else {
-                throw new InvalidOperationException($"[ModifierCodec] Unknown tag {tag}");
+                throw new InvalidOperationException($"Unknown tag {tag}");
             }
 
             if (mod == null)
-                throw new InvalidOperationException($"[ModifierCodec] Failed to instantiate for tag {tag}");
+                throw new InvalidOperationException($"Failed to instantiate for tag {tag}");
 
             mod.Unpack(ref buffer);
 
@@ -124,7 +141,7 @@ namespace Spellbound.Modifiers {
             return mod switch {
                 TraitRef _ => Tag.TraitRef,
                 Affix _ => Tag.Affix,
-                _ => throw new InvalidOperationException($"[ModifierCodec] Unsupported modifier type: {mod.GetType().Name}")
+                _ => throw new InvalidOperationException($"Unsupported modifier type: {mod.GetType().Name}")
             };
         }
 
@@ -136,7 +153,7 @@ namespace Spellbound.Modifiers {
                     return (SbModifier)Activator.CreateInstance(type);
             }
 
-            Log.Error($"[ModifierCodec] Type '{fullName}' not found in any loaded assembly.");
+            Log.Error($"Type '{fullName}' not found in any loaded assembly.");
 
             return null;
         }
