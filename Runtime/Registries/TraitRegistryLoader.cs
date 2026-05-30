@@ -27,7 +27,7 @@ namespace Spellbound.Modifiers {
                 return;
 
             foreach (var key in TraitRegistry.Keys)
-                Log.Debug($"[TraitRegistry] Registered: {key}");
+                Log.Debug($"Registered: {key}");
         }
     }
 }

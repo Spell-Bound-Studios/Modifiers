@@ -1,6 +1,7 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using Spellbound.Core.Logging;
 using Spellbound.Core.Packing;
 using UnityEngine;
 
@@ -44,6 +45,9 @@ namespace Spellbound.Modifiers {
         public override void Apply(ICanBeModified target) {
             if (trait == null || trait.Effect == null)
                 return;
+
+            if (_appliedClone != null)
+                Log.Warn($"TraitRef.Apply called twice without an intervening Remove (trait='{trait.Key}'); the previous clone is being orphaned on the target.");
 
             _appliedClone = (SbModifier)trait.Effect.Clone();
             _appliedClone.Apply(target);

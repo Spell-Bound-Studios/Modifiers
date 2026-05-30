@@ -6,9 +6,9 @@ using Spellbound.Core.Packing;
 namespace Spellbound.Modifiers {
     /// <summary>
     /// Convenience base for the 80% modifier use case: bundles <see cref="IModifier"/> with a generated
-    /// <see cref="IHasUniqueId.UniqueId"/>, a JSON-based default <see cref="Clone"/>, and protected helpers
-    /// (<see cref="TryGetStats"/> / <see cref="TryGetBehaviour{T}"/> / <see cref="TryGetEvents"/>) that reach
-    /// into the target's containers without callers writing the cast boilerplate.
+    /// <see cref="IHasUniqueId.UniqueId"/>, an <see cref="IPacker"/>-based default <see cref="Clone"/>, and
+    /// protected helpers (<see cref="TryGetBehaviour{T}"/> / <see cref="TryGetEvents"/>) that reach into
+    /// the target's containers without callers writing the cast boilerplate.
     /// </summary>
     /// <remarks>
     /// Concrete subclasses are typically <c>[Serializable] sealed</c> so they can ride a
@@ -41,9 +41,8 @@ namespace Spellbound.Modifiers {
         /// <summary>
         /// Deep-clone via the project's binary packer. Round-trips the modifier through
         /// <see cref="Packer.ToBytes{T}"/> + <see cref="Activator.CreateInstance(Type)"/> +
-        /// <see cref="Unpack"/>, then stamps a fresh <see cref="UniqueId"/>. Replaces the previous
-        /// JsonUtility-based clone — same in-process deep-copy semantics, but rides the same
-        /// IPacker pipeline the rest of the codebase uses for save / network / inventory data.
+        /// <see cref="Unpack"/>, then stamps a fresh <see cref="UniqueId"/>. Concrete subclasses
+        /// must expose a parameterless constructor for the <c>Activator.CreateInstance</c> path.
         /// </summary>
         public virtual IModifier Clone() {
             var bytes = Packer.ToBytes(this);
@@ -60,12 +59,6 @@ namespace Spellbound.Modifiers {
         /// <summary>
         /// Attempts to get the SbBehaviour from the ICanBeModified target if an IHasBehaviour exists on the target.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="behaviour"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>
-        ///
-        /// </returns>
         protected bool TryGetBehaviour<T>(ICanBeModified target, out T behaviour) where T : SbBehaviour {
             behaviour = null;
 
@@ -75,11 +68,6 @@ namespace Spellbound.Modifiers {
         /// <summary>
         /// Attempts to get the EventContainer from the ICanBeModified target if an IHasEvents exists on the target.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="events"></param>
-        /// <returns>
-        ///
-        /// </returns>
         protected bool TryGetEvents(ICanBeModified target, out EventContainer events) {
             events = null;
 

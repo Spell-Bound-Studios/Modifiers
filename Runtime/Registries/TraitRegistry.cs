@@ -82,14 +82,14 @@ namespace Spellbound.Modifiers {
                     continue;
 
                 if (string.IsNullOrEmpty(asset.Key)) {
-                    Log.Error($"[TraitRegistry] Asset '{asset.name}' has no Key; skipping.");
+                    Log.Error($"Asset '{asset.name}' has no Key; skipping.");
 
                     continue;
                 }
 
                 if (_byKey.TryGetValue(asset.Key, out var existing)) {
                     Log.Error(
-                        $"[TraitRegistry] Duplicate Key '{asset.Key}'. " +
+                        $"Duplicate Key '{asset.Key}'. " +
                         $"Existing: {existing.name}; ignored: {asset.name}.");
 
                     continue;
@@ -99,7 +99,7 @@ namespace Spellbound.Modifiers {
 
                 if (_byId.TryGetValue(id, out var collidingAsset)) {
                     Log.Error(
-                        $"[TraitRegistry] Hash collision: '{asset.Key}' (id={id}) collides with " +
+                        $"Hash collision: '{asset.Key}' (id={id}) collides with " +
                         $"existing '{collidingAsset.Key}'. Rename one of them. Ignoring '{asset.name}'.");
 
                     continue;

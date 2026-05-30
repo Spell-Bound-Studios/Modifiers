@@ -13,8 +13,9 @@ namespace Spellbound.Modifiers {
     /// <para>Ids are <b>deterministic across builds</b> when registration always goes through
     /// <see cref="StatDatabase.RegisterAll"/> — the database iterates its serialized stat list in field
     /// order and assigns ids sequentially, so every client / server / build that loads the same asset
-    /// assigns identical ids. Ad-hoc <see cref="Register"/> calls outside that path will shift every later
-    /// id; lock down registration if you depend on id stability.</para>
+    /// assigns identical ids. Ad-hoc <see cref="Register"/> calls outside that path (e.g. a runtime tool
+    /// or console command introducing a previously-unseen stat name) will shift every later id; lock
+    /// down registration if you depend on id stability.</para>
     /// <para>Today's <see cref="SbBehaviour.Pack"/> defensively packs stat <b>names</b>, not ids, so
     /// serialized data survives an ad-hoc <see cref="Register"/> shifting the id table. Long-term direction
     /// is to pack ids once registration is locked to the database path — smaller wire format, no string

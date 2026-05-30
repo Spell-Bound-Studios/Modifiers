@@ -1,6 +1,7 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using Spellbound.Core.Logging;
 using Spellbound.Core.Packing;
 using UnityEngine;
 
@@ -36,16 +37,14 @@ namespace Spellbound.Modifiers {
         public float Value => value;
 
         /// <summary>
-        /// Configure at runtime — used by pool sampling and other code paths that construct an
-        /// Affix fresh with a rolled value. Returns this for chaining. Inspector-authored instances
-        /// assign their fields directly via SerializeField.
+        /// Mutator used by the <see cref="AffixExtensions.Initialize{T}"/> extension. Inspector-
+        /// authored instances populate their fields via SerializeField; runtime construction
+        /// flows through the extension (which returns the concrete subclass for fluent chaining).
         /// </summary>
-        public Affix Initialize(StatDefinition stat, ModifierType modifierType, float value) {
+        internal void SetData(StatDefinition stat, ModifierType modifierType, float value) {
             this.stat = stat;
             this.modifierType = modifierType;
             this.value = value;
-
-            return this;
         }
 
         public override void Pack(ref Span<byte> buffer) {
@@ -56,9 +55,39 @@ namespace Spellbound.Modifiers {
 
         public override void Unpack(ref ReadOnlySpan<byte> buffer) {
             var statName = Packer.ReadString(ref buffer);
-            stat = string.IsNullOrEmpty(statName) ? null : StatDefinitionRegistry.GetByName(statName);
+
+            if (string.IsNullOrEmpty(statName)) {
+                stat = null;
+            }
+            else {
+                stat = StatDefinitionRegistry.GetByName(statName);
+
+                if (stat == null)
+                    Log.Warn($"Affix.Unpack: stat '{statName}' is not registered in StatDefinitionRegistry; affix will no-op on Apply.");
+            }
+
             modifierType = (ModifierType)Packer.ReadByte(ref buffer);
             value = Packer.ReadFloat(ref buffer);
+        }
+    }
+
+    /// <summary>
+    /// Extension layer for <see cref="Affix"/>. <see cref="Initialize{T}"/> returns the concrete
+    /// subclass type via type inference from the receiver — fluent chains like
+    /// <c>new StatAffix().Initialize(...)</c> retain the concrete type without a cast.
+    /// </summary>
+    public static class AffixExtensions {
+        /// <summary>
+        /// Configure an Affix at runtime — used by pool sampling and any other code path that
+        /// constructs an Affix fresh with a rolled value. Returns the concrete subclass for
+        /// fluent chaining. Inspector-authored instances assign their fields directly via
+        /// SerializeField and don't need this.
+        /// </summary>
+        public static T Initialize<T>(this T affix, StatDefinition stat, ModifierType modifierType, float value)
+                where T : Affix {
+            affix.SetData(stat, modifierType, value);
+
+            return affix;
         }
     }
 }
