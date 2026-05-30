@@ -19,6 +19,12 @@ namespace Spellbound.Modifiers.Samples {
 
         private ICanBeModified _target;
         private Action<TargetedPayload> _targetedPayloadAction;
+
+        // Tracks split-spawned projectiles so SplitProjectiles can skip them on hit (prevents
+        // recursive splitting). Entries are removed when a tracked projectile causes a hit — but
+        // projectiles that despawn without hitting (lifetime expired, left scene) leave stale
+        // entries that accumulate over the modifier's lifetime. Production code copying this
+        // pattern should hook a projectile-destroyed callback to clean up.
         private readonly HashSet<SimpleProjectile> _myProjectiles = new();
 
         public override void Apply(ICanBeModified target) {

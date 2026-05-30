@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
-
     /// <summary>
     /// Sample modifier: replaces the projectile direction calculation on a target's
     /// <see cref="ProjectileBehaviour"/> with a 360° fan. Demonstrates that a modifier can change BEHAVIOUR

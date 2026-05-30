@@ -145,14 +145,26 @@ namespace Spellbound.Modifiers {
             };
         }
 
+        // Cache populated lazily on first lookup. Negative results (type-not-found) also cached
+        // so repeated decodes of corrupt data don't re-walk every assembly each time.
+        private static readonly Dictionary<string, Type> _typeCache = new();
+
         private static SbModifier InstantiateByTypeName(string fullName) {
+            if (_typeCache.TryGetValue(fullName, out var cached))
+                return cached != null ? (SbModifier)Activator.CreateInstance(cached) : null;
+
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
                 var type = asm.GetType(fullName);
 
-                if (type != null)
-                    return (SbModifier)Activator.CreateInstance(type);
+                if (type == null)
+                    continue;
+
+                _typeCache[fullName] = type;
+
+                return (SbModifier)Activator.CreateInstance(type);
             }
 
+            _typeCache[fullName] = null;
             Log.Error($"Type '{fullName}' not found in any loaded assembly.");
 
             return null;
