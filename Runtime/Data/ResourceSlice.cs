@@ -84,8 +84,8 @@ namespace Spellbound.Modifiers {
 
         public void InvokeResolveCallback(
             byte context, ObjectParent parent, int instanceIndex,
-            ObjectPreset preset, int surfaceIndex, TransformData transformData, IAwardReciever awardReciever) =>
-                this.ResolveCallback(context, parent, instanceIndex, preset, surfaceIndex, transformData, awardReciever);
+            ObjectPreset preset, int surfaceIndex, TransformData transformData) =>
+                this.ResolveCallback(context, parent, instanceIndex, preset, surfaceIndex, transformData);
 
         public void Pack(ref Span<byte> buffer) {
             var count = Entries?.Count ?? 0;
