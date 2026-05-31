@@ -168,6 +168,11 @@ Routing is a target concern, not a modifier-type concern. `TalentAffix` / `BuffA
 - **`[SpritePreview]`** — inline sprite preview in the inspector. Used on `StatDefinition.icon`.
 - **`StatDefinition.OnValidate`** re-runs the display formatter against a preview value (150.55) so editors get live
   feedback on `StatDisplayFormat` changes.
+- **Unity 6 + IMGUI `AdvancedDropdown` from a UIToolkit callback gotcha**: when invoked synchronously from a UI Toolkit
+  `Button.clicked` (or similar event), `AdvancedDropdown.Show` runs before IMGUI's editor skin is active and emits
+  `Unable to find style 'DD ItemStyle' in skin 'GameSkin'` warnings + renders every item with the pink/red
+  missing-style fallback. Always defer the `Show` call by one editor frame via `EditorApplication.delayCall`. See
+  `StatDefinitionPicker.Open` for the pattern; reuse it for any future IMGUI dropdown opened from a UIToolkit context.
 
 ## Tests
 
