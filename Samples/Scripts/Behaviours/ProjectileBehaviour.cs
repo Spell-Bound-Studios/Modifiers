@@ -27,8 +27,8 @@ namespace Spellbound.Modifiers.Samples {
             if (ProjectilePrefab == null)
                 return spawned;
 
-            var projectileCount = (int)this.GetValue("projectile_count");
-            var projectileSpeed = this.GetValue("projectile_speed");
+            var projectileCount = (int)GetValue("projectile_count");
+            var projectileSpeed = GetValue("projectile_speed");
 
             Vector3[] finalDirections;
 
@@ -69,6 +69,5 @@ namespace Spellbound.Modifiers.Samples {
 
             return directions;
         }
-
     }
 }

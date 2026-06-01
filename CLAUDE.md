@@ -1,217 +1,258 @@
-# CLAUDE.md
+# CLAUDE.md — Spellbound.Modifiers
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude and agents working in this repository. README is for external users; this file is for architectural
+context, conventions, and tripwires when CHANGING the library.
 
 ## What this library is
 
-`Spellbound.Modifiers` is a **standalone, drop-in stats/modifiers system** designed to be a complete replacement for
-anyone wanting Path-of-Exile-style modifier semantics in their Unity game. It is pre-1.0 — there is no
-backward-compatibility contract yet. When clarity demands renaming, restructuring, or deleting public API, do it. *
-*Architectural strength beats API stability** until 1.0.
+`Spellbound.Modifiers` is a standalone, drop-in stats and modifiers system. PoE-style semantics — base + ordered
+modifier chain → final value, computed at read time, deterministic. Slots into any Unity game's data layer without
+dragging engine-specific dependencies.
 
-The library has two stakeholders to keep in mind whenever you change it:
+**Pre-1.0.** No backward-compatibility contract. **Architectural strength beats API stability** until 1.0 — when clarity
+demands renaming, restructuring, or removal, do it.
 
-- **The author (Corsairs Isle / `_GameLogic`)** — consumes this lib for every stat in the game. Player-side glue lives
-  in the outer repo at `_GameLogic/Player/Runtime/SbStatsComponent.cs` and `SbNetworkComponent.cs`.
-- **External Unity developers** — install via `package.json` (`com.spellboundstudios.modifiers`) and expect the README's
-  getting-started flow to "just work."
+Two stakeholders to keep in mind:
 
-## This directory is its own git repository
+- **Corsairs Isle** (`_GameLogic`) — first real customer; consumes this lib for every stat in the game.
+- **External Unity developers** — install via `package.json` (`com.spellboundstudios.modifiers`); expect the README's
+  mental model to "just work."
 
-`Assets/_Project/Modifiers/` is a **nested sibling repo** (`git@github.com:Spell-Bound-Studios/Modifiers.git`) cloned in
-place inside the outer game repo. Changes here do not appear in `git status` from the outer `CorsairsIsleDev/` working
-directory — commit and push from within this directory. See the project-level `CLAUDE.md` (one level up under
-`Assets/_Project/`) for the multi-repo layout.
+## Repo + git workflow
 
-## Assembly + dependency wiring
+This directory is a **nested sibling repo** (`Spell-Bound-Studios/Modifiers`) cloned in place inside the outer Corsairs
+Isle game repo. Changes here do not appear in the outer repo's `git status`.
+
+**Git policy (project-wide):** only the user runs state-mutating git operations (`add`, `commit`, `push`, `reset`,
+`revert`, `restore`, `checkout`, `rebase`, `merge`, `cherry-pick`, `clean`, `rm`, `mv`, `stash`, branch / tag deletion).
+Main Claude and every subagent restrict git usage to read-only inspection (`status`, `diff`, `log`, `show`, `blame`).
+Hard-denied in `.claude/settings.json` at the outer game repo and applies across every repo in the project. Do not
+propose workarounds.
+
+- When the user commits / pushes, they do it from inside `Assets/_Project/Modifiers/` — this is its own repo.
+- A feature spanning Modifiers + `_GameLogic` is two commits in two repos.
+- The outer repo's `_GameLogic/Docs/` folder is **local-only** (gitignored) and carries forward-context planning docs.
+  Read those before structural changes — especially `Docs/RoutingLayer.md`.
+
+## Dependencies
 
 - One runtime assembly: `Spellbound.Modifiers` (`Runtime/Spellbound.Modifiers.asmdef`).
-- Depends on exactly one other assembly: `Spellbound.Core` (referenced by GUID `c14a5db03514b8d4ba10b621ed3627d5`).
-  Concretely this gives us `[Immutable]`, `SpritePreview`-style tooling attributes, and the `Spellbound.Core.Tooling`
-  namespace.
-- `package.json` declares the same: `com.spellboundstudios.core` is the only runtime dependency.
-- Editor assembly: `Editor/` (custom property drawers for `[DropdownPicker]` and `[SpritePreview]`).
-- **No Unity-engine-specific networking, ECS, or rendering dependencies.** Keep it that way — anything that ties this
-  lib to a specific runtime stack (PurrNet, Entities, URP) belongs in `_GameLogic`, not here.
+- One runtime dependency: `Spellbound.Core` (asmdef GUID `c14a5db03514b8d4ba10b621ed3627d5`).
+- Editor assembly: `Editor/` (property drawers).
+- **No Unity-engine-specific networking, ECS, or rendering deps.** Anything that ties this lib to a specific runtime
+  stack (PurrNet, Entities, URP, Cinemachine) belongs in the consumer.
 
-## Architectural layer model (READ THE README)
+## Mental model: four roles
 
-`README.md` is the source of truth for the four-layer model (Data → Engine → Convenience → Educational). Read it before
-non-trivial changes. Quick map from layer to current directory:
+The architectural spine. Every change reinforces these roles.
 
-| Layer                           | Role                                                                           | Current location                                                                                 |
-|---------------------------------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| 0 — Data                        | Pure structs, enums, DTOs, payloads                                            | `Runtime/Core/DataTransferObjects/`, `Runtime/Core/Payloads/`, `Runtime/Core/Modifiers/` (enums) |
-| 1 — Engine                      | Contracts + containers + algorithms                                            | `Runtime/Core/Interfaces/`, `Runtime/Core/Containers/`, `Runtime/Core/Registries/`               |
-| 2 — Convenience                 | Base classes, fluent extensions, inspector tooling, ScriptableObject authoring | `Runtime/API/`                                                                                   |
-| 2 — Convenience (drag-and-drop) | `MonoBehaviour` components for designers who don't want to write boot code     | `Runtime/Components/`                                                                            |
-| 3 — Educational                 | Concrete skills/behaviours/modifiers, demo scene                               | `Samples/`                                                                                       |
+| Role               | Location                                | Owns                                                                                                                            | Doesn't know                                                                      |
+|--------------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `SbBehaviour`      | `Runtime/Behaviours/SbBehaviour.cs`     | A capability AND the stats that govern it. Fixed-point ints, PoE math.                                                          | When it runs, what triggers it, what's next.                                      |
+| `SbModifier`       | `Runtime/Modifiers/SbModifier.cs`       | An apply/remove operation on a target. Carries `UniqueId` for instance-precise removal. Implements `IPacker`.                   | The target's other modifiers. Reaches in through `IHasBehaviours` / `IHasEvents`. |
+| `ModifiableObject` | `Runtime/Modifiers/ModifiableObject.cs` | A composed target. Owns `BehaviourContainer` + `EventContainer`. A skill is just one whose `Initialize()` wires its behaviours. | What gameplay system owns or triggers it.                                         |
+| The game           | (consumer)                              | Triggers, cooldowns, scheduling, networking, save/load, scenes, talent trees, loot tables.                                      | Library internals — kept that way intentionally.                                  |
 
-**Dependency direction is one-way.** A `using` from `Runtime/Core/*` into `Runtime/API/*` is an architectural
-violation — flag it and push the offending code down a layer (or pull the dependency up). Same for anything in
-`Samples/` leaking into `Runtime/`.
+**Power users implement the contracts directly** — `IModifier`, `IHasUniqueId`, `IHasBehaviours`, `IHasEvents`. The base
+classes are the 80% path, not the only path. Preserve that escape hatch.
 
-**Mismatch with the README's ideal layout that's worth knowing:**
+There is **no separate `StatContainer`** — stats live ON `SbBehaviour` itself. There is **no `IHasStats`** — stats are
+scoped to specific behaviours and routed via `IHasBehaviours`. If you see references to `StatContainer` or `IHasStats`
+in commits / comments / memory, those are stale.
 
-- README documents `Samples~/` (tilde excludes from compilation, opt-in via Package Manager). Today this lib ships
-  `Samples/` (no tilde), so samples compile alongside runtime. If you're polishing the library for external
-  distribution, renaming to `Samples~/` is the right move — but coordinate with the demo scene that currently references
-  those scripts directly.
-- README documents a `Tests/` directory. **There are currently no tests.** Adding edit-mode tests (especially around
-  `StatContainer` calculation order and fixed-point math) is high-value work.
+## PoE math
 
-## The mental model: Behaviour / Modifier / Container / Skill
+Order, fixed in `SbBehaviour.CalculateStat`:
 
-This is the architectural spine. Every decision should reinforce these roles:
+```
+Base
+  → + Σ Flat
+  → × (1 + Σ Increased)
+  → × Π (1 + More)
+  → unless any Override exists, in which case the last Override wins (ignores everything)
+```
 
-- **`SbBehaviour` (Layer 2 base, `Runtime/API/SbBehaviour.cs`)** — a *pure capability*. Knows HOW to do exactly one
-  thing (fire a projectile, deal cold damage, run a beam). Owns its own `StatContainer`. Does **not** know when it runs,
-  what triggers it, or what comes after.
-- **`SbModifier` (Layer 2 base, `Runtime/API/SbModifier.cs`)** — mutates a target via `Apply(ICanBeModified)` /
-  `Remove(ICanBeModified)`. Uses the protected `TryGetBehaviour<T>` / `TryGetStats` / `TryGetEvents` helpers to reach
-  into the target's containers. Carries its own `UniqueId` so stat removal can target the exact modifier instance that
-  was added.
-- **`ModifiableObject` (Layer 2 base, `Runtime/API/ModifiableObject.cs`)** — composes the three containers (`Stats`,
-  `Behaviours`, `Events`). A "skill" in this lib is just a `ModifiableObject` that wires behaviours together in
-  `Initialize()` — see `Samples/Scripts/Skills/Fireball.cs` and `RayOfFrost.cs`.
-- **Orchestration belongs to the GAME, not the library.** The library does not define triggers, cooldowns, or
-  scheduling. `Fireball.OnCast → _projectile.Launch → _fire.DealFireDamage` is a sample showing one orchestration shape;
-  do not promote it into the library.
+Fixed-point `int` throughout — default scale 10000 (four decimal places), configurable via
+`StatSettings.SetDecimalPrecision`. Deterministic across machines; survives serialization round-trips; matters for
+network sync, replay, save-load.
 
-The three containers (`StatContainer`, `BehaviourContainer`, `EventContainer`) live in `Runtime/Core/Containers/`.
-Composability interfaces (`IHasStats`, `IHasBehaviours`, `IHasEvents`, `ICanBeModified`, `IHasUniqueId`, `IModifier`)
-live in `Runtime/Core/Interfaces/`. **A power user can implement these interfaces directly without ever
-touching `SbModifier` / `ModifiableObject`.** Preserve that escape hatch — it's the contract with the 20% power user.
+`_isDirty` flagging means `GetValue` only recalculates when modifiers actually changed. Don't add code paths that read
+internal dictionaries directly — go through `GetValue` / `GetBase`.
 
-## Stat math is fixed-point, not float
+`StatRegistry` (`Runtime/Registries/StatRegistry.cs`) is **global static**, mapping `string ↔ int`. Strict validation (
+toggled via `StatDatabase.RegisterAll`) throws on stat names not declared in the asset — use strict in shipping configs.
+Because it's global state, **`StatRegistry.Clear()` is required between unit tests**.
 
-`StatContainer` stores all values as scaled `int` (default scale = 10000 = four decimal places).
-`StatSettings.SetDecimalPrecision(n)` configures this globally and is called by `StatDatabase.RegisterAll`. Reasons this
-matters:
+`SbBehaviour` implements `IPacker`. **Currently packs stat names** (length-prefixed string + value bytes); on unpack the
+name is re-interned via `StatRegistry.Register` to recover the local id.
 
-- Determinism (network sync, replay, save-load).
-- The calculation order is fixed in `CalculateStat`:
-  `Base → Flat (additive) → Increased (additive pool, applied once) → More (multiplicative chain) → Override (last one wins, ignores everything)`.
-  This is the PoE model — do not casually reorder it.
-- `_isDirty` flagging means `GetValue` only recalculates when modifiers change. Don't add code paths that read internal
-  dictionaries directly; go through `GetValue`/`GetBase`.
+Stat ids ARE deterministic across builds when registration goes through `StatDatabase.RegisterAll` — the asset iterates
+a fixed list order; all clients load the same asset → same ids. Pack-by-name is a defensive choice: it survives the edge
+case where some code path calls `StatRegistry.Register("foo")` ad-hoc before the database registers (which would shift
+every later id by one).
 
-`StatRegistry` (`Runtime/Core/Registries/StatRegistry.cs`) is a **global static** mapping `string ↔ int` for stat IDs.
-Strict validation (toggled by `StatDatabase.RegisterAll(strictStatValidation: true)`) throws on any stat name not
-declared in the asset — use this in shipping configurations. Because it's global state, **`StatRegistry.Clear()` is
-required between unit tests**.
+**Long-term direction: pack stat ids** instead of names — tighter wire format, no string interning on the hot path.
+Blocker is locking down the registration surface so `Register` can only happen via `RegisterAll`. Switch is a small
+refactor in `SbBehaviour.Pack` / `Unpack` when we get there.
 
-`StatContainer` implements `IPacker` (from `Spellbound.Core.Packing`) so containers can live inside packed per-instance
-data slots (chunk data, save files, network sync). The wire format packs stat **names**, not IDs — IDs are process-local
-and would otherwise drift between save and load or between server and client. On unpack the names are re-interned via
-`StatRegistry.Register`, which means **the host's `StatDatabase` must be registered before any packed container is
-unpacked** (otherwise strict validation throws). The library does not ship a per-instance `IDecodableData` wrapper
-itself — that lives in the consumer game (see `_GameLogic/CorsairsWorld/Stats/StatsData.cs` for the Corsairs Isle
-wrapper that pairs `StatContainer` with `IDefaultDataProvider<StatsData>` on `StatsModule`).
+Constraint that holds either way: **the host's `StatDatabase` must be registered before any packed container is unpacked
+**, otherwise unknown names get phantom ids (or, under strict validation, throw).
 
-## Authoring flow (the "getting started" path)
+## Authoring architecture
 
-This is the path an external user should walk. If you change anything below, update `README.md` in lockstep — the
-getting-started feeling is the library's main pitch.
+The locked-in shape for designer authoring:
 
-1. Create a `StatDatabase` asset: *Create → Spellbound/ModifierLib/Stat Database*. Set decimal precision.
-2. Create one `StatDefinition` per stat: *Create → Spellbound/ModifierLib/Stat Definition*. Add it to the database's
-   stat list. Optionally assign a `StatDisplayFormat` for UI formatting (prefix/suffix/decimals).
-3. Register the database at game start. The drag-and-drop path is `StatDatabaseLoader` (`Runtime/Components/`): add the
-   component to a GameObject in the bootstrap scene, assign the database (or put one in `Resources/`), done. Code path:
-   call `statDatabase.RegisterAll(strictStatValidation: true)` yourself — see `Samples/Scripts/Example/StatDemo.cs`.
-4. Subclass `SbBehaviour` for each capability. Use `protected override StatContainer InitializeStats()` to seed
-   `SetBase("stat_name", value)`.
-5. Subclass `ModifiableObject` (a "skill") and `Behaviours.Add(...)` in the constructor. Wire events in `Initialize()`.
-6. Subclass `SbModifier` and use `TryGetBehaviour<T>` / `stats.AddFlat|AddIncreased|AddMore` (extension methods in
-   `Runtime/API/ContainerExtensions.cs`) inside `Apply` / `Remove`.
-7. Optionally, expose modifiable objects + modifiers as `[SerializeReference]` on a `ModdedCollection` ScriptableObject
-   for designer-driven authoring (see `Runtime/API/ModdedCollection.cs`).
+- **`Affix`** (`Runtime/Modifiers/Affix.cs`) — **abstract** base for anonymous stat-flavor modifiers. Owns data (stat /
+  modifier type / value), `Initialize` chaining, `Pack` / `Unpack`. Apply / Remove stay abstract — the consumer ships a
+  concrete subclass (e.g. Corsairs Isle's `StatAffix`) that implements routing to whichever `SbBehaviour` should receive
+  the modifier.
+- **`Trait`** (`Runtime/Modifiers/Trait.cs`) — `ScriptableObject` for a named, registered identity (DisplayName, Icon,
+  Description, embedded `SbModifier` effect). For player-recognized things: "Iron Will", "Thick Hide". Tiered variants
+  are separate assets sharing a C# class.
+- **`TraitRef`** (`Runtime/Modifiers/TraitRef.cs`) — inline `SbModifier` wrapper around a `Trait` asset reference. Lets
+  a `[SerializeReference] List<SbModifier>` hold mixed `Affix` + named-identity entries. Apply clones the trait's
+  effect; Pack writes the trait's hashed uint key.
+- **`TraitRegistry`** (`Runtime/Registries/TraitRegistry.cs`) — scans `Resources/Traits/` at first query. Indexes by
+  string key AND FNV-1a uint hash. Asserts no collisions. `TraitRegistryLoader` is the eager-load drop-in component.
+- **`ModifierPool`** (`Runtime/Modifiers/ModifierPool.cs`) — drop-generation `ScriptableObject`. Holds
+  `[SerializeReference] List<PoolSlot>`. `PoolSlot` abstract; lib ships concrete `TraitSlot` and abstract `AffixSlot` (
+  with a `CreateAffixInstance` template method consumers override). Pool-level `Sample(int count, System.Random rng)`
+  does weight-proportional with-replacement sampling.
+- **`ModifierCodec`** (`Runtime/Modifiers/ModifierCodec.cs`) — polymorphic byte[] codec for inventory item data, save
+  sections, network frames. 1-byte type tags (`Affix = 0`, `TraitRef = 1`). Affix entries carry their concrete subclass
+  full-name string for polymorphic decode; TraitRef entries carry the trait's hashed uint key.
 
-The end-to-end demo in `Samples/Scripts/Example/SkillModifierDemo.cs` exercises all of the above with both a code-built
-skill (`Fireball`) and an SO-built skill (`RayOfFrost` via `ModdedCollection`).
+**Why this shape**: one-SO-per-affix bloats unmanageably at scale (~thousands of anonymous stat tweaks × multiple item
+slots). Inline `[SerializeReference]` data for the anonymous mass; SO-backed `Trait`s only for named identities a player
+will actually see. See auto-memory `project_affix_and_trait_model` for the full reasoning.
 
-## Conventions specific to this library
+## Stat ownership and routing
+
+**Currently a placeholder.** `StatAffix.Apply` in the consumer game hardcodes `TryGetBehaviour<PassiveBehaviour>` —
+known temporary, not the end state.
+
+**The end state** is a target-driven routing layer: a modifier declares intent ("modify stat X by value V"), and the
+target walks every `SbBehaviour` that owns the stat, dispatching the call to each. "+5 fire damage" lights up every
+behaviour on the target that owns `fire_damage` — no priority, no first-only, no per-affix choice. The lib should own as
+much of this routing primitive as possible; some extension points may inevitably be consumer-side.
+
+**Plan / open decisions** at `_GameLogic/Docs/RoutingLayer.md`. Cross-session anchor in auto-memory
+`project_stat_affix_routing_roadmap`.
+
+When game-logic asks for "another `Affix` subclass to route differently" — **push back**. One `StatAffix`, forever.
+Routing is a target concern, not a modifier-type concern. `TalentAffix` / `BuffAffix` / `GearAffix` are anti-patterns.
+
+## Conventions
 
 - **Copyright header** on every C# file: `// Copyright 2026 Spellbound Studio Inc.`
-- Runtime namespace is **flat**: everything under `namespace Spellbound.Modifiers { ... }` regardless of subfolder.
-  Samples use `Spellbound.Modifiers.Samples`. Editor code uses `Spellbound.Modifiers.Editor`. **Do not
-  add `.Core`, `.API`, `.Containers` namespace segments** — directory structure expresses the layer, the namespace stays
-  flat.
-- Concrete `SbModifier` / `SbBehaviour` / `ModifiableObject` subclasses are typically `[Serializable]` and `sealed`. The
-  `[Serializable]` is required for `[SerializeReference]` authoring (e.g. via `ModdedCollection` and the
-  `DropdownPickerDrawer`).
-- Stats are looked up by **string name** in user-facing code (`stats.GetValue("projectile_count")`) —
-  `StatRegistry.Register` interns the string to an int the first time it's seen. Don't expose raw `int` stat IDs in
-  user-facing API surfaces; keep them internal to `StatContainer` / `StatModifier`.
-- **Use `Spellbound.Core.Logging.Log`** (`Log.Info/Warn/Error/Debug/Verbose`), not `UnityEngine.Debug.Log*`. Core is
-  this lib's dependency precisely so we can leverage it — falling back to `Debug.Log` defeats its purpose. `Log.Error`
-  is never stripped; the others are gated by `SPELLBOUND_LOG_*` scripting defines. Legacy `Debug.Log*` calls in
-  `StatDatabase`, `StatContainer`, and the samples are pre-migration and should move to `Log.*` when touched.
-- Outer-repo files use Allman-ish brace style with `_camelCase` private fields and properties wired through getters.
-  Match that.
+- **Flat namespace** — everything under `namespace Spellbound.Modifiers { ... }` regardless of subfolder. Samples use
+  `Spellbound.Modifiers.Samples`; editor uses `Spellbound.Modifiers.Editor`. Do NOT add `.Behaviours`, `.Modifiers`,
+  `.Registries` namespace segments — directory expresses organization; namespace stays flat.
+- **`[Serializable]`** on concrete `SbModifier` / `SbBehaviour` / `Affix` / `PoolSlot` subclasses. Typically `sealed`.
+  Required for `[SerializeReference]` authoring.
+- **Stats by string name** in user-facing API (`pb.GetValue("projectile_count")`). `StatRegistry.Register` interns to
+  int. Don't expose raw int stat ids in user-facing surfaces.
+- **Use `Spellbound.Core.Logging.Log`** (`Log.Info / Warn / Error / Debug / Verbose`), NOT `UnityEngine.Debug.Log*`.
+  Core is the dependency precisely so this is available. `Log.Error` is never stripped; others gated by
+  `SPELLBOUND_LOG_*` defines.
+- **Brace style**: Allman-ish, `_camelCase` private fields, properties wired through getters. Match the existing files.
 
-## Editor tooling worth knowing
+## Editor tooling
 
-- `[DropdownPicker]` (`Runtime/API/Attributes/`) works on **both** `SerializeReference` polymorphic fields (lists
-  managed types implementing the field's interface) **and** `ObjectReference` fields (lists matching ScriptableObject
-  assets in the project). Implementation: `Editor/DropdownPickerDrawer.cs`. This is the mechanism that powers
-  `ModdedCollection`'s inspector — `modifiableObject` picks a type, `modifiers` picks a list of types.
-- `[SpritePreview]` renders a sprite preview inline in the inspector. Used on `StatDefinition.icon`.
-- `StatDefinition.OnValidate` re-runs the display formatter against a preview value (150.55) so editors get live
+- **`[DropdownPicker]`** (`Runtime/Attributes/DropdownPickerAttribute.cs`) — works on `SerializeReference` polymorphic
+  fields AND `ObjectReference` fields. Picker lists concrete types implementing the field's declared type (or, with a
+  filter attribute, only types carrying that marker). Drawer: `Editor/DropdownPickerDrawer.cs`.
+- **`[PickableBehaviourAttribute]`** (`Runtime/Attributes/PickableBehaviourAttribute.cs`) — opt-in marker for
+  `SbBehaviour` subclasses that should appear in dropdowns. Without it, the subclass is hidden from authoring menus —
+  keeps scaffolding / internal behaviours out.
+- **`[SpritePreview]`** — inline sprite preview in the inspector. Used on `StatDefinition.icon`.
+- **`StatDefinition.OnValidate`** re-runs the display formatter against a preview value (150.55) so editors get live
   feedback on `StatDisplayFormat` changes.
+- **Unity 6 + IMGUI `AdvancedDropdown` from a UIToolkit callback gotcha**: when invoked synchronously from a UI Toolkit
+  `Button.clicked` (or similar event), `AdvancedDropdown.Show` runs before IMGUI's editor skin is active and emits
+  `Unable to find style 'DD ItemStyle' in skin 'GameSkin'` warnings + renders every item with the pink/red
+  missing-style fallback. Always defer the `Show` call by one editor frame via `EditorApplication.delayCall`. See
+  `StatDefinitionPicker.Open` for the pattern; reuse it for any future IMGUI dropdown opened from a UIToolkit context.
 
-## Testing and running
+## Tests
 
-- **No automated tests exist in this library yet.** The Unity-level test runner is the outer project's, not this nested
-  repo's. If you add tests, put them in `Tests/Editor/` (edit-mode) and `Tests/Runtime/` (play-mode) with their own
-  `.asmdef`. Cover at minimum: PoE calculation order, fixed-point precision, strict validation, modifier add/remove by
-  `UniqueId`.
-- The interactive demo runs from `Samples/Scenes/StatExamples.unity` inside the Unity editor — open the scene and press
-  play. There is no headless harness committed.
+**No automated tests exist yet.** Adding edit-mode tests is high-value work. Cover at minimum: PoE calculation order,
+fixed-point precision, strict-validation throws, modifier add/remove by `UniqueId`, `ModifierCodec` round-trip (Affix +
+TraitRef), pool weight distribution.
 
-## Designing for modifier-first scope
+When adding tests: `Tests/Editor/` (edit-mode) and `Tests/Runtime/` (play-mode) with their own `.asmdef`.
 
-The lib targets ~10k+ stats and arbitrary numbers of behaviours/modifiers per target. Every new primitive must ask: **"
-can a modifier reach this?"** Before adding a hardcoded strategy, formula, or policy, check whether a talent / gear /
+## Modifier-first scope
+
+The lib targets ~10k+ stats and arbitrary numbers of behaviours / modifiers per target. Every new primitive must ask: *
+*"can a modifier reach this?"** Before adding a hardcoded strategy, formula, or policy, check whether a talent / gear /
 buff might plausibly want to alter it. If yes, the strategy belongs on a `SbBehaviour` (which modifiers can add /
 remove / tune), not baked onto the data type.
 
-Common failure modes to watch for:
+### Common failure modes
 
-- **Hardcoded calculators.** A `DamageCalculator` with fixed mitigation rules locks out conversions ("50% of phys taken
-  as fire"), redirections ("damage to mana before life"), and per-type custom math. The "calculator" is the *composition
-  of behaviours on the target* — not a service class.
-- **Narrow naming.** `Vital` implies life/death — wrong for rage, energy, focus, stamina, charges, soul. Prefer generic
-  names like `ResourcePool`. Same trap: don't name primitives after the first use case.
+- **Hardcoded calculators.** A `DamageCalculator` with fixed mitigation rules locks out conversions ("50% phys taken as
+  fire"), redirections ("damage to mana before life"), and per-type custom math. The calculator is the composition of
+  behaviours on the target — not a service class.
+- **Narrow naming.** `Vital` implies life/death — wrong for rage, energy, focus, stamina, charges, soul. Use generic
+  names like `ResourcePool`. Don't name primitives after their first use case.
 - **Designing for one concrete scenario.** "Make the tree take damage" → built health-specific scaffolding. The right
   framing is "any target receives any damage type into any resource pool." Tree damage is one instance of the general
   model.
-- **Bypassing `ModifiableObject` / `SbBehaviour` / `SbModifier`.** These are the lib's language. New gameplay rules are
-  usually a new `SbBehaviour` subclass + an `SbModifier` that adds it — not a new top-level service or hardcoded
-  receiver.
+- **Bypassing `ModifiableObject` / `SbBehaviour` / `SbModifier`.** These are the lib's vocabulary. New gameplay rules
+  are a new `SbBehaviour` subclass + an `SbModifier` that adds it — not a new top-level service or hardcoded receiver.
 
 ### Stats vs ResourcePools
 
-Both have a `{baseline, current, ceiling}` shape, but they are distinct concepts and should remain so:
+Both have a `{baseline, current, ceiling}` shape but are distinct concepts:
 
-- **Stats** are computed from base + modifiers. `GetValue(stat)` is "current." There is no separately-stored current
-  value. Buffs/debuffs are `SbModifier`s on the stat container.
-- **ResourcePools** store a `current` value that depletes / restores from gameplay events. The pool's `Max` is a *live
-  read* from a referenced stat in the modifier container, so modifier-driven changes to the max-stat (e.g.
-  `+50 max life` buff) automatically affect the pool's ceiling.
+- **Stats** are computed from base + modifiers. `GetValue(stat)` IS "current." There is no separately-stored current
+  value. Buffs/debuffs are `SbModifier`s in the stat-holding `SbBehaviour`'s modifier list.
+- **ResourcePools** store a `current` value that depletes / restores from gameplay events. The pool's `Max` is a **live
+  read** from a referenced stat, so modifier-driven changes to the max-stat (e.g. `+50 max life` buff) automatically
+  affect the pool's ceiling.
 
-A transient effect like "shield for 100 damage for 10s" is a *transient ResourcePool* added at runtime by an
+A transient effect like "shield for 100 damage for 10s" is a transient `ResourcePool` added at runtime by an
 `SbModifier.Apply` — modifiers can add pools, not just mutate stats.
 
-## When making changes here
+## Where current context lives
 
-1. Identify which layer the change belongs to. If a Data type starts growing methods, it's drifting to Engine — split
-   it.
-2. Check whether the change leaks an external dependency into the runtime asmdef. Only `Spellbound.Core` belongs there.
-3. If you're touching containers or `StatContainer.CalculateStat`, write a test first (even if there is no test infra
-   yet — start it). The math is the most catastrophic-to-regress part of the library.
-4. If you rename or remove a public type/method, update the README's getting-started snippets and the sample scripts in
-   the same commit — they are the de-facto documentation.
-5. When committing: this is its own repo. `git status` and `git commit` must be run from inside
-   `Assets/_Project/Modifiers/`. A feature spanning Modifiers + `_GameLogic` is two commits in two repos.
+When this file isn't enough, the most authoritative sources:
+
+- **Auto-memory entries** (persist across sessions; read first when the topic touches them):
+    - `project_affix_and_trait_model` — locked-in authoring architecture
+    - `project_stat_affix_routing_roadmap` — THE central anchor for routing
+    - `feedback_use_core_packing_not_json` — never JSON for byte[] round-trip
+    - `feedback_lib_ships_interfaces_not_concretes` — pluggable strategies belong consumer-side
+    - `feedback_no_silent_pragmas` — never silently suppress warnings
+- **`_GameLogic/Docs/`** (outer repo, gitignored) — game-side forward-context planning. Check before lib changes that
+  game-side might be about to need.
+- **`README.md`** in this directory — external-user pitch; update in lockstep with public-API changes.
+
+## Tripwires (push back when you see these)
+
+- A request for a second concrete `Affix` subclass to route differently → routing layer's job, not a type-system job.
+  Point at `_GameLogic/Docs/RoutingLayer.md`.
+- A new Unity-engine-specific dependency in this asmdef (PurrNet / Entities / URP / Cinemachine / etc.) → belongs in the
+  consumer.
+- A "DamageCalculator" / "HealthSystem" / similar named service class → the calculator is the composition of behaviours
+  on the target.
+- Naming a primitive after its first use case (`HealthPool`, `FireResistanceStat`) → prefer generic names.
+- `Debug.Log*` anywhere in lib code → use `Spellbound.Core.Logging.Log`.
+- `JsonUtility` / `Encoding.UTF8` / custom byte[] serialization → use `Spellbound.Core.Packing` (`IPacker` + `Packer.*`
+  helpers).
+- `#pragma warning disable` without explicit user approval → never silently suppress warnings.
+- Hardcoding `PassiveBehaviour` (or any consumer-side type) in lib code → the lib doesn't know consumer types.
+- An SO created per stat affix (`+9_armor_t1.asset`, etc.) → use inline `Affix` via `[SerializeReference]`. Assets are
+  for named identities only (`Trait`).
+
+## When making changes
+
+1. Read the relevant auto-memory entries before structural changes — the architecture has iterated and stale assumptions
+   are common.
+2. Verify the change doesn't leak an external dependency into the runtime asmdef. Only `Spellbound.Core` belongs there.
+3. If touching `SbBehaviour.CalculateStat`, the codec, or the registries, write a test first (even if there's no test
+   infra yet — start it). Math and serialization are the most catastrophic-to-regress.
+4. If renaming or removing a public type/method, update `README.md` in lockstep — it's the de-facto user-facing
+   documentation.
+5. Two-repo commits when a feature spans Modifiers + `_GameLogic` (or any sibling lib).

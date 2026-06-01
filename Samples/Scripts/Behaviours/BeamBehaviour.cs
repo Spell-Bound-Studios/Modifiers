@@ -135,7 +135,6 @@ namespace Spellbound.Modifiers.Samples {
             _impactParticles = null;
         }
 
-
         /// <summary>
         /// Return value of <see cref="BeamBehaviour.Fire"/>: the hit list, the effective distance the beam
         /// traveled, the hit point for visual anchoring, and whether anything was actually struck.

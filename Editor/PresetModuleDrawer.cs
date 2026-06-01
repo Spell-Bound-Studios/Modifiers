@@ -314,13 +314,18 @@ namespace Spellbound.Modifiers.Editor {
                 if (resources != null) {
                     for (var i = 0; i < resources.arraySize; i++) {
                         var entry = resources.GetArrayElementAtIndex(i);
-                        var def = entry.FindPropertyRelative(nameof(ResourceBaseEntry.stat)).objectReferenceValue as StatDefinition;
+
+                        var def =
+                                entry.FindPropertyRelative(nameof(ResourceBaseEntry.stat))
+                                        .objectReferenceValue as StatDefinition;
 
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
 
                         var id = StatRegistry.Register(def.StatName);
-                        container.SetBase(id, entry.FindPropertyRelative(nameof(ResourceBaseEntry.baseValue)).floatValue);
+
+                        container.SetBase(id,
+                            entry.FindPropertyRelative(nameof(ResourceBaseEntry.baseValue)).floatValue);
                         resourceMins[id] = entry.FindPropertyRelative(nameof(ResourceBaseEntry.min)).floatValue;
 
                         if (!resourceIds.Contains(id))
@@ -331,7 +336,10 @@ namespace Spellbound.Modifiers.Editor {
                 if (stats != null) {
                     for (var i = 0; i < stats.arraySize; i++) {
                         var entry = stats.GetArrayElementAtIndex(i);
-                        var def = entry.FindPropertyRelative(nameof(StatBaseEntry.stat)).objectReferenceValue as StatDefinition;
+
+                        var def =
+                                entry.FindPropertyRelative(nameof(StatBaseEntry.stat)).objectReferenceValue as
+                                        StatDefinition;
 
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
@@ -345,7 +353,10 @@ namespace Spellbound.Modifiers.Editor {
                 if (modifiers != null) {
                     for (var i = 0; i < modifiers.arraySize; i++) {
                         var entry = modifiers.GetArrayElementAtIndex(i);
-                        var def = entry.FindPropertyRelative(nameof(ModifierEntry.stat)).objectReferenceValue as StatDefinition;
+
+                        var def =
+                                entry.FindPropertyRelative(nameof(ModifierEntry.stat)).objectReferenceValue as
+                                        StatDefinition;
 
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
@@ -411,7 +422,6 @@ namespace Spellbound.Modifiers.Editor {
                 return $"<preview error: {ex.Message}>";
             }
         }
-
     }
 }
 #endif

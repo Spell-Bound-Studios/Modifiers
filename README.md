@@ -1,196 +1,107 @@
-# Modifiers
+# Spellbound.Modifiers
 
-What is a Behaviour?
-A behaviour is a pure capability. It knows HOW to do exactly one thing. It has stats that affect that thing. It does NOT
-know:
+A composable, modifier-driven stats system for Unity games. PoE-style semantics — stats are computed at read time from a
+base value plus an ordered chain of modifiers, and modifiers can be added or removed at any time, on any target, by any
+source.
 
-- When it executes
-- What triggers it
-- What happens after it executes
-- Anything about events
-
-What is a Skill?
-A skill is a container of behaviours. Nothing more. It doesn't orchestrate. It doesn't have triggers. It's just a bag of
-capabilities with combined tags.
-
-Who orchestrates?
-The GAME orchestrates. Not the library. The library cannot possibly know all the trigger types your game will have.
-
-# Library Architecture Overview
-
-## Overview
-
-This document outlines the architectural philosophy and structural patterns used across all Spellbound Studio libraries.
-Understanding these patterns will help you navigate, extend, contribute, and reason about any system we build.
+**Pre-1.0.** No backward-compatibility contract yet. When clarity demands renaming or restructuring, it happens.
 
 ---
 
-## Table of Contents
+## Philosophy
 
-- [Overview](#overview)
-- [The Layer Model](#the-layer-model)
-    - [Layer 0 - "The Data Layer"](#layer-0---the-data-layer)
-    - [Layer 1 - "The Engine Layer"](#layer-1---the-engine-layer)
-    - [Layer 2 - "The Convenience Layer"](#layer-2---the-convenience-layer)
-    - [Layer 3 - "The Educational Layer"](#layer-3---the-educational-layer)
-- [Dependency Rules](#dependency-rules)
-- [The Two User Types](#the-two-user-types)
-- [Library Directory Layout](#library-directory-layout)
-- [Summary](#summary)
+**A behaviour is a pure capability.** It knows HOW to do one thing — fire a projectile, hold a resource pool, receive
+damage. It owns the stats that govern THAT thing. It does not know when it runs, what triggers it, or what comes next.
 
----
+**A skill is a composition, not an orchestrator.** Just a `ModifiableObject` that owns behaviours and wires them
+together in `Initialize()`. No magic, no orchestration layer hiding inside.
 
-## The Layer Model
+**The game orchestrates.** Triggers, cooldowns, scheduling, networking, save/load, talent trees, loot tables — all
+game-side. The library cannot anticipate every game's trigger model and refuses to ship one.
 
-### Layer 0 - "The Data Layer"
-
-Pure data structures with no behavior. These are the inputs and outputs that flow through the system.
-
-**Contains:**
-
-- Configuration files (.yaml, .json)
-- ScriptableObjects
-- Structs, enums, readonly records
-- Data Transfer Objects (DTO's)
-
-**Dependencies:** None.
-
-**Change Impact:** Catastrophic. Everything in the library depends on these.
+**Modifiers reach anything.** Characters, items, props, projectiles, terrain — anything implementing `ICanBeModified`.
+If a talent / gear / buff might plausibly want to alter a behaviour, that behaviour lives on the target as a modifiable
+thing, not as a hardcoded service.
 
 ---
 
-### Layer 1 - "The Engine Layer"
+## Mental model
 
-The engine transforms inputs into outputs. Users can ship an entire game without knowing the inner workings of this
-layer—and most will. If you find that the majority of users are trying to access this layer then that should act as a
-code smell. Power users live here.
+| Role               | What it is                                                                                                                                                       | What it doesn't know                                                                                         |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `SbBehaviour`      | A pure capability. Owns its own stats for the thing it does. PoE math lives here.                                                                                | When it runs, what triggers it, what's next.                                                                 |
+| `SbModifier`       | Mutates a target via `Apply(target)` / `Remove(target)`. Carries a `UniqueId` so removal targets the exact applied instance.                                     | Anything about the target's other modifiers; reaches in through `IHasBehaviours` / `IHasEvents` and adjusts. |
+| `ModifiableObject` | A composed target. Owns a `BehaviourContainer` + `EventContainer`. A "skill" in this lib is just a `ModifiableObject` whose `Initialize()` wires its behaviours. | What gameplay system owns or triggers it.                                                                    |
+| The game           | Wires triggers, cooldowns, schedules, networking, save/load, scenes. Composes behaviours into skills, talents into trees, drops into loot tables.                | Library internals — that's why those internals exist.                                                        |
 
-**Contains:**
-
-- Interfaces defining contracts
-- Containers and managers
-- Core algorithms and calculations
-
-**Dependencies:** Layer 0 only.
-
-**Change Impact:** Severe. Changes here require significant effort and refactoring.
+Power users implement the contracts (`IModifier`, `IHasUniqueId`, `IHasBehaviours`, `IHasEvents`) directly. `SbModifier`
+and `ModifiableObject` are the 80% path, not the only path.
 
 ---
 
-### Layer 2 - "The Convenience Layer"
+## Math
 
-The majority of users live here. They should be able to make powerful behavioral changes to their game with ease by
-referencing this layer. This is the layer that allows users to feel powerful and say "I did X" even when they don't know
-the details of what's happening in the Engine Layer. This is not a jab at the user... this is a core idea on the <i>
-feeling </i> the user gets when using the library.
-
-**Contains:**
-
-- API classes with readable methods
-- Base classes users can inherit
-- Inspector tools and attributes
-- Extension methods and helpers
-- Drop-in `MonoBehaviour` components for designers who prefer drag-and-drop over writing boot code
-
-**Dependencies:** Layers 0 and 1.
-
-**Change Impact:** Moderate. Changes are localized and rarely require refactoring lower layers. Engineers can enhance
-tooling, visuals, and wrapper methods *usually* in one location.
-
----
-
-### Layer 3 - "The Educational Layer"
-
-Thorough and complete examples demonstrating usage. This layer is separate from the shipped library.
-
-**Contains:**
-
-- Samples and demos
-- Concrete implementations
-- Integration examples
-
-**Dependencies:** No restrictions.
-
-**Change Impact:** None. This layer is not used by the library.
-
----
-
-## Dependency Rules
-
-Dependencies flow in one direction.
-
-| Layer | Can Depend On  |
-|-------|----------------|
-| 0     | Nothing        |
-| 1     | Layer 0        |
-| 2     | Layers 0 and 1 |
-| 3     | Anything       |
-
-Violations of this rule indicate architectural problems.
-
----
-
-## The Two User Types
-
-### The 80% User
-
-- Wants to ship a game, not study a library
-- Lives in Layer 2
-- Follows Layer 3 examples
-- Entry point: base classes and helpers
-
-### The 20% Power User
-
-- Has constraints the library doesn't anticipate
-- Implements Layer 1 interfaces directly
-- May bypass Layer 2 entirely
-- Entry point: contracts/interfaces
-
-A well-designed library serves both.
-
----
-
-## Library Directory Layout
-
-The directory layout follows Unity's recommended package structure:
-https://docs.unity3d.com/6000.3/Documentation/Manual/cus-layout.html
+PoE-order, deterministic, fixed-point. For any stat:
 
 ```
-<package-root>/
-├── package.json
-├── README.md
-├── CHANGELOG.md
-├── LICENSE.md
-├── Editor/
-│   ├── Spellbound.[PackageName].Editor.asmdef
-│   └── ...
-├── Runtime/
-│   ├── Spellbound.[PackageName].asmdef
-│   ├── Data/           ← Layer 0
-│   ├── Core/           ← Layer 1
-│   ├── API/            ← Layer 2 (code-first surface)
-│   └── Components/     ← Layer 2 (drag-and-drop MonoBehaviours)
-├── Tests/
-│   ├── Editor/
-│   └── Runtime/
-├── Samples~/           ← Layer 3
-│   └── ExampleName/
-└── Documentation~/
+final = (base + Σflat) × (1 + Σincreased) × Π(1 + more)
 ```
 
-**Notes:**
+…unless any `Override` modifier is present, in which case the last `Override` wins and ignores everything before it.
 
-- The `~` suffix excludes folders from Unity's compilation (Samples are opt-in imports)
-- Layer boundaries are directory boundaries where possible
-- Assembly definitions enforce dependency rules at compile time
+All values stored as scaled `int` (default scale = 10000 → four decimal places). Determinism matters for network sync,
+replay, and save-load round-trips. Reads are dirty-flagged — `GetValue` only recalculates when modifiers actually
+changed.
 
 ---
 
-## Summary
+## Authoring shapes
 
-| Layer | Name        | Purpose                             | Users       |
-|-------|-------------|-------------------------------------|-------------|
-| 0     | Data        | Input that flows through the system | All users   |
-| 1     | Engine      | Powers the system                   | Power users |
-| 2     | Convenience | Makes the common case trivial       | Most users  |
-| 3     | Educational | Demonstrates usage                  | All users   |
+Designers compose modifiers from two primitives:
+
+- **`Affix`** — anonymous stat-flavor data. "+9 armor", "+25% increased life". Inline via `[SerializeReference]` on
+  items / talents / pools. No identity, no asset, no display name; tooltips format directly from the referenced stat.
+  The lib ships `Affix` as an abstract base; the consumer ships a concrete subclass that implements `Apply` / `Remove`
+  with their preferred routing (which `SbBehaviour` receives the modifier).
+- **`Trait`** + **`TraitRef`** — named, registered identities the player recognizes. "Iron Will", "Thick Hide", "Fire
+  Resistant". A `Trait` is a `ScriptableObject` (display data + embedded `SbModifier` effect); a `TraitRef` is the
+  inline `SbModifier` wrapper that lets a `[SerializeReference] List<SbModifier>` hold a reference to one. Tiered
+  variants (`iron_will_t1`, `t2`, `t3`) are separate assets that share a C# class but tune its parameters.
+
+The split exists because one-SO-per-affix bloats unmanageably at scale (~thousands of anonymous stat tweaks × multiple
+item slots). Inline data for the anonymous mass; assets only for the named identities a player will actually see.
+
+Drop generation rides **`ModifierPool`** assets — weighted slot lists that sample fresh `Affix` / `TraitRef` instances
+at drop time and emit them through `ModifierCodec` for inventory / save / wire encoding.
+
+---
+
+## What this library deliberately omits
+
+- **Trigger systems.** No cooldown manager, no input bindings, no scheduler. Game owns this.
+- **Damage formulas / mitigation policies.** Damage math is `SbBehaviour` subclasses in the consumer, not baked-in
+  services. A hardcoded "DamageCalculator" would lock out conversions, redirections, and per-type custom rules — the
+  calculator is the composition of behaviours on the target.
+- **Resource pools as a primary type.** Pools are derived from stats; their `Max` is a live read from a referenced stat
+  so modifier-driven changes to the max flow through automatically.
+- **Networking, ECS hooks, rendering.** None. The library depends only on `Spellbound.Core`. Anything that ties to a
+  specific runtime stack (PurrNet, Unity Entities, URP) belongs in the consumer.
+
+---
+
+## Install
+
+Unity package manifest:
+
+```json
+"com.spellboundstudios.modifiers": "<git url>"
+```
+
+Depends only on `com.spellboundstudios.core`.
+
+---
+
+## Status
+
+Pre-1.0. **Architectural strength beats API stability** until 1.0. Breaking changes happen when the architecture demands
+them; see `CHANGELOG.md`.

@@ -38,7 +38,7 @@ namespace Spellbound.Modifiers.Editor {
             pickerButton.clicked += () => {
                 var siblings = StatDefinitionPicker.CollectSiblings(property, nameof(StatBaseEntry.stat));
 
-                StatDefinitionPicker.Open(pickerButton.worldBound, siblings, picked => {
+                StatDefinitionPicker.Open(pickerButton, siblings, picked => {
                     statProp.objectReferenceValue = picked;
                     statProp.serializedObject.ApplyModifiedProperties();
                     pickerButton.text = StatDefinitionPicker.FormatLabel(picked);
@@ -58,6 +58,7 @@ namespace Spellbound.Modifiers.Editor {
             });
 
             valueField.TrackPropertyValue(baseValueProp, p => valueField.SetValueWithoutNotify(p.floatValue));
+
             pickerButton.TrackPropertyValue(statProp,
                 p => pickerButton.text = StatDefinitionPicker.FormatLabel(p.objectReferenceValue as StatDefinition));
 

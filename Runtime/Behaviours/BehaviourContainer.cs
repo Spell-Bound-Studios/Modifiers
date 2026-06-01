@@ -87,9 +87,10 @@ namespace Spellbound.Modifiers {
         void ISerializationCallbackReceiver.OnAfterDeserialize() {
             _lookup.Clear();
 
-            foreach (var b in behaviours)
+            foreach (var b in behaviours) {
                 if (b != null)
                     _lookup[b.GetType()] = b;
+            }
         }
 
         #endregion

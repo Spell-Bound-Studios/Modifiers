@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Spellbound.Modifiers.Editor {
     /// <summary>
@@ -23,11 +24,63 @@ namespace Spellbound.Modifiers.Editor {
         private const string LibSamplesPathFragment = "/Modifiers/Samples/";
 
         /// <summary>
-        /// Open the picker at <paramref name="anchor"/>; on selection, invoke <paramref name="onPicked"/>.
-        /// Stats present in <paramref name="exclude"/> are filtered out (used for sibling-deduplication).
+        /// Open the picker anchored to <paramref name="anchorElement"/>; on selection, invoke
+        /// <paramref name="onPicked"/>. Stats present in <paramref name="exclude"/> are filtered out (used for
+        /// sibling-deduplication).
         /// </summary>
-        public static void Open(Rect anchor, HashSet<StatDefinition> exclude, Action<StatDefinition> onPicked) {
-            new Dropdown(new AdvancedDropdownState(), exclude, onPicked).Show(anchor);
+        /// <remarks>
+        /// Invoked synchronously from a UI Toolkit <c>Button.clicked</c> callback on Unity 6,
+        /// <see cref="AdvancedDropdown.Show"/> emits <c>Unable to find style 'DD ItemStyle' in skin 'GameSkin'</c>
+        /// (and friends) and renders every item in the missing-style fallback color — because the call
+        /// originates outside any active IMGUI frame where <c>GUI.skin</c> resolves to the editor skin.
+        /// <para>
+        /// Deferring with <see cref="EditorApplication.delayCall"/> makes it worse: the deferred lambda runs
+        /// <c>&lt;called outside OnGUI&gt;</c> entirely, AND the screen-space conversion of the anchor Rect
+        /// has no GUI context to convert against, so the popup spawns at the wrong screen position.
+        /// </para>
+        /// <para>
+        /// The fix is to invoke <c>Show</c> from inside a real OnGUI tick. We attach a hidden
+        /// <see cref="IMGUIContainer"/> to the anchor's panel root; its <c>onGUIHandler</c> runs in a normal
+        /// IMGUI editor frame (editor skin active, anchor Rect convertible), fires <c>Show</c> once with a
+        /// freshly-read <see cref="VisualElement.worldBound"/>, then detaches itself.
+        /// </para>
+        /// </remarks>
+        public static void Open(
+            VisualElement anchorElement, HashSet<StatDefinition> exclude, Action<StatDefinition> onPicked) {
+            if (anchorElement?.panel == null) {
+                Spellbound.Core.Logging.Log.Warn(
+                    "[StatDefinitionPicker] Anchor element has no panel; dropdown cannot open.");
+
+                return;
+            }
+
+            var dropdown = new Dropdown(new AdvancedDropdownState(), exclude, onPicked);
+            var root = anchorElement.panel.visualTree;
+
+            IMGUIContainer bridge = null;
+            var fired = false;
+
+            bridge = new IMGUIContainer(() => {
+                if (fired)
+                    return;
+
+                fired = true;
+                dropdown.Show(anchorElement.worldBound);
+
+                // Detach next frame so we leave the OnGUI tick cleanly before mutating the tree.
+                var toRemove = bridge;
+                anchorElement.schedule.Execute(() => toRemove?.RemoveFromHierarchy());
+            }) {
+                // Zero-sized + not picking-target so the bridge is invisible and click-transparent.
+                style = {
+                    width = 0,
+                    height = 0,
+                    position = Position.Absolute
+                },
+                pickingMode = PickingMode.Ignore
+            };
+
+            root.Add(bridge);
         }
 
         /// <summary>
@@ -141,9 +194,11 @@ namespace Spellbound.Modifiers.Editor {
                 switch (item) {
                     case NullItem:
                         _onPicked(null);
+
                         break;
                     case CandidateItem c:
                         _onPicked(_candidates[c.Index]);
+
                         break;
                 }
             }

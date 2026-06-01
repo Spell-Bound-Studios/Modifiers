@@ -9,7 +9,7 @@ namespace Spellbound.Modifiers {
             Value = maxValue;
             Max = maxValue;
         }
-        
+
         public ResourcePoolEntry(float currentValue, float maxValue) {
             Value = currentValue;
             Max = maxValue;
