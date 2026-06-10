@@ -307,9 +307,9 @@ namespace Spellbound.Modifiers.Editor {
             SerializedProperty modifiers) {
             try {
                 var container = new SbBehaviour();
-                var resourceIds = new List<int>();
-                var resourceMins = new Dictionary<int, float>();
-                var statIds = new HashSet<int>();
+                var resourceIds = new List<uint>();
+                var resourceMins = new Dictionary<uint, float>();
+                var statIds = new HashSet<uint>();
 
                 if (resources != null) {
                     for (var i = 0; i < resources.arraySize; i++) {
@@ -322,7 +322,7 @@ namespace Spellbound.Modifiers.Editor {
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
 
-                        var id = StatRegistry.Register(def.StatName);
+                        var id = def.Hash;
 
                         container.SetBase(id,
                             entry.FindPropertyRelative(nameof(ResourceBaseEntry.baseValue)).floatValue);
@@ -344,7 +344,7 @@ namespace Spellbound.Modifiers.Editor {
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
 
-                        var id = StatRegistry.Register(def.StatName);
+                        var id = def.Hash;
                         container.SetBase(id, entry.FindPropertyRelative(nameof(StatBaseEntry.baseValue)).floatValue);
                         statIds.Add(id);
                     }
@@ -361,7 +361,7 @@ namespace Spellbound.Modifiers.Editor {
                         if (def == null || string.IsNullOrEmpty(def.StatName))
                             continue;
 
-                        var id = StatRegistry.Register(def.StatName);
+                        var id = def.Hash;
                         var type = (ModifierType)entry.FindPropertyRelative(nameof(ModifierEntry.type)).enumValueIndex;
                         var value = entry.FindPropertyRelative(nameof(ModifierEntry.value)).floatValue;
                         container.AddModifier(new StatModifierEntry(id, type, value));

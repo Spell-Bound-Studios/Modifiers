@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Spellbound Studio Inc.
+// Copyright 2026 Spellbound Studio Inc.
 
 using System;
 using System.Collections.Generic;
@@ -9,41 +9,29 @@ using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// The core engine of the library. Holds base stat values + modifier list for one target (character, item,
-    /// tree, chest — anything) and computes final values in PoE order:
+    /// Base class for a pure capability. A behaviour knows HOW to do exactly one thing (fire a projectile,
+    /// receive damage, emit a beam, hold a resource pool, run a duration effect) and owns the stats that
+    /// govern that thing, computed in PoE order:
     /// <c>Base -> Flat -> Increased (additive pool) -> More (multiplicative chain) -> Override (last wins)</c>.
-    /// Stats are addressed by integer id (interned through <see cref="StatRegistry"/>); user code addresses
-    /// them by name via the extension methods in <see cref="BehaviourExtensions"/>.
+    /// Stats are keyed by the stable hash of their name (via <see cref="StatRegistry"/>).
     /// </summary>
     /// <remarks>
     /// Values are stored as fixed-point ints (scale = <see cref="StatSettings.Precision"/>) so the math is
-    /// deterministic across machines and survives serialization round-trips. Recalculation is dirty-flagged:
-    /// <see cref="GetValue"/> only re-runs <see cref="CalculateStat"/> when a modifier was added/removed since
-    /// the last read. <see cref="IPacker"/> is implemented so a container can ride inside any packed data slot
-    /// (chunk data, save file, network frame); the wire format keys by stat NAME, not registry id, because
-    /// registry ids are process-local.
-    /// </remarks>
-    /// <summary>
-    /// Base class for a pure capability. A behaviour knows HOW to do exactly one thing (fire a projectile,
-    /// receive damage, emit a beam, hold a resource pool, run a duration effect) and owns its own
-    /// <see cref="StatContainer"/> for the numbers that govern that thing. It does NOT know when it runs,
-    /// what triggers it, or what comes after — that orchestration is the GAME's job (see the README).
-    /// </summary>
-    /// <remarks>
-    /// Subclass and override <see cref="InitializeStats"/> to seed base values; everything else (cooldowns,
-    /// triggers, FX, networking) is layered on by the consuming game. The <see cref="SerializableAttribute"/>
-    /// is required so concrete subclasses can ride a <c>[SerializeReference]</c> field for designer authoring.
+    /// deterministic across machines and survives serialization round-trips. Recalculation is dirty-flagged.
+    /// <see cref="IPacker"/> keys the wire format by stat hash — a stable 4-byte id identical on every machine.
+    /// The <see cref="SerializableAttribute"/> is required so concrete subclasses can ride a
+    /// <c>[SerializeReference]</c> field for designer authoring.
     /// </remarks>
     [Serializable]
     public class SbBehaviour : ISerializationCallbackReceiver {
         // Base values before any modifiers are applied (stored as fixed-point ints)
-        private readonly Dictionary<int, int> _baseValues = new();
+        private readonly Dictionary<uint, int> _baseValues = new();
 
         // Cached calculated values (stored as fixed-point ints, only valid when !_isDirty)
-        private readonly Dictionary<int, int> _calculatedValues = new();
+        private readonly Dictionary<uint, int> _calculatedValues = new();
 
         // All active modifiers affecting this entity
-        private readonly Dictionary<int, List<StatModifierEntry>> _modifiersByStatId = new();
+        private readonly Dictionary<uint, List<StatModifierEntry>> _modifiersByStatId = new();
 
         // If true, we need to recalculate before returning values
         private bool _isDirty = true;
@@ -62,7 +50,7 @@ namespace Spellbound.Modifiers {
                 if (entry.stat == null || string.IsNullOrEmpty(entry.stat.StatName))
                     continue;
 
-                SetBase(entry.stat.StatName, entry.baseValue);
+                SetBase(entry.stat.Hash, entry.baseValue);
             }
         }
 
@@ -71,18 +59,14 @@ namespace Spellbound.Modifiers {
         /// <summary>
         /// Set the base value for a stat before modifiers.
         /// </summary>
-        /// <example>
-        /// Base physical damage = 100
-        /// </example>
-        public void SetBase(int statId, float value) {
-            _baseValues[statId] = StatSettings.ToInternal(value);
+        public void SetBase(uint statHash, float value) {
+            _baseValues[statHash] = StatSettings.ToInternal(value);
             NotifyDirty();
         }
 
         /// <summary>
-        /// Fires whenever stats may have changed (base set, modifier added/removed, etc.). UI / debug
-        /// surfaces subscribe and re-read values; the engine itself only flips the dirty flag and
-        /// recomputes lazily on next <see cref="GetValue"/>.
+        /// Fires whenever stats may have changed. UI / debug surfaces subscribe and re-read; the engine flips
+        /// the dirty flag and recomputes lazily on next <see cref="GetValue(uint)"/>.
         /// </summary>
         public event Action OnStatsDirty;
 
@@ -92,31 +76,28 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Get the base value for a stat before modifiers.
-        /// Returns 0 if the stat hasn't been set.
+        /// Get the base value for a stat before modifiers, or 0 if unset.
         /// </summary>
-        public float GetBase(int statId) =>
-                _baseValues.TryGetValue(statId, out var value)
+        public float GetBase(uint statHash) =>
+                _baseValues.TryGetValue(statHash, out var value)
                         ? StatSettings.ToExternal(value)
                         : 0f;
 
-        public bool HasBase(int statId) => _baseValues.ContainsKey(statId);
+        public bool HasBase(uint statHash) => _baseValues.ContainsKey(statHash);
 
         /// <summary>
-        /// Add a modifier to this container.
-        /// The modifier will be applied during the next calculation.
+        /// Add a modifier to this container; applied during the next calculation.
         /// </summary>
         public void AddModifier(StatModifierEntry modifierEntry) {
-            if (!_modifiersByStatId.ContainsKey(modifierEntry.StatId))
-                _modifiersByStatId[modifierEntry.StatId] = new List<StatModifierEntry>();
+            if (!_modifiersByStatId.ContainsKey(modifierEntry.StatHash))
+                _modifiersByStatId[modifierEntry.StatHash] = new List<StatModifierEntry>();
 
-            _modifiersByStatId[modifierEntry.StatId].Add(modifierEntry);
+            _modifiersByStatId[modifierEntry.StatHash].Add(modifierEntry);
             NotifyDirty();
         }
 
         /// <summary>
-        /// Remove all modifiers from a specific id.
-        /// Use this when unequipping an item, removing a buff, etc.
+        /// Remove all modifiers carrying this unique id (unequip an item, remove a buff, etc.).
         /// </summary>
         public void RemoveModifierByUniqueId(string uniqueId) {
             if (string.IsNullOrEmpty(uniqueId)) {
@@ -132,17 +113,16 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Get the final calculated value for a stat (base + all modifiers applied).
-        /// Triggers recalculation if needed.
+        /// Get the final calculated value for a stat (base + all modifiers), recalculating if dirty.
         /// </summary>
-        public float GetValue(int statId) {
+        public float GetValue(uint statHash) {
             if (_isDirty)
                 Recalculate();
 
-            if (_calculatedValues.TryGetValue(statId, out var value))
+            if (_calculatedValues.TryGetValue(statHash, out var value))
                 return StatSettings.ToExternal(value);
 
-            return GetBase(statId);
+            return GetBase(statHash);
         }
 
         public void ClearModifiers() {
@@ -162,24 +142,23 @@ namespace Spellbound.Modifiers {
         public int ModifierCount => _modifiersByStatId.Values.Sum(list => list.Count);
 
         /// <summary>
-        /// Read-only enumeration of every stat id with a base value set. Used by UI / debug surfaces to walk
-        /// the live stat list without bypassing the engine's dictionaries.
+        /// Every stat hash with a base value set.
         /// </summary>
-        public IEnumerable<int> StatIds => _baseValues.Keys;
+        public IEnumerable<uint> StatHashes => _baseValues.Keys;
 
         #region Name-Based Overloads
 
-        /// <summary>Name-keyed <see cref="SetBase(int, float)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public void SetBase(string statName, float value) => SetBase(StatRegistry.Register(statName), value);
+        /// <summary>Name-keyed <see cref="SetBase(uint, float)"/>; hashes + validates the name via <see cref="StatRegistry"/>.</summary>
+        public void SetBase(string statName, float value) => SetBase(StatRegistry.GetHash(statName), value);
 
-        /// <summary>Name-keyed <see cref="GetBase(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public float GetBase(string statName) => GetBase(StatRegistry.Register(statName));
+        /// <summary>Name-keyed <see cref="GetBase(uint)"/>; hashes + validates the name via <see cref="StatRegistry"/>.</summary>
+        public float GetBase(string statName) => GetBase(StatRegistry.GetHash(statName));
 
-        /// <summary>Name-keyed <see cref="HasBase(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public bool HasBase(string statName) => HasBase(StatRegistry.Register(statName));
+        /// <summary>Name-keyed <see cref="HasBase(uint)"/>; hashes + validates the name via <see cref="StatRegistry"/>.</summary>
+        public bool HasBase(string statName) => HasBase(StatRegistry.GetHash(statName));
 
-        /// <summary>Name-keyed <see cref="GetValue(int)"/>; interns the name via <see cref="StatRegistry"/>.</summary>
-        public float GetValue(string statName) => GetValue(StatRegistry.Register(statName));
+        /// <summary>Name-keyed <see cref="GetValue(uint)"/>; hashes + validates the name via <see cref="StatRegistry"/>.</summary>
+        public float GetValue(string statName) => GetValue(StatRegistry.GetHash(statName));
 
         /// <summary>
         /// Add a <see cref="ModifierType.Flat"/> modifier to the named stat. The optional
@@ -188,41 +167,38 @@ namespace Spellbound.Modifiers {
         /// </summary>
         public void AddFlat(string statName, float value, string uniqueId = null) =>
                 AddModifier(new StatModifierEntry(
-                    StatRegistry.Register(statName),
+                    StatRegistry.GetHash(statName),
                     ModifierType.Flat,
                     value,
                     uniqueId));
 
         /// <summary>
-        /// Add a <see cref="ModifierType.Increased"/> modifier (additive % pool — stacks of Increased sum
-        /// together before the multiplication) to the named stat.
+        /// Add a <see cref="ModifierType.Increased"/> modifier (additive % pool) to the named stat.
         /// </summary>
         public void AddIncreased(string statName, float percent, string uniqueId = null) =>
                 AddModifier(new StatModifierEntry(
-                    StatRegistry.Register(statName),
+                    StatRegistry.GetHash(statName),
                     ModifierType.Increased,
                     percent,
                     uniqueId));
 
         /// <summary>
-        /// Add a <see cref="ModifierType.More"/> modifier (multiplicative — each More multiplies the running
-        /// total) to the named stat.
+        /// Add a <see cref="ModifierType.More"/> modifier (multiplicative chain) to the named stat.
         /// </summary>
         public void AddMore(string statName, float percent, string uniqueId = null) =>
                 AddModifier(new StatModifierEntry(
-                    StatRegistry.Register(statName),
+                    StatRegistry.GetHash(statName),
                     ModifierType.More,
                     percent,
                     uniqueId));
 
         /// <summary>
         /// Add a <see cref="ModifierType.Override"/> modifier (last-Override-wins; ignores Base / Flat /
-        /// Increased / More entirely) to the named stat. Useful for absolute setters — debug console
-        /// "SetSpeed 10", talents that force a stat to a fixed value, etc.
+        /// Increased / More) to the named stat.
         /// </summary>
         public void AddOverride(string statName, float value, string uniqueId = null) =>
                 AddModifier(new StatModifierEntry(
-                    StatRegistry.Register(statName),
+                    StatRegistry.GetHash(statName),
                     ModifierType.Override,
                     value,
                     uniqueId));
@@ -230,24 +206,22 @@ namespace Spellbound.Modifiers {
         #endregion
 
         /// <summary>
-        /// Recalculate all stats by applying modifiers in the correct order.
-        /// Order: Base -> Flat additions -> Increased (additive pool) -> More (multiplicative chain) -> Override
+        /// Recalculate all stats by applying modifiers in PoE order.
         /// </summary>
         private void Recalculate() {
             _calculatedValues.Clear();
 
-            foreach (var (statId, modifiers) in _modifiersByStatId)
-                _calculatedValues[statId] = CalculateStat(statId, modifiers);
+            foreach (var (statHash, modifiers) in _modifiersByStatId)
+                _calculatedValues[statHash] = CalculateStat(statHash, modifiers);
 
             _isDirty = false;
         }
 
         /// <summary>
-        /// Calculate a single stat's final value by applying modifiers in PoE order.
-        /// Uses fixed-point integer math for deterministic calculations.
+        /// Calculate a single stat's final value by applying modifiers in PoE order, in fixed-point int math.
         /// </summary>
-        private int CalculateStat(int statId, List<StatModifierEntry> modifiers) {
-            var baseValue = _baseValues.GetValueOrDefault(statId, 0);
+        private int CalculateStat(uint statHash, List<StatModifierEntry> modifiers) {
+            var baseValue = _baseValues.GetValueOrDefault(statHash, 0);
             var precision = StatSettings.Precision;
 
             // Step 1: Apply flat modifiers
@@ -261,7 +235,6 @@ namespace Spellbound.Modifiers {
             var afterFlat = baseValue + flatSum;
 
             // Step 2: Apply all Increased modifiers - they stack additively
-            // Example: 30% + 20% + 50% = 100% increased = multiply by 2.0
             var increasedSum = 0;
 
             foreach (var mod in modifiers) {
@@ -269,12 +242,9 @@ namespace Spellbound.Modifiers {
                     increasedSum += StatSettings.ToInternal(mod.Value);
             }
 
-            // (base + flat) * (1 + increased/100)
-            // In fixed-point: afterFlat * (precision + increasedSum) / precision
             var afterIncreased = (long)afterFlat * (precision + increasedSum) / precision;
 
             // Step 3: Apply all More modifiers - each is multiplicative
-            // Example: 40% more and then 30% more = 1.4 * 1.3 = 1.82 (82% total increase)
             var afterMore = afterIncreased;
 
             foreach (var mod in modifiers) {
@@ -284,7 +254,7 @@ namespace Spellbound.Modifiers {
                 }
             }
 
-            // Step 4: Check for Override modifiers (last one wins, ignores all previous calculations)
+            // Step 4: Check for Override modifiers (last one wins)
             foreach (var mod in modifiers) {
                 if (mod.Type == ModifierType.Override)
                     return StatSettings.ToInternal(mod.Value);
@@ -296,25 +266,21 @@ namespace Spellbound.Modifiers {
         #region IPacker
 
         /// <summary>
-        /// Pack the container as base values + flattened modifier list, keyed by stat NAME (not the process-local
-        /// integer id from <see cref="StatRegistry"/>). Names survive load-order changes, database reordering, and
-        /// cross-process transfer.
+        /// Pack the container as base values + flattened modifier list, keyed by stat hash (a stable 4-byte id).
         /// </summary>
         public void Pack(ref Span<byte> buffer) {
             Packer.WriteInt(ref buffer, _baseValues.Count);
 
-            foreach (var (id, value) in _baseValues) {
-                Packer.WriteString(ref buffer, StatRegistry.GetName(id));
+            foreach (var (hash, value) in _baseValues) {
+                Packer.WriteUInt(ref buffer, hash);
                 Packer.WriteInt(ref buffer, value);
             }
 
             Packer.WriteInt(ref buffer, ModifierCount);
 
-            foreach (var (id, modifiers) in _modifiersByStatId) {
-                var name = StatRegistry.GetName(id);
-
+            foreach (var (hash, modifiers) in _modifiersByStatId) {
                 foreach (var mod in modifiers) {
-                    Packer.WriteString(ref buffer, name);
+                    Packer.WriteUInt(ref buffer, hash);
                     Packer.WriteByte(ref buffer, (byte)mod.Type);
                     Packer.WriteFloat(ref buffer, mod.Value);
                     Packer.WriteString(ref buffer, mod.UniqueId ?? string.Empty);
@@ -323,9 +289,7 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Replace the container's contents from the buffer. Re-registers any stat names encountered through
-        /// <see cref="StatRegistry"/>, which means strict validation must already be configured if you want unknown
-        /// stats to throw on unpack.
+        /// Replace the container's contents from the buffer.
         /// </summary>
         public void Unpack(ref ReadOnlySpan<byte> buffer) {
             Clear();
@@ -333,27 +297,25 @@ namespace Spellbound.Modifiers {
             var baseCount = Packer.ReadInt(ref buffer);
 
             for (var i = 0; i < baseCount; i++) {
-                var name = Packer.ReadString(ref buffer);
+                var hash = Packer.ReadUInt(ref buffer);
                 var value = Packer.ReadInt(ref buffer);
-                var id = StatRegistry.Register(name);
-                _baseValues[id] = value;
+                _baseValues[hash] = value;
             }
 
             var modCount = Packer.ReadInt(ref buffer);
 
             for (var i = 0; i < modCount; i++) {
-                var name = Packer.ReadString(ref buffer);
+                var hash = Packer.ReadUInt(ref buffer);
                 var type = (ModifierType)Packer.ReadByte(ref buffer);
                 var value = Packer.ReadFloat(ref buffer);
                 var uniqueId = Packer.ReadString(ref buffer);
-                var id = StatRegistry.Register(name);
 
-                if (!_modifiersByStatId.TryGetValue(id, out var list)) {
+                if (!_modifiersByStatId.TryGetValue(hash, out var list)) {
                     list = new List<StatModifierEntry>();
-                    _modifiersByStatId[id] = list;
+                    _modifiersByStatId[hash] = list;
                 }
 
-                list.Add(new StatModifierEntry(id, type, value, uniqueId));
+                list.Add(new StatModifierEntry(hash, type, value, uniqueId));
             }
 
             _isDirty = true;
@@ -364,7 +326,7 @@ namespace Spellbound.Modifiers {
         #region Display Helpers
 
         /// <summary>
-        /// Get a formatted string of all base stats for debug output.
+        /// A formatted string of all base stats for debug output.
         /// </summary>
         public string GetBaseStatList() {
             var lines = _baseValues
@@ -379,23 +341,22 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Get a formatted string of all calculated stats for debug output.
-        /// Triggers recalculation if needed.
+        /// A formatted string of all calculated stats for debug output, recalculating if dirty.
         /// </summary>
         public string GetCalculatedStatList() {
             if (_isDirty)
                 Recalculate();
 
-            var allStatIds = new HashSet<int>(_baseValues.Keys);
+            var allStatHashes = new HashSet<uint>(_baseValues.Keys);
 
-            foreach (var statId in _modifiersByStatId.Keys)
-                allStatIds.Add(statId);
+            foreach (var statHash in _modifiersByStatId.Keys)
+                allStatHashes.Add(statHash);
 
-            var lines = allStatIds
-                    .Select(statId => {
-                        var name = StatRegistry.GetName(statId) ?? $"Unknown({statId})";
-                        var baseValue = GetBase(statId);
-                        var finalValue = GetValue(statId);
+            var lines = allStatHashes
+                    .Select(statHash => {
+                        var name = StatRegistry.GetName(statHash) ?? $"Unknown({statHash})";
+                        var baseValue = GetBase(statHash);
+                        var finalValue = GetValue(statHash);
 
                         return $"  {name}: {finalValue:F2} (base: {baseValue})";
                     });
@@ -404,19 +365,18 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Get a detailed breakdown of how a stat's value is calculated.
-        /// Shows all modifiers grouped by type and the step-by-step calculation.
+        /// A detailed breakdown of how a stat's value is calculated.
         /// </summary>
-        public string GetModifierAnalysis(int statId) {
-            var statName = StatRegistry.GetName(statId) ?? $"Unknown({statId})";
-            var baseValue = GetBase(statId);
+        public string GetModifierAnalysis(uint statHash) {
+            var statName = StatRegistry.GetName(statHash) ?? $"Unknown({statHash})";
+            var baseValue = GetBase(statHash);
 
             var lines = new List<string> {
                 $"Stat: {statName}",
                 $"Base: {baseValue}"
             };
 
-            if (!_modifiersByStatId.TryGetValue(statId, out var modifiers) || modifiers.Count == 0) {
+            if (!_modifiersByStatId.TryGetValue(statHash, out var modifiers) || modifiers.Count == 0) {
                 lines.Add("No modifiers");
                 lines.Add($"Final: {baseValue}");
 
@@ -461,7 +421,7 @@ namespace Spellbound.Modifiers {
             if (overrides.Count > 0)
                 lines.Add($"Override: {overrides.Last()} (ignores all calculations)");
 
-            lines.Add($"Final: {GetValue(statId):F2}");
+            lines.Add($"Final: {GetValue(statHash):F2}");
 
             return string.Join("\n", lines);
         }
