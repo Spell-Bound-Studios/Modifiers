@@ -19,6 +19,7 @@ namespace Spellbound.Modifiers {
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Stat Definition")]
     public class StatDefinition : ScriptableObject, IRegistryEntry {
         [Header("Identity"), SerializeField] private string statName;
+        [SerializeField, Immutable] private uint hash;
         [SerializeField] private string displayName;
         [SerializeField, TextArea] private string description;
         [SerializeField, SpritePreview] private Sprite icon;
@@ -32,7 +33,7 @@ namespace Spellbound.Modifiers {
         [SerializeField, Immutable] private string formattedDisplay;
 
         public string StatName => statName;
-        public uint Hash => StableHash.Fnv1A32(statName);
+        public uint Hash => hash;
         public string DisplayName => string.IsNullOrEmpty(displayName) ? statName : displayName;
         public string Description => description;
         public Sprite Icon => icon;
@@ -47,6 +48,13 @@ namespace Spellbound.Modifiers {
         private const float PreviewValue = 150.55f;
 
         private void OnValidate() {
+            var newHash = StableHash.Fnv1A32(statName);
+
+            if (hash != newHash) {
+                hash = newHash;
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+
             var internalValue = StatSettings.ToInternal(PreviewValue);
 
             internalStorage = $"{internalValue} (precision: {StatSettings.Precision})";
