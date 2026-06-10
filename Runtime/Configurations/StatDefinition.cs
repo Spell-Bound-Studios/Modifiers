@@ -1,22 +1,25 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
+using Spellbound.Core.Hashing;
+using Spellbound.Core.Registries;
 using Spellbound.Core.Tooling;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Designer-authored asset declaring one stat: its name (the registry key), human-readable display name,
-    /// description, icon, and an optional <see cref="StatDisplayFormat"/> for UI formatting. Aggregated into
-    /// a <see cref="StatDatabase"/> at the project level; referenced directly by preset modules via
-    /// <see cref="StatBaseEntry"/> / <see cref="ModifierEntry"/> / <see cref="ResourceBaseEntry"/>.
+    /// Designer-authored asset declaring one stat: its name (the registry key and the source of its stable
+    /// <see cref="Hash"/>), display name, description, icon, and an optional <see cref="StatDisplayFormat"/>.
+    /// Auto-discovered from a Resources/Stats folder by <see cref="StatRegistry"/>; referenced by preset
+    /// modules via <see cref="StatBaseEntry"/> / <see cref="ModifierEntry"/> / <see cref="ResourceBaseEntry"/>.
     /// </summary>
     /// <remarks>
     /// <see cref="OnValidate"/> re-formats a preview value (150.55) so designers see what their display
     /// format does without entering Play mode.
     /// </remarks>
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Stat Definition")]
-    public class StatDefinition : ScriptableObject {
+    public class StatDefinition : ScriptableObject, IRegistryEntry {
         [Header("Identity"), SerializeField] private string statName;
+        [SerializeField, Immutable] private uint hash;
         [SerializeField] private string displayName;
         [SerializeField, TextArea] private string description;
         [SerializeField, SpritePreview] private Sprite icon;
@@ -30,23 +33,11 @@ namespace Spellbound.Modifiers {
         [SerializeField, Immutable] private string formattedDisplay;
 
         public string StatName => statName;
+        public uint Hash => hash;
         public string DisplayName => string.IsNullOrEmpty(displayName) ? statName : displayName;
         public string Description => description;
         public Sprite Icon => icon;
         public StatDisplayFormat DisplayFormat => displayFormat;
-
-        /// <summary>
-        /// Threads this definition into both <see cref="StatDefinitionRegistry"/> (for name→asset
-        /// lookup) and <see cref="StatRegistry"/> (which interns the name to a process-local int
-        /// id), returning the assigned id. Idempotent — subsequent calls return the same id and
-        /// re-set the asset reference. <see cref="StatDatabase.RegisterAll"/> calls this on every
-        /// stat at boot; ad-hoc callers (tests, runtime stat introduction) can use it directly.
-        /// </summary>
-        public int Register() {
-            StatDefinitionRegistry.Register(this);
-
-            return StatRegistry.Register(statName);
-        }
 
         public string FormatValue(float value) =>
                 displayFormat != null
@@ -57,6 +48,13 @@ namespace Spellbound.Modifiers {
         private const float PreviewValue = 150.55f;
 
         private void OnValidate() {
+            var newHash = StableHash.Fnv1A32(statName);
+
+            if (hash != newHash) {
+                hash = newHash;
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+
             var internalValue = StatSettings.ToInternal(PreviewValue);
 
             internalStorage = $"{internalValue} (precision: {StatSettings.Precision})";

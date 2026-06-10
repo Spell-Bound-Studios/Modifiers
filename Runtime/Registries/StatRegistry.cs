@@ -1,94 +1,131 @@
-﻿// Copyright 2026 Spellbound Studio Inc.
+// Copyright 2026 Spellbound Studio Inc.
 
+using System;
 using System.Collections.Generic;
+using Spellbound.Core.Hashing;
+using Spellbound.Core.Registries;
+using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Process-global bidirectional table mapping stat <c>name &lt;-&gt; int id</c>. The library uses ints
-    /// internally for fast dictionary lookups; user-facing API surfaces use names (via
-    /// <see cref="BehaviourExtensions"/>) and intern them through this registry on first use. Optional
-    /// strict-validation mode rejects any name not declared in the active <see cref="StatDatabase"/>.
+    /// Resolves stats by the stable FNV-1a hash of their name. Auto-discovers every StatDefinition under a
+    /// Resources/Stats folder; hand it a name to get the hash (validated) or a hash to get the definition.
     /// </summary>
-    /// <remarks>
-    /// <para>Ids are <b>deterministic across builds</b> when registration always goes through
-    /// <see cref="StatDatabase.RegisterAll"/> — the database iterates its serialized stat list in field
-    /// order and assigns ids sequentially, so every client / server / build that loads the same asset
-    /// assigns identical ids. Ad-hoc <see cref="Register"/> calls outside that path (e.g. a runtime tool
-    /// or console command introducing a previously-unseen stat name) will shift every later id; lock
-    /// down registration if you depend on id stability.</para>
-    /// <para>Today's <see cref="SbBehaviour.Pack"/> defensively packs stat <b>names</b>, not ids, so
-    /// serialized data survives an ad-hoc <see cref="Register"/> shifting the id table. Long-term direction
-    /// is to pack ids once registration is locked to the database path — smaller wire format, no string
-    /// interning on the hot unpack path.</para>
-    /// <para>Because this is global static state, tests that exercise it must call <see cref="Clear"/>
-    /// between cases.</para>
-    /// </remarks>
     public static class StatRegistry {
-        private static readonly Dictionary<string, int> NameToId = new();
-        private static readonly Dictionary<int, string> IdToName = new();
-        private static int _nextId;
+        private const string ResourceFolder = "Stats";
 
-        private static HashSet<string> _databaseStats;
-
-        public static bool StrictValidationEnabled { get; private set; }
+        private static readonly HashRegistry<StatDefinition> Registry = new();
+        private static bool _isLoaded;
 
         /// <summary>
-        /// Enables strict validation. Any stat not in the provided set will throw an exception.
+        /// Every registered stat definition.
         /// </summary>
-        public static void EnableStrictValidation(IEnumerable<string> databaseStats) {
-            StrictValidationEnabled = true;
-            _databaseStats = new HashSet<string>(databaseStats);
-        }
+        public static IReadOnlyList<StatDefinition> All {
+            get {
+                EnsureLoaded();
 
-        /// <summary>
-        /// Disables strict validation. Stats can be registered from anywhere.
-        /// </summary>
-        public static void DisableStrictValidation() {
-            StrictValidationEnabled = false;
-            _databaseStats = null;
-        }
-
-        /// <summary>
-        /// Clears all registered stats. Useful for tests.
-        /// </summary>
-        public static void Clear() {
-            NameToId.Clear();
-            IdToName.Clear();
-            _nextId = 0;
-            StrictValidationEnabled = false;
-            _databaseStats = null;
-        }
-
-        public static int Register(string statName) {
-            if (NameToId.TryGetValue(statName, out var existingId))
-                return existingId;
-
-            if (StrictValidationEnabled && !_databaseStats.Contains(statName)) {
-                throw new KeyNotFoundException(
-                    $"Stat '{statName}' is not defined in StatDatabase. " +
-                    "Add it to your database or disable strict validation.");
+                return Registry.All;
             }
-
-            var id = _nextId++;
-            NameToId[statName] = id;
-            IdToName[id] = statName;
-
-            return id;
         }
 
-        public static int GetId(string statName) =>
-                NameToId.TryGetValue(statName, out var id)
-                        ? id
-                        : throw new KeyNotFoundException($"Stat '{statName}' not registered");
+        #region Lifecycle
 
-        public static bool TryGetId(string statName, out int id) => NameToId.TryGetValue(statName, out id);
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetForPlaySession() {
+            Registry.Clear();
+            _isLoaded = false;
+        }
 
-        public static string GetName(int id) => IdToName[id];
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void WarmUp() => EnsureLoaded();
 
-        public static bool TryGetName(int id, out string name) => IdToName.TryGetValue(id, out name);
+        #endregion
 
-        public static bool IsRegistered(string statName) => NameToId.ContainsKey(statName);
+        #region API
 
-        public static IEnumerable<string> GetAllStatNames() => NameToId.Keys;
+        /// <summary>
+        /// The stable hash for a stat name, throwing if no such stat is registered. Call once, cache the uint,
+        /// and key the hot paths by the hash so a per-frame read never hashes the string again.
+        /// </summary>
+        public static uint GetHash(string statName) {
+            EnsureLoaded();
+
+            var hash = StableHash.Fnv1A32(statName);
+
+            if (!Registry.Contains(hash))
+                throw new KeyNotFoundException(
+                    $"Stat '{statName}' is not registered. Author a StatDefinition for it under Resources/{ResourceFolder}.");
+
+            return hash;
+        }
+
+        /// <summary>
+        /// The stable hash for a stat name; false if no such stat is registered.
+        /// </summary>
+        public static bool TryGetHash(string statName, out uint hash) {
+            EnsureLoaded();
+            hash = StableHash.Fnv1A32(statName);
+
+            return Registry.Contains(hash);
+        }
+
+        /// <summary>
+        /// True if a stat with this name is registered.
+        /// </summary>
+        public static bool IsRegistered(string statName) {
+            EnsureLoaded();
+
+            return Registry.Contains(StableHash.Fnv1A32(statName));
+        }
+
+        /// <summary>
+        /// The definition for a stat hash, or null.
+        /// </summary>
+        public static StatDefinition GetDefinition(uint statHash) {
+            EnsureLoaded();
+
+            return Registry.TryGet(statHash, out var def) ? def : null;
+        }
+
+        /// <summary>
+        /// The definition for a stat name, or null.
+        /// </summary>
+        public static StatDefinition GetDefinition(string statName) => GetDefinition(StableHash.Fnv1A32(statName));
+
+        /// <summary>
+        /// The name of the stat with this hash, or null.
+        /// </summary>
+        public static string GetName(uint statHash) => GetDefinition(statHash)?.StatName;
+
+        /// <summary>
+        /// The name of the stat with this hash; false if none is registered.
+        /// </summary>
+        public static bool TryGetName(uint statHash, out string statName) {
+            statName = GetName(statHash);
+
+            return statName != null;
+        }
+
+        #endregion
+
+        #region Internal
+
+        private static void EnsureLoaded() {
+            if (_isLoaded)
+                return;
+
+            _isLoaded = true;
+
+            foreach (var definition in Resources.LoadAll<StatDefinition>(ResourceFolder)) {
+                if (Registry.Contains(definition.Hash))
+                    throw new InvalidOperationException(
+                        $"Stat hash collision: '{definition.StatName}' (asset '{definition.name}') collides with an " +
+                        $"already-registered stat at hash {definition.Hash}. Stat names must be unique — rename one.");
+
+                Registry.Add(definition);
+            }
+        }
+
+        #endregion
     }
 }

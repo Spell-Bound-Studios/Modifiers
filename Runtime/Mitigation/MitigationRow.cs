@@ -12,13 +12,13 @@ namespace Spellbound.Modifiers {
     /// <c>RemoveModifierByUniqueId</c> pattern on stats). Vanilla rows baked from a template carry no id.
     /// </remarks>
     public readonly struct MitigationRow {
-        public readonly int DefenseStatId;
-        public readonly int[] CoveredDamageStatIds;
+        public readonly uint DefenseStatId;
+        public readonly uint[] CoveredDamageStatIds;
         public readonly IMitigationStrategy Strategy;
         public readonly string UniqueId;
 
         public MitigationRow(
-            int defenseStatId, int[] coveredDamageStatIds, IMitigationStrategy strategy,
+            uint defenseStatId, uint[] coveredDamageStatIds, IMitigationStrategy strategy,
             string uniqueId) {
             DefenseStatId = defenseStatId;
             CoveredDamageStatIds = coveredDamageStatIds;

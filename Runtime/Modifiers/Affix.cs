@@ -48,23 +48,18 @@ namespace Spellbound.Modifiers {
         }
 
         public override void Pack(ref Span<byte> buffer) {
-            Packer.WriteString(ref buffer, stat != null ? stat.StatName : string.Empty);
+            Packer.WriteUInt(ref buffer, stat != null ? stat.Hash : 0u);
             Packer.WriteByte(ref buffer, (byte)modifierType);
             Packer.WriteFloat(ref buffer, value);
         }
 
         public override void Unpack(ref ReadOnlySpan<byte> buffer) {
-            var statName = Packer.ReadString(ref buffer);
+            var statHash = Packer.ReadUInt(ref buffer);
 
-            if (string.IsNullOrEmpty(statName))
-                stat = null;
-            else {
-                stat = StatDefinitionRegistry.GetByName(statName);
+            stat = statHash == 0u ? null : StatRegistry.GetDefinition(statHash);
 
-                if (stat == null)
-                    Log.Warn(
-                        $"Affix.Unpack: stat '{statName}' is not registered in StatDefinitionRegistry; affix will no-op on Apply.");
-            }
+            if (statHash != 0u && stat == null)
+                Log.Warn($"Affix.Unpack: stat hash {statHash} is not registered; affix will no-op on Apply.");
 
             modifierType = (ModifierType)Packer.ReadByte(ref buffer);
             value = Packer.ReadFloat(ref buffer);
