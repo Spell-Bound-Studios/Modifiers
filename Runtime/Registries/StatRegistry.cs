@@ -2,19 +2,20 @@
 
 using System;
 using System.Collections.Generic;
-using Spellbound.Core.Hashing;
 using Spellbound.Core.Registries;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// Resolves stats by the stable FNV-1a hash of their name. Auto-discovers every StatDefinition under a
-    /// Resources/Stats folder; hand it a name to get the hash (validated) or a hash to get the definition.
+    /// Resolves stats by their stable GUID-derived hash. Auto-discovers every StatDefinition under a
+    /// Resources/Stats folder; hand it a name to get the hash (via the name index) or a hash to get the
+    /// definition.
     /// </summary>
     public static class StatRegistry {
         private const string ResourceFolder = "Stats";
 
         private static readonly HashRegistry<StatDefinition> Registry = new();
+        private static readonly Dictionary<string, StatDefinition> NameIndex = new();
         private static bool _isLoaded;
 
         /// <summary>
@@ -33,6 +34,7 @@ namespace Spellbound.Modifiers {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetForPlaySession() {
             Registry.Clear();
+            NameIndex.Clear();
             _isLoaded = false;
         }
 
@@ -45,18 +47,16 @@ namespace Spellbound.Modifiers {
 
         /// <summary>
         /// The stable hash for a stat name, throwing if no such stat is registered. Call once, cache the uint,
-        /// and key the hot paths by the hash so a per-frame read never hashes the string again.
+        /// and key the hot paths by the hash so a per-frame read never touches the name index again.
         /// </summary>
         public static uint GetHash(string statName) {
             EnsureLoaded();
 
-            var hash = StableHash.Fnv1A32(statName);
-
-            if (!Registry.Contains(hash))
+            if (!NameIndex.TryGetValue(statName, out var definition))
                 throw new KeyNotFoundException(
                     $"Stat '{statName}' is not registered. Author a StatDefinition for it under Resources/{ResourceFolder}.");
 
-            return hash;
+            return definition.Hash;
         }
 
         /// <summary>
@@ -64,9 +64,16 @@ namespace Spellbound.Modifiers {
         /// </summary>
         public static bool TryGetHash(string statName, out uint hash) {
             EnsureLoaded();
-            hash = StableHash.Fnv1A32(statName);
 
-            return Registry.Contains(hash);
+            if (NameIndex.TryGetValue(statName, out var definition)) {
+                hash = definition.Hash;
+
+                return true;
+            }
+
+            hash = 0u;
+
+            return false;
         }
 
         /// <summary>
@@ -75,7 +82,7 @@ namespace Spellbound.Modifiers {
         public static bool IsRegistered(string statName) {
             EnsureLoaded();
 
-            return Registry.Contains(StableHash.Fnv1A32(statName));
+            return NameIndex.ContainsKey(statName);
         }
 
         /// <summary>
@@ -90,7 +97,11 @@ namespace Spellbound.Modifiers {
         /// <summary>
         /// The definition for a stat name, or null.
         /// </summary>
-        public static StatDefinition GetDefinition(string statName) => GetDefinition(StableHash.Fnv1A32(statName));
+        public static StatDefinition GetDefinition(string statName) {
+            EnsureLoaded();
+
+            return NameIndex.TryGetValue(statName, out var definition) ? definition : null;
+        }
 
         /// <summary>
         /// The name of the stat with this hash, or null.
@@ -120,7 +131,12 @@ namespace Spellbound.Modifiers {
                 if (Registry.Contains(definition.Hash))
                     throw new InvalidOperationException(
                         $"Stat hash collision: '{definition.StatName}' (asset '{definition.name}') collides with an " +
-                        $"already-registered stat at hash {definition.Hash}. Stat names must be unique — rename one.");
+                        $"already-registered stat at hash {definition.Hash}. Regenerate one asset's GUID to resolve.");
+
+                if (!NameIndex.TryAdd(definition.StatName, definition))
+                    throw new InvalidOperationException(
+                        $"Duplicate stat name: '{definition.StatName}' (asset '{definition.name}') is already " +
+                        "registered by another StatDefinition. Stat names must be unique — rename one.");
 
                 Registry.Add(definition);
             }
