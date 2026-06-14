@@ -47,7 +47,7 @@ PoE-order, deterministic, fixed-point. For any stat:
 final = (base + Σflat) × (1 + Σincreased) × Π(1 + more)
 ```
 
-…unless any `Override` modifier is present, in which case the last `Override` wins and ignores everything before it.
+…unless any `Override` modifier is present, in which case the **first** `Override` wins and ignores everything else — a CI-style "Maximum Life becomes 1" is not displaced by overrides applied after it.
 
 All values stored as scaled `int` (default scale = 10000 → four decimal places). Determinism matters for network sync,
 replay, and save-load round-trips. Reads are dirty-flagged — `GetValue` only recalculates when modifiers actually

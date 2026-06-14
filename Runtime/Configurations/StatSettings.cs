@@ -25,7 +25,8 @@ namespace Spellbound.Modifiers {
         public static void SetDecimalPrecision(int decimalPlaces) =>
                 Precision = (int)System.Math.Pow(10, decimalPlaces);
 
-        public static int ToInternal(float value) => (int)(value * Precision);
+        public static int ToInternal(float value) =>
+                (int)System.Math.Round(value * (double)Precision, System.MidpointRounding.AwayFromZero);
         public static float ToExternal(int value) => (float)value / Precision;
     }
 }

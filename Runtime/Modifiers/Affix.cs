@@ -41,7 +41,7 @@ namespace Spellbound.Modifiers {
         /// authored instances populate their fields via SerializeField; runtime construction
         /// flows through the extension (which returns the concrete subclass for fluent chaining).
         /// </summary>
-        internal void SetData(StatDefinition stat, ModifierType modifierType, float value) {
+        public void SetData(StatDefinition stat, ModifierType modifierType, float value) {
             this.stat = stat;
             this.modifierType = modifierType;
             this.value = value;
@@ -63,26 +63,6 @@ namespace Spellbound.Modifiers {
 
             modifierType = (ModifierType)Packer.ReadByte(ref buffer);
             value = Packer.ReadFloat(ref buffer);
-        }
-    }
-
-    /// <summary>
-    /// Extension layer for <see cref="Affix"/>. <see cref="Initialize{T}"/> returns the concrete
-    /// subclass type via type inference from the receiver — fluent chains like
-    /// <c>new StatAffix().Initialize(...)</c> retain the concrete type without a cast.
-    /// </summary>
-    public static class AffixExtensions {
-        /// <summary>
-        /// Configure an Affix at runtime — used by pool sampling and any other code path that
-        /// constructs an Affix fresh with a rolled value. Returns the concrete subclass for
-        /// fluent chaining. Inspector-authored instances assign their fields directly via
-        /// SerializeField and don't need this.
-        /// </summary>
-        public static T Initialize<T>(this T affix, StatDefinition stat, ModifierType modifierType, float value)
-                where T : Affix {
-            affix.SetData(stat, modifierType, value);
-
-            return affix;
         }
     }
 }
