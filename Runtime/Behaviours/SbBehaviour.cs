@@ -343,6 +343,19 @@ namespace Spellbound.Modifiers {
             _isDirty = true;
         }
 
+        /// <summary>
+        /// A deep copy — same concrete type, same base values + modifiers — via a Pack/Unpack round-trip. Gives
+        /// each spawned target its own instance cloned from a shared authored composition.
+        /// </summary>
+        public SbBehaviour Clone() {
+            var clone = (SbBehaviour)Activator.CreateInstance(GetType());
+            var payload = Packer.BuildPayload((ref Span<byte> buffer) => Pack(ref buffer));
+            ReadOnlySpan<byte> span = payload;
+            clone.Unpack(ref span);
+
+            return clone;
+        }
+
         #endregion
 
         #region Display Helpers

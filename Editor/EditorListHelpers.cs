@@ -145,7 +145,14 @@ namespace Spellbound.Modifiers.Editor {
         /// <paramref name="baseType"/>. Optionally filter by a required class-level attribute — useful for
         /// opt-in picker lists (e.g. only types tagged <see cref="PickableBehaviourAttribute"/>).
         /// </summary>
+        private static readonly Dictionary<(Type, Type), List<Type>> AssignableTypeCache = new();
+
         public static List<Type> GetAssignableTypes(Type baseType, Type requiredAttribute = null) {
+            var key = (baseType, requiredAttribute);
+
+            if (AssignableTypeCache.TryGetValue(key, out var cached))
+                return cached;
+
             var types = new List<Type>();
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
@@ -176,7 +183,10 @@ namespace Spellbound.Modifiers.Editor {
                 }
             }
 
-            return types.OrderBy(t => t.Name).ToList();
+            var result = types.OrderBy(t => t.Name).ToList();
+            AssignableTypeCache[key] = result;
+
+            return result;
         }
 
         /// <summary>

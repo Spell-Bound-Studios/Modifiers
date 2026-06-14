@@ -27,8 +27,6 @@ namespace Spellbound.Modifiers.Editor {
             var declared = behaviour?.Declare();
             var hasDeclared = declared != null && declared.Count > 0;
 
-            // Typed [SerializeField] children render normally — but hide the raw stats list when we're
-            // revealing the declared stats instead (otherwise the designer sees both).
             EditorListHelpers.ForEachVisibleChild(property, child => {
                 if (hasDeclared && child.name == "stats")
                     return;
