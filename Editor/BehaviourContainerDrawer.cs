@@ -1,6 +1,7 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -246,7 +247,20 @@ namespace Spellbound.Modifiers.Editor {
                 return;
             }
 
+            var present = new HashSet<Type>();
+
+            for (var i = 0; i < listProp.arraySize; i++) {
+                if (listProp.GetArrayElementAtIndex(i).managedReferenceValue is { } existing)
+                    present.Add(existing.GetType());
+            }
+
             foreach (var type in types) {
+                if (present.Contains(type)) {
+                    menu.AddDisabledItem(new GUIContent($"{type.Name}  ✓ added"));
+
+                    continue;
+                }
+
                 var captured = type;
 
                 menu.AddItem(new GUIContent(captured.Name), false, () => {

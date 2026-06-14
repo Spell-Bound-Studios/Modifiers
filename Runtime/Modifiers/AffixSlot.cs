@@ -18,7 +18,7 @@ namespace Spellbound.Modifiers {
         public StatDefinition Stat;
 
         [Tooltip("How the rolled value applies — Flat (+X), Increased / More (decimal fraction; " +
-                 "0.25 = 25%), Override (last-wins).")]
+                 "0.25 = 25%), Override (first-wins).")]
         public ModifierType ModifierType = ModifierType.Flat;
 
         [Tooltip("Sample range. Math is uniform in [x, y) — y itself is never sampled before " +
@@ -43,8 +43,9 @@ namespace Spellbound.Modifiers {
 
             var raw = Mathf.Lerp(RollRange.x, RollRange.y, (float)rng.NextDouble());
             var stepped = Mathf.Round(raw / Step) * Step;
+            affix.SetData(Stat, ModifierType, stepped);
 
-            return affix.Initialize(Stat, ModifierType, stepped);
+            return affix;
         }
 
         /// <summary>

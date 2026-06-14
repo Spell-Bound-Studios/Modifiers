@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Spellbound.Core.Logging;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
@@ -70,6 +71,61 @@ namespace Spellbound.Modifiers {
         public void Clear() => _lookup.Clear();
 
         public int Count => _lookup.Count;
+
+        #region Stat Modifier Routing
+
+        /// <summary>
+        /// Route a stat modifier to every behaviour that owns the stat (<see cref="SbBehaviour.HasBase(uint)"/>).
+        /// Returns the number of behaviours that received it; zero owners is a silent no-op.
+        /// </summary>
+        public int AddModifier(StatModifierEntry entry) {
+            var owners = 0;
+
+            foreach (var behaviour in _lookup.Values) {
+                if (!behaviour.HasBase(entry.StatHash))
+                    continue;
+
+                behaviour.AddModifier(entry);
+                owners++;
+            }
+
+            if (owners == 0)
+                Log.Verbose($"No behaviour owns the stat for {entry}; modifier not applied.");
+
+            return owners;
+        }
+
+        /// <summary>
+        /// Remove all modifier entries carrying this unique id from every behaviour. Returns the total
+        /// number of entries removed.
+        /// </summary>
+        public int RemoveModifierByUniqueId(string uniqueId) {
+            var removed = 0;
+
+            foreach (var behaviour in _lookup.Values)
+                removed += behaviour.RemoveModifierByUniqueId(uniqueId);
+
+            if (removed == 0)
+                Log.Verbose($"No modifier with id '{uniqueId}' found on any behaviour.");
+
+            return removed;
+        }
+
+        /// <summary>
+        /// Read a stat's value from whichever behaviour owns it (<see cref="SbBehaviour.HasBase(uint)"/>),
+        /// or 0 if none does. The read counterpart to <see cref="AddModifier"/>: under the one-owner-per-stat
+        /// rule there is at most one match, so this returns the first owner's modifier-inclusive value.
+        /// </summary>
+        public float GetValue(uint statHash) {
+            foreach (var behaviour in _lookup.Values) {
+                if (behaviour.HasBase(statHash))
+                    return behaviour.GetValue(statHash);
+            }
+
+            return 0f;
+        }
+
+        #endregion
 
         #region Inspector Authoring
 

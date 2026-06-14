@@ -12,7 +12,7 @@ namespace Spellbound.Modifiers {
     /// Base class for a pure capability. A behaviour knows HOW to do exactly one thing (fire a projectile,
     /// receive damage, emit a beam, hold a resource pool, run a duration effect) and owns the stats that
     /// govern that thing, computed in PoE order:
-    /// <c>Base -> Flat -> Increased (additive pool) -> More (multiplicative chain) -> Override (last wins)</c>.
+    /// <c>Base -> Flat -> Increased (additive pool) -> More (multiplicative chain) -> Override (first wins)</c>.
     /// Stats are keyed by the stable hash of their name (via <see cref="StatRegistry"/>).
     /// </summary>
     /// <remarks>
@@ -97,19 +97,25 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Remove all modifiers carrying this unique id (unequip an item, remove a buff, etc.).
+        /// Remove all modifier entries carrying this unique id (unequip an item, remove a buff, etc.).
+        /// Returns the number of entries removed; the behaviour is only dirtied when that count is non-zero.
         /// </summary>
-        public void RemoveModifierByUniqueId(string uniqueId) {
+        public int RemoveModifierByUniqueId(string uniqueId) {
             if (string.IsNullOrEmpty(uniqueId)) {
                 Log.Error("Attempting to remove a modifier with a null ID.");
 
-                return;
+                return 0;
             }
 
-            foreach (var modifierList in _modifiersByStatId.Values)
-                modifierList.RemoveAll(m => m.UniqueId == uniqueId);
+            var removed = 0;
 
-            NotifyDirty();
+            foreach (var modifierList in _modifiersByStatId.Values)
+                removed += modifierList.RemoveAll(m => m.UniqueId == uniqueId);
+
+            if (removed > 0)
+                NotifyDirty();
+
+            return removed;
         }
 
         /// <summary>
@@ -193,7 +199,7 @@ namespace Spellbound.Modifiers {
                     uniqueId));
 
         /// <summary>
-        /// Add a <see cref="ModifierType.Override"/> modifier (last-Override-wins; ignores Base / Flat /
+        /// Add a <see cref="ModifierType.Override"/> modifier (first-Override-wins; ignores Base / Flat /
         /// Increased / More) to the named stat.
         /// </summary>
         public void AddOverride(string statName, float value, string uniqueId = null) =>
@@ -202,6 +208,21 @@ namespace Spellbound.Modifiers {
                     ModifierType.Override,
                     value,
                     uniqueId));
+
+        #endregion
+
+        #region Owned Stat Declaration
+
+        /// <summary>
+        /// The stats this behaviour owns plus the base value each ships with. Override in a concrete behaviour
+        /// so the authoring inspector reveals exactly these (pre-filled, no orphans) and the runtime can seed
+        /// them as a fallback. Empty by default — a behaviour with no declaration authors via the raw stats list.
+        /// </summary>
+        public virtual IReadOnlyList<StatAndValue> Declare() => Array.Empty<StatAndValue>();
+
+        /// <summary>Builds a declared (stat, default-value) pair by name for use inside <see cref="Declare"/>.</summary>
+        protected static StatAndValue Own(string statName, float defaultValue) =>
+                new(StatRegistry.GetHash(statName), defaultValue);
 
         #endregion
 
@@ -254,7 +275,8 @@ namespace Spellbound.Modifiers {
                 }
             }
 
-            // Step 4: Check for Override modifiers (last one wins)
+            // Step 4: Check for Override modifiers (first one wins — CI-style "becomes X" effects
+            // are not displaced by later overrides on the same stat)
             foreach (var mod in modifiers) {
                 if (mod.Type == ModifierType.Override)
                     return StatSettings.ToInternal(mod.Value);
@@ -319,6 +341,19 @@ namespace Spellbound.Modifiers {
             }
 
             _isDirty = true;
+        }
+
+        /// <summary>
+        /// A deep copy — same concrete type, same base values + modifiers — via a Pack/Unpack round-trip. Gives
+        /// each spawned target its own instance cloned from a shared authored composition.
+        /// </summary>
+        public SbBehaviour Clone() {
+            var clone = (SbBehaviour)Activator.CreateInstance(GetType());
+            var payload = Packer.BuildPayload((ref Span<byte> buffer) => Pack(ref buffer));
+            ReadOnlySpan<byte> span = payload;
+            clone.Unpack(ref span);
+
+            return clone;
         }
 
         #endregion
@@ -419,7 +454,7 @@ namespace Spellbound.Modifiers {
             }
 
             if (overrides.Count > 0)
-                lines.Add($"Override: {overrides.Last()} (ignores all calculations)");
+                lines.Add($"Override: {overrides[0]} (ignores all calculations)");
 
             lines.Add($"Final: {GetValue(statHash):F2}");
 
