@@ -21,7 +21,7 @@ namespace Spellbound.Modifiers {
     /// resolved via <see cref="TraitRegistry"/>. The asset itself never travels over the wire or
     /// into save data.</para>
     /// </remarks>
-    [Serializable]
+    [Serializable, PackerId("trait_ref")]
     public sealed class TraitRef : SbModifier {
         [Tooltip("The Trait asset this reference points at. Apply clones the asset's Effect."), SerializeField]
         private Trait trait;
@@ -68,5 +68,7 @@ namespace Spellbound.Modifiers {
             var id = Packer.ReadUInt(ref buffer);
             trait = TraitRegistry.GetById(id);
         }
+
+        public override ISmartPacker CreateNewInstance() => new TraitRef();
     }
 }
