@@ -10,7 +10,7 @@ namespace Spellbound.Modifiers.Samples {
     /// whichever target owns a <see cref="DurationBehaviour"/>. Demonstrates the additive % pool — multiple
     /// stacks of this modifier add their percents together (PoE "increased" math), not multiply.
     /// </summary>
-    [Serializable]
+    [Serializable, PackerId("increased_duration")]
     public sealed class IncreasedDurationModifier : SbModifier {
         [SerializeField] private float increasedDurationPercent = .5f;
 
@@ -32,5 +32,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public override void Unpack(ref ReadOnlySpan<byte> buffer) =>
                 increasedDurationPercent = Packer.ReadFloat(ref buffer);
+
+        public override ISmartPacker CreateNewInstance() => new IncreasedDurationModifier();
     }
 }

@@ -11,7 +11,7 @@ namespace Spellbound.Modifiers.Samples {
     /// behaviour, push a flat stat modifier, remove by <see cref="SbModifier.UniqueId"/> on detach. Use this
     /// pattern for every numeric "+N to X" affix.
     /// </summary>
-    [Serializable]
+    [Serializable, PackerId("added_projectile_count")]
     public sealed class AddedProjectileCountModifier : SbModifier {
         [SerializeField] private int additionalProjectiles = 6;
 
@@ -38,5 +38,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public override void Unpack(ref ReadOnlySpan<byte> buffer) =>
                 additionalProjectiles = Packer.ReadInt(ref buffer);
+
+        public override ISmartPacker CreateNewInstance() => new AddedProjectileCountModifier();
     }
 }

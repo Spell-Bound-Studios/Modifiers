@@ -17,7 +17,7 @@ namespace Spellbound.Modifiers {
     /// directly (the README's documented "20% power user" escape hatch).
     /// </remarks>
     [Serializable]
-    public abstract class SbModifier : IModifier, IHasUniqueId, IPacker {
+    public abstract class SbModifier : IModifier, IHasUniqueId, ISmartPacker {
         public abstract void Apply(ICanBeModified target);
 
         public abstract void Remove(ICanBeModified target);
@@ -37,6 +37,18 @@ namespace Spellbound.Modifiers {
         /// Read state from <paramref name="buffer"/> into this instance. Mirror of <see cref="Pack"/>.
         /// </summary>
         public abstract void Unpack(ref ReadOnlySpan<byte> buffer);
+
+        /// <summary>
+        /// The stable type tag written ahead of this modifier's state when it rides a polymorphic list, so the
+        /// concrete subclass can be reconstructed from bytes alone. Sourced from the type's <c>[PackerId]</c>.
+        /// </summary>
+        public uint Hash => SmartPackerRegistry.GetHash(GetType());
+
+        /// <summary>
+        /// A fresh, default-constructed instance of this modifier's concrete type, for registry-driven
+        /// reconstruction. Each concrete subclass returns <c>new ThatType()</c>.
+        /// </summary>
+        public abstract ISmartPacker CreateNewInstance();
 
         /// <summary>
         /// Deep-clone via the project's binary packer. Round-trips the modifier through

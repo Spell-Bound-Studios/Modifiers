@@ -1,6 +1,7 @@
 ﻿// Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using Spellbound.Core.Packing;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
@@ -10,7 +11,7 @@ namespace Spellbound.Modifiers.Samples {
     /// (the algorithm for picking directions), not just stat numbers — the projectile count and speed are
     /// untouched; only the geometry shifts.
     /// </summary>
-    [Serializable]
+    [Serializable, PackerId("circular_projectile")]
     public sealed class CircularProjectileModifier : SbModifier {
         private ProjectileBehaviour _modifiedBehaviour;
 
@@ -32,6 +33,8 @@ namespace Spellbound.Modifiers.Samples {
         // instance with the same algorithm.
         public override void Pack(ref Span<byte> buffer) { }
         public override void Unpack(ref ReadOnlySpan<byte> buffer) { }
+
+        public override ISmartPacker CreateNewInstance() => new CircularProjectileModifier();
 
         private Vector3[] CalculateCircularDirections(int count) {
             if (count <= 0)

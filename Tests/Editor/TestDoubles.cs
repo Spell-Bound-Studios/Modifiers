@@ -1,6 +1,7 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System;
+using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers.Editor.Tests {
     /// <summary>
@@ -37,10 +38,13 @@ namespace Spellbound.Modifiers.Editor.Tests {
     /// walk under this instance's UniqueId; Remove sweeps that id. Pack/Unpack are deliberately empty —
     /// nothing in this suite exercises serialization.
     /// </summary>
+    [PackerId("test_stat_modifier")]
     internal sealed class TestStatModifier : SbModifier {
         private readonly uint _statHash;
         private readonly ModifierType _type;
         private readonly float _value;
+
+        public TestStatModifier() { }
 
         public TestStatModifier(uint statHash, ModifierType type, float value) {
             _statHash = statHash;
@@ -61,5 +65,7 @@ namespace Spellbound.Modifiers.Editor.Tests {
         public override void Pack(ref Span<byte> buffer) { }
 
         public override void Unpack(ref ReadOnlySpan<byte> buffer) { }
+
+        public override ISmartPacker CreateNewInstance() => new TestStatModifier();
     }
 }
