@@ -12,7 +12,7 @@ namespace Spellbound.Modifiers.Samples {
     /// the target's <see cref="EventContainer"/> and reacting with new gameplay, not just stat changes or
     /// algorithm swaps. Tracks its own spawned projectiles so split-on-hit doesn't recurse infinitely.
     /// </summary>
-    [Serializable]
+    [Serializable, PackerId("splitting_projectile")]
     public sealed class SplittingProjectileModifier : SbModifier {
         [SerializeField] private int splitCount = 2;
         [SerializeField] private int splitAngle = 30;
@@ -63,6 +63,8 @@ namespace Spellbound.Modifiers.Samples {
             splitCount = Packer.ReadInt(ref buffer);
             splitAngle = Packer.ReadInt(ref buffer);
         }
+
+        public override ISmartPacker CreateNewInstance() => new SplittingProjectileModifier();
 
         private void SplitProjectiles(TargetedPayload payload) {
             // Skip over my projectiles so that we don't recursively spawn more.
