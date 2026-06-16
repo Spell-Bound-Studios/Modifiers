@@ -72,6 +72,13 @@ namespace Spellbound.Modifiers {
 
         public int Count => _lookup.Count;
 
+        /// <summary>
+        /// This owner's broadcast modifiers — the set an owned satellite (a skill, a spawned object) reconciles
+        /// against via its <see cref="ModifierReceiver"/> to pull owner-level buffs into itself. Empty until a
+        /// source (gear, talent, buff) populates it; mutating it bumps a generation the satellites gate on.
+        /// </summary>
+        public ModifierCache ModifierCache { get; } = new();
+
         #region Stat Modifier Routing
 
         /// <summary>
