@@ -5,14 +5,20 @@ using Spellbound.Core.Logging;
 
 namespace Spellbound.Modifiers {
     /// <summary>
-    /// A satellite's record of which owner modifiers it has injected into its target and the cache
-    /// generation it last synced at. <see cref="Reconcile"/> is a full resync: sweep the previously
-    /// injected ids, apply the cache's current set, record the new ids + generation. The consumer decides
-    /// when to call it; the generation comparison is the O(1) clean-path check.
+    /// A satellite's link to an owner's <see cref="ModifierCache"/>: it holds its own clones of the owner's
+    /// modifiers, applied to the target, plus the cache generation it last synced at. <see cref="Reconcile"/>
+    /// is a full resync — tear down the previously injected clones through each modifier's own
+    /// <see cref="SbModifier.Remove"/>, then clone the cache's current set and <see cref="SbModifier.Apply"/>
+    /// each to the target, recording the new clones + generation. Cloning per satellite keeps stateful
+    /// modifiers isolated (each target gets its own instance); undoing through the modifier means anything —
+    /// a stat change, a state swap, a behaviour swap — round-trips, not just stat entries. The consumer
+    /// decides when to call <see cref="Reconcile"/>; the generation comparison is the O(1) clean-path check.
+    /// Target-agnostic by construction: it touches only <see cref="ICanBeModified"/>, so any modifiable thing
+    /// can be a satellite of any owner.
     /// </summary>
     public sealed class ModifierReceiver {
         private readonly ICanBeModified _target;
-        private readonly List<string> _injectedIds = new();
+        private readonly List<SbModifier> _injected = new();
         private ModifierCache _lastSource;
         private int _lastSyncedGeneration = -1;
 
@@ -24,9 +30,9 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Number of modifier ids currently injected into the target.
+        /// Number of modifier clones currently applied to the target.
         /// </summary>
-        public int InjectedCount => _injectedIds.Count;
+        public int InjectedCount => _injected.Count;
 
         /// <summary>
         /// True when this receiver already reflects the cache's current generation.
@@ -37,8 +43,9 @@ namespace Spellbound.Modifiers {
                 && _lastSyncedGeneration == cache.Generation;
 
         /// <summary>
-        /// Full resync against the cache when stale: sweep the previously injected ids, apply the cache's
-        /// current modifiers in order, record their ids and the generation. Returns true when a resync ran.
+        /// Full resync against the cache when stale: tear down the previously injected clones, clone the
+        /// cache's current modifiers and apply each to the target, record the clones and the generation.
+        /// Returns true when a resync ran.
         /// </summary>
         public bool Reconcile(ModifierCache cache) {
             if (cache == null) {
@@ -53,10 +60,10 @@ namespace Spellbound.Modifiers {
             Sweep();
 
             for (var i = 0; i < cache.Modifiers.Count; i++) {
-                var modifier = cache.Modifiers[i];
+                var clone = (SbModifier)cache.Modifiers[i].Clone();
 
-                modifier.Apply(_target);
-                _injectedIds.Add(modifier.UniqueId);
+                clone.Apply(_target);
+                _injected.Add(clone);
             }
 
             _lastSource = cache;
@@ -72,7 +79,7 @@ namespace Spellbound.Modifiers {
         public void Invalidate() => _lastSyncedGeneration = -1;
 
         /// <summary>
-        /// Sweeps everything this receiver injected and forgets its source; the next Reconcile starts fresh.
+        /// Tears down everything this receiver injected and forgets its source; the next Reconcile starts fresh.
         /// </summary>
         public void Detach() {
             Sweep();
@@ -81,12 +88,10 @@ namespace Spellbound.Modifiers {
         }
 
         private void Sweep() {
-            if (_target is IHasBehaviours hasBehaviours) {
-                foreach (var id in _injectedIds)
-                    hasBehaviours.Behaviours.RemoveModifierByUniqueId(id);
-            }
+            foreach (var modifier in _injected)
+                modifier.Remove(_target);
 
-            _injectedIds.Clear();
+            _injected.Clear();
         }
     }
 }
