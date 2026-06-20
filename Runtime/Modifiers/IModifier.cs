@@ -3,8 +3,8 @@
 namespace Spellbound.Modifiers {
     /// <summary>
     /// The atomic contract for "something that mutates a target." Two reversible operations
-    /// (<see cref="Apply"/> / <see cref="Remove"/>) plus a <see cref="Clone"/> hook used by asset-driven
-    /// authoring (see <see cref="ModdedCollection"/>). All gear, buffs, debuffs, talents, conversions,
+    /// (<see cref="Apply"/> / <see cref="Remove"/>) plus a <see cref="Clone"/> hook (a satellite clones a
+    /// modifier before applying it). All gear, buffs, debuffs, talents, conversions,
     /// redirections, and on-event triggers in a PoE-style game are <see cref="IModifier"/> implementations.
     /// </summary>
     /// <example>

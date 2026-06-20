@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 namespace Spellbound.Modifiers.Editor {
     /// <summary>
     /// Default UI Toolkit drawer for any <see cref="SbBehaviour"/> subclass. When the behaviour declares owned
-    /// stats (<see cref="SbBehaviour.Declare"/>) it reveals exactly those as pre-filled value fields — no
+    /// stats (<see cref="SbBehaviour.DeclareOwnedStats"/>) it reveals exactly those as pre-filled value fields — no
     /// stat-picker, no orphans, no forgetting one. Otherwise it falls back to rendering the raw stats list.
     /// A read-only computed preview follows either way.
     /// </summary>
@@ -24,7 +24,7 @@ namespace Spellbound.Modifiers.Editor {
             };
 
             var behaviour = property.managedReferenceValue as SbBehaviour;
-            var declared = behaviour?.Declare();
+            var declared = behaviour?.DeclareOwnedStats();
             var hasDeclared = declared != null && declared.Count > 0;
 
             EditorListHelpers.ForEachVisibleChild(property, child => {
