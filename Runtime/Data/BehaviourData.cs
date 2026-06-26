@@ -14,6 +14,7 @@ namespace Spellbound.Modifiers {
     /// The data that belongs to a behaviour container. It is intended to represent all of the networkable and savable
     /// data per container instance.
     /// </summary>
+    [PackerId("behaviour_data")]
     public struct BehaviourData : IPackerObjectData {
         public List<ResourceData> resourceData; // Stat max, min, current
         public List<StatAndValue> statModifiers; // Affix and Traits
