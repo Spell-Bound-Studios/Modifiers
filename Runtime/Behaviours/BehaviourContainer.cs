@@ -52,6 +52,13 @@ namespace Spellbound.Modifiers {
         [SerializeReference, DropdownPicker(typeof(PickableBehaviourAttribute))]
         private List<SbBehaviour> behaviours = new();
 
+        /// <summary>
+        /// This method is intended to be overriden with the specific behaviour data that you want the behaviour container
+        /// to adopt. Inherit from BehaviourContainer in order to override and own this methods implementation.
+        /// </summary>
+        /// <param name="behaviourData"></param>
+        public virtual void HydrateWithBehaviourData(BehaviourData behaviourData) { }
+
         public void Add(SbBehaviour behaviour) {
             behaviour.BindEvents(Events);
             _lookup[behaviour.GetType()] = behaviour;
