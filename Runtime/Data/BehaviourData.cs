@@ -20,6 +20,14 @@ namespace Spellbound.Modifiers {
         public List<StatAndValue> statModifiers; // Affix and Traits
         // Buffs
         // Debuffs
+        
+        public static class Context {
+            public const byte Silent = 0;
+            public const byte ResourcesGained = 1;
+            public const byte ResourcesLost = 2;
+            public const byte ResourcesUnchanged = 3;
+            public const byte Died = 4;
+        }
 
         #region IPackerObjectData
 
