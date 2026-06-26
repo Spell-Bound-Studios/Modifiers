@@ -26,13 +26,13 @@ namespace Spellbound.Modifiers {
         public IPackerObjectData GetEmptyData() => new BehaviourData();
 
         public void InvokeChangeCallback(
-            byte context, ObjectParent parent, int instanceIndex,
-            ObjectPreset preset, int surfaceIndex, TransformData transformData) =>
+            byte context, ObjectParent parent, int instanceIndex, ObjectPreset preset, byte surfaceIndex,
+            TransformData transformData) =>
                 this.ChangeCallback(context, parent, instanceIndex, preset, surfaceIndex, transformData);
 
         public void InvokeResolveCallback(
-            byte context, ObjectParent parent, int instanceIndex,
-            ObjectPreset preset, int surfaceIndex, TransformData transformData) =>
+            byte context, ObjectParent parent, int instanceIndex, ObjectPreset preset, byte surfaceIndex,
+            TransformData transformData) =>
                 this.ResolveCallback(context, parent, instanceIndex, preset, surfaceIndex, transformData);
 
         #endregion IPackerObjectData
