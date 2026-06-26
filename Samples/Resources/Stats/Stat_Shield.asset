@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: fad4ded0ff785e34498dacc21ae4cb45
   hash: 1704455818
-  statName: shield
+  statName: sample_shield
   displayName: Shield
   description: Absorbs!
   icon: {fileID: 0}

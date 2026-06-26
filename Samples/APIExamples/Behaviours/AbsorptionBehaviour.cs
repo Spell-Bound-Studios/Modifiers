@@ -12,12 +12,12 @@ namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class AbsorptionBehaviour : SbBehaviour {
         private static uint? _shieldHash;
-        private static uint ShieldHash => _shieldHash ??= StatRegistry.GetHash("shield");
+        private static uint ShieldHash => _shieldHash ??= StatRegistry.GetHash("sample_shield");
 
         private float _current;
         private bool _initialized;
 
-        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("shield", 50f) };
+        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("sample_shield", 50f) };
 
         public float Max => GetValue(ShieldHash);
 

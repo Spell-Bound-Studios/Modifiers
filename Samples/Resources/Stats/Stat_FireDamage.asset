@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db9314a9a3b94e448d9a4321d043afe6, type: 3}
   m_Name: Stat_FireDamage
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
-  statName: fire_damage
+  guid: 98b9f99d7cceb2b49b27fdb6122d0dd4
+  hash: 4144783570
+  statName: sample_fire_damage
   displayName: Fire Damage
   description: The amount of fire damage something does.
   icon: {fileID: 0}
-  displayFormat: {fileID: 0}
-  internalStorage: '1505500 (precision: 10000)'
-  formattedDisplay: 151

@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db9314a9a3b94e448d9a4321d043afe6, type: 3}
   m_Name: Stat_ProjectileSpeed
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
-  statName: projectile_speed
+  guid: d4dadb24a1a78e34ebf701be23acf0e0
+  hash: 3752213778
+  statName: sample_projectile_speed
   displayName: Projectile Speed
   description: The speed at which a projectile moves.
   icon: {fileID: 0}
-  displayFormat: {fileID: 11400000, guid: dcd385a800784c642a87bebf9ea78219, type: 2}
-  internalStorage: '1505500 (precision: 10000)'
-  formattedDisplay: 150.55%

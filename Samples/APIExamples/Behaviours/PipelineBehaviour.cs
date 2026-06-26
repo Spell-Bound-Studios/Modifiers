@@ -36,9 +36,9 @@ namespace Spellbound.Modifiers.Samples {
                 Circuit.Sequence("root",
                     Circuit.Stage("absorption", new AbsorptionStage()),
                     Circuit.Parallel("resistances",
-                        Circuit.Stage("fire", new ResistanceStage("fire_resistance", "fire_damage")),
-                        Circuit.Stage("cold", new ResistanceStage("cold_resistance", "cold_damage")),
-                        Circuit.Stage("lightning", new ResistanceStage("lightning_resistance", "lightning_damage"))),
+                        Circuit.Stage("fire", new ResistanceStage("sample_fire_resistance", "sample_fire_damage")),
+                        Circuit.Stage("cold", new ResistanceStage("sample_cold_resistance", "sample_cold_damage")),
+                        Circuit.Stage("lightning", new ResistanceStage("sample_lightning_resistance", "sample_lightning_damage"))),
                     Circuit.Stage("armor", new ArmorStage()),
                     Circuit.Stage("deposit", new DepositToLifeStage()));
     }

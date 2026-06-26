@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: 6d04a16de30cc4d468b37c9e83df308a
   hash: 1144749911
-  statName: cold_damage
+  statName: sample_cold_damage
   displayName: Cold Damage
   description: The amount of cold damage something does.
   icon: {fileID: 0}

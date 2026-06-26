@@ -11,9 +11,9 @@ namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class ResistanceBehaviour : SbBehaviour {
         public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] {
-            OwnedStat("fire_resistance", 20f),
-            OwnedStat("cold_resistance", 20f),
-            OwnedStat("lightning_resistance", 20f)
+            OwnedStat("sample_fire_resistance", 20f),
+            OwnedStat("sample_cold_resistance", 20f),
+            OwnedStat("sample_lightning_resistance", 20f)
         };
     }
 }

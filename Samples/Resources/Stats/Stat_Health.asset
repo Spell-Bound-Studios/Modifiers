@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db9314a9a3b94e448d9a4321d043afe6, type: 3}
   m_Name: Stat_Health
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
-  statName: health
+  guid: 35fcaf30f687e2242b392f6161e59e3a
+  hash: 1693302202
+  statName: sample_health
   displayName: Health
   description: The hp that something has.
   icon: {fileID: 0}
-  displayFormat: {fileID: 11400000, guid: 8cff6e62574c2a949850d3ecd4bf46d9, type: 2}
-  internalStorage: '1505500 (precision: 10000)'
-  formattedDisplay: +150.55

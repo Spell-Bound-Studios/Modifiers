@@ -13,11 +13,11 @@ namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class AwardBehaviour : SbBehaviour {
         private static uint? _killingBlowHash;
-        private static uint KillingBlowHash => _killingBlowHash ??= StatRegistry.GetHash("killing_blow");
+        private static uint KillingBlowHash => _killingBlowHash ??= StatRegistry.GetHash("sample_killing_blow");
 
         private bool _empowermentEnabled;
 
-        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("killing_blow", 0f) };
+        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("sample_killing_blow", 0f) };
 
         public float Banked => GetValue(KillingBlowHash);
 
@@ -31,7 +31,7 @@ namespace Spellbound.Modifiers.Samples {
                 _empowermentEnabled = value;
 
                 if (!value)
-                    SetBase("killing_blow", 0f);
+                    SetBase("sample_killing_blow", 0f);
             }
         }
 
@@ -42,7 +42,7 @@ namespace Spellbound.Modifiers.Samples {
 
             foreach (var entry in consequence) {
                 if (entry.statHash == KillingBlowHash)
-                    SetBase("killing_blow", Banked + entry.amount);
+                    SetBase("sample_killing_blow", Banked + entry.amount);
             }
         }
 
@@ -51,7 +51,7 @@ namespace Spellbound.Modifiers.Samples {
             if (!_empowermentEnabled || Banked < 1f)
                 return false;
 
-            SetBase("killing_blow", Banked - 1f);
+            SetBase("sample_killing_blow", Banked - 1f);
 
             return true;
         }

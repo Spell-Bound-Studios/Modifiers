@@ -14,10 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: a122db8d1036f7742a7654f160ea8041
   hash: 915515410
-  statName: killing_blow
+  statName: sample_killing_blow
   displayName: Killing Blow
   description: Get a killing blow when you're responsible for an enemies death.
   icon: {fileID: 0}
-  displayFormat: {fileID: 0}
-  internalStorage: '1505500 (precision: 10000)'
-  formattedDisplay: 151

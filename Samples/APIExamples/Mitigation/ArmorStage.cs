@@ -12,8 +12,8 @@ namespace Spellbound.Modifiers.Samples {
         private static uint? _armorHash;
         private static uint? _physicalHash;
 
-        private static uint ArmorHash => _armorHash ??= StatRegistry.GetHash("armor");
-        private static uint PhysicalHash => _physicalHash ??= StatRegistry.GetHash("physical_damage");
+        private static uint ArmorHash => _armorHash ??= StatRegistry.GetHash("sample_armor");
+        private static uint PhysicalHash => _physicalHash ??= StatRegistry.GetHash("sample_physical_damage");
 
         public void Process(in DamageContext ctx) {
             var armor = ctx.GetValue(ArmorHash);

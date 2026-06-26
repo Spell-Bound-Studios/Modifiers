@@ -16,16 +16,16 @@ namespace Spellbound.Modifiers.Samples {
         private static uint? _countHash;
         private static uint? _speedHash;
 
-        private static uint ProjectileCountHash => _countHash ??= StatRegistry.GetHash("projectile_count");
-        private static uint ProjectileSpeedHash => _speedHash ??= StatRegistry.GetHash("projectile_speed");
+        private static uint ProjectileCountHash => _countHash ??= StatRegistry.GetHash("sample_projectile_count");
+        private static uint ProjectileSpeedHash => _speedHash ??= StatRegistry.GetHash("sample_projectile_speed");
 
         private Func<int, Vector3[]> _directionOverride;
 
         public bool SplitOnHit { get; set; }
 
         public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] {
-            OwnedStat("projectile_count", 1f),
-            OwnedStat("projectile_speed", 14f)
+            OwnedStat("sample_projectile_count", 1f),
+            OwnedStat("sample_projectile_speed", 14f)
         };
 
         public int Count => Mathf.Max(1, (int)GetValue(ProjectileCountHash));

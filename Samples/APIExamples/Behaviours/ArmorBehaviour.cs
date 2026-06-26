@@ -10,6 +10,6 @@ namespace Spellbound.Modifiers.Samples {
     /// </summary>
     [Serializable]
     public sealed class ArmorBehaviour : SbBehaviour {
-        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("armor", 10f) };
+        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("sample_armor", 10f) };
     }
 }

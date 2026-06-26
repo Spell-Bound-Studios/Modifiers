@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: 099fbf81690300a4b91844d307e7a294
   hash: 367896889
-  statName: cold_resistance
+  statName: sample_cold_resistance
   displayName: Cold Resistance
   description: The amount of cold damage you can resist.
   icon: {fileID: 0}

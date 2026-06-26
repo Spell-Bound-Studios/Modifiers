@@ -18,7 +18,7 @@ namespace Spellbound.Modifiers.Samples {
         public override void Apply(ICanBeModified target) {
             if (TryGetBehaviour<PipelineBehaviour>(target, out var pipeline)
                     && pipeline.Root is GroupNode<DamageContext> sequence) {
-                sequence.Prepend(Circuit.Stage("reflect-fire", new ReflectStage("fire_damage", fraction)));
+                sequence.Prepend(Circuit.Stage("reflect-fire", new ReflectStage("sample_fire_damage", fraction)));
                 Log.Info($"[Reflect] inserted reflect-fire (x{fraction}) — circuit root now has {sequence.Children.Count} children");
             }
             else {

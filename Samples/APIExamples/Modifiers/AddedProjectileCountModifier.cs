@@ -15,7 +15,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public override void Apply(ICanBeModified target) {
             if (TryGetBehaviour<ProjectileBehaviour>(target, out var projectile))
-                projectile.AddFlat("projectile_count", additional, UniqueId);
+                projectile.AddFlat("sample_projectile_count", additional, UniqueId);
         }
 
         public override void Remove(ICanBeModified target) {

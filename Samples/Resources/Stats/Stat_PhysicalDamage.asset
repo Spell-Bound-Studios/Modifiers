@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: 941ea60529cb132449aec9a24995a538
   hash: 989282978
-  statName: physical_damage
+  statName: sample_physical_damage
   displayName: Physical Damage
   description: The amount of physical damage that you do.
   icon: {fileID: 0}

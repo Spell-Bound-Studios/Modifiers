@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: daebe60485a35b84d9fe0324c6dabe3d
   hash: 3401686331
-  statName: lightning_damage
+  statName: sample_lightning_damage
   displayName: Lightning damage
   description: The amount of lightning damage something does.
   icon: {fileID: 0}

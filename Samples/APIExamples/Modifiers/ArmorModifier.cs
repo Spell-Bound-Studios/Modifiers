@@ -15,7 +15,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public override void Apply(ICanBeModified target) {
             if (TryGetBehaviour<ArmorBehaviour>(target, out var armor))
-                armor.AddFlat("armor", amount, UniqueId);
+                armor.AddFlat("sample_armor", amount, UniqueId);
         }
 
         public override void Remove(ICanBeModified target) {

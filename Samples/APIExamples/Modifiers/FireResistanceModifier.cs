@@ -16,7 +16,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public override void Apply(ICanBeModified target) {
             if (TryGetBehaviour<ResistanceBehaviour>(target, out var resistance))
-                resistance.AddFlat("fire_resistance", amount, UniqueId);
+                resistance.AddFlat("sample_fire_resistance", amount, UniqueId);
         }
 
         public override void Remove(ICanBeModified target) {

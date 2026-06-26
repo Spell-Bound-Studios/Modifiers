@@ -12,12 +12,12 @@ namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class ResourceBehaviour : SbBehaviour {
         private static uint? _healthHash;
-        private static uint HealthHash => _healthHash ??= StatRegistry.GetHash("health");
+        private static uint HealthHash => _healthHash ??= StatRegistry.GetHash("sample_health");
 
         private float _current;
         private bool _initialized;
 
-        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("health", 100f) };
+        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("sample_health", 100f) };
 
         public float Max => GetValue(HealthHash);
 

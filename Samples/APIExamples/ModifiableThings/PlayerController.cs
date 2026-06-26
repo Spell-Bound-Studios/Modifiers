@@ -69,7 +69,7 @@ namespace Spellbound.Modifiers.Samples {
             Behaviours.Add(new ArmorBehaviour());
             _resource = new ResourceBehaviour();
             Behaviours.Add(_resource);
-            _resource.SetBase("health", 50f);
+            _resource.SetBase("sample_health", 50f);
             _pipeline = new PipelineBehaviour();
             Behaviours.Add(_pipeline);
         }

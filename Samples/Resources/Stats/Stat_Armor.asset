@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: f80ef36a323cc0543bf5907a02714355
   hash: 4287345079
-  statName: armor
+  statName: sample_armor
   displayName: Armor
   description: The amount of armor you have!
   icon: {fileID: 0}

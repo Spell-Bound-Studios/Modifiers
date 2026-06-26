@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db9314a9a3b94e448d9a4321d043afe6, type: 3}
   m_Name: Stat_IgniteChance
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
-  statName: ignite_chance
+  guid: 989ce5c182aa5984da19bc2b6e31593d
+  hash: 3574674554
+  statName: sample_ignite_chance
   displayName: Ignite Chance
   description: The chance to ignite something.
   icon: {fileID: 0}
-  displayFormat: {fileID: 11400000, guid: dcd385a800784c642a87bebf9ea78219, type: 2}
-  internalStorage: '1505500 (precision: 10000)'
-  formattedDisplay: 150.55%

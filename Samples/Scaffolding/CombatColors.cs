@@ -23,22 +23,22 @@ namespace Spellbound.Modifiers.Samples {
 
         /// <summary>The palette color for a damage-type stat, or white for anything unrecognized.</summary>
         public static Color ForDamage(uint statHash) {
-            _fire ??= StatRegistry.GetHash("fire_damage");
+            _fire ??= StatRegistry.GetHash("sample_fire_damage");
 
             if (statHash == _fire)
                 return Fire;
 
-            _physical ??= StatRegistry.GetHash("physical_damage");
+            _physical ??= StatRegistry.GetHash("sample_physical_damage");
 
             if (statHash == _physical)
                 return Physical;
 
-            _cold ??= StatRegistry.GetHash("cold_damage");
+            _cold ??= StatRegistry.GetHash("sample_cold_damage");
 
             if (statHash == _cold)
                 return Cold;
 
-            _lightning ??= StatRegistry.GetHash("lightning_damage");
+            _lightning ??= StatRegistry.GetHash("sample_lightning_damage");
 
             if (statHash == _lightning)
                 return Lightning;

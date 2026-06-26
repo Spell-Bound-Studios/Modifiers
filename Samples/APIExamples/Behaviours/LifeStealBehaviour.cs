@@ -14,7 +14,7 @@ namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class LifeStealBehaviour : SbBehaviour {
         private static uint? _killingBlowHash;
-        private static uint KillingBlowHash => _killingBlowHash ??= StatRegistry.GetHash("killing_blow");
+        private static uint KillingBlowHash => _killingBlowHash ??= StatRegistry.GetHash("sample_killing_blow");
 
         public float Fraction { get; set; }
 

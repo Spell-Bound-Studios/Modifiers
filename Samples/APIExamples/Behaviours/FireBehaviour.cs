@@ -12,11 +12,11 @@ namespace Spellbound.Modifiers.Samples {
     [Serializable]
     public sealed class FireBehaviour : SbBehaviour {
         private static uint? _fireDamageHash;
-        private static uint FireDamageHash => _fireDamageHash ??= StatRegistry.GetHash("fire_damage");
+        private static uint FireDamageHash => _fireDamageHash ??= StatRegistry.GetHash("sample_fire_damage");
 
         public bool IgniteEnabled { get; set; }
 
-        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("fire_damage", 30f) };
+        public override IReadOnlyList<StatAndValue> DeclareOwnedStats() => new[] { OwnedStat("sample_fire_damage", 30f) };
 
         public float FireDamage => GetValue(FireDamageHash);
 

@@ -17,7 +17,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public override void Apply(ICanBeModified target) {
             if (TryGetBehaviour<FireBehaviour>(target, out var fire))
-                fire.AddMore("fire_damage", moreFraction, UniqueId);
+                fire.AddMore("sample_fire_damage", moreFraction, UniqueId);
         }
 
         public override void Remove(ICanBeModified target) {

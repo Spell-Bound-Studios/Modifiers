@@ -27,10 +27,10 @@ namespace Spellbound.Modifiers.Samples {
         private Coroutine _igniteRoutine;
 
         private static uint? _killingBlowHash;
-        private static uint KillingBlowHash => _killingBlowHash ??= StatRegistry.GetHash("killing_blow");
+        private static uint KillingBlowHash => _killingBlowHash ??= StatRegistry.GetHash("sample_killing_blow");
 
         private static uint? _fireHash;
-        private static uint FireHash => _fireHash ??= StatRegistry.GetHash("fire_damage");
+        private static uint FireHash => _fireHash ??= StatRegistry.GetHash("sample_fire_damage");
 
         public event Action<EnemyController> OnDeath;
 
@@ -168,10 +168,10 @@ namespace Spellbound.Modifiers.Samples {
 
         [ContextMenu("Take Test Hit")]
         private void TakeTestHit() => TakeHit(new List<StatAndValue> {
-            new(StatRegistry.GetHash("physical_damage"), 40f),
-            new(StatRegistry.GetHash("fire_damage"), 40f),
-            new(StatRegistry.GetHash("cold_damage"), 40f),
-            new(StatRegistry.GetHash("lightning_damage"), 40f)
+            new(StatRegistry.GetHash("sample_physical_damage"), 40f),
+            new(StatRegistry.GetHash("sample_fire_damage"), 40f),
+            new(StatRegistry.GetHash("sample_cold_damage"), 40f),
+            new(StatRegistry.GetHash("sample_lightning_damage"), 40f)
         });
     }
 }

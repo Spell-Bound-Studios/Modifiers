@@ -14,10 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Spellbound.Stats::Spellbound.Stats.StatDefinition
   guid: b888e3a5adc5a9b41857c78d6aae0aa4
   hash: 3031099690
-  statName: fire_resistance
+  statName: sample_fire_resistance
   displayName: Fire Resistance
   description: The amount of fire damage you can resist.
   icon: {fileID: 0}
-  displayFormat: {fileID: 0}
-  internalStorage: '1505500 (precision: 10000)'
-  formattedDisplay: 151
