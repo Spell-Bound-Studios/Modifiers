@@ -35,8 +35,9 @@ namespace Spellbound.Modifiers.Editor.Tests {
 
     /// <summary>
     /// Minimal stat-entry-shaped modifier: Apply routes one StatModifierEntry through the container
-    /// walk under this instance's UniqueId; Remove sweeps that id. Pack/Unpack are deliberately empty —
-    /// nothing in this suite exercises serialization.
+    /// walk under this instance's UniqueId; Remove sweeps that id. Pack/Unpack stay empty — the suite
+    /// exercises Clone (the receiver clones on apply), not serialization, so Clone is a MemberwiseClone
+    /// that carries the rolled values and stamps a fresh id.
     /// </summary>
     [PackerId("test_stat_modifier")]
     internal sealed class TestStatModifier : SbModifier {
@@ -65,6 +66,13 @@ namespace Spellbound.Modifiers.Editor.Tests {
         public override void Pack(ref Span<byte> buffer) { }
 
         public override void Unpack(ref ReadOnlySpan<byte> buffer) { }
+
+        public override IModifier Clone() {
+            var clone = (TestStatModifier)MemberwiseClone();
+            clone.UniqueId = Guid.NewGuid().ToString();
+
+            return clone;
+        }
 
         public override ISmartPacker CreateNewInstance() => new TestStatModifier();
     }

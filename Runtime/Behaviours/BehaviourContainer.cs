@@ -31,7 +31,38 @@ namespace Spellbound.Modifiers {
     public class BehaviourContainer : ISerializationCallbackReceiver {
         private readonly Dictionary<Type, SbBehaviour> _lookup = new();
 
-        public void Add(SbBehaviour behaviour) => _lookup[behaviour.GetType()] = behaviour;
+        /// <summary>
+        /// This owner's broadcast modifiers — the set an owned satellite (a skill, a spawned object) reconciles
+        /// against via its <see cref="ModifierReceiver"/> to pull owner-level buffs into itself. Empty until a
+        /// source (gear, talent, buff) populates it; mutating it bumps a generation the satellites gate on.
+        /// </summary>
+        public ModifierCache ModifierCache { get; } = new();
+
+        /// <summary>
+        /// The shared event surface: the one place modifiers subscribe and behaviours publish. Each behaviour is
+        /// bound to it on <see cref="Add"/>; <see cref="Clear"/> tears it down.
+        /// </summary>
+        public EventContainer Events { get; } = new();
+
+        // This list and the ISerializationCallbackReceiver methods below exist ONLY because Unity can't
+        // serialize the _lookup dictionary directly. Nothing in runtime gameplay code reads or writes this
+        // list — it's the persisted-and-inspector-editable form of _lookup, bridged into the dictionary on
+        // load. Runtime mutations to _lookup are intentionally NOT mirrored back, so transient buffs added
+        // during playmode don't stick to the scene asset on save.
+        [SerializeReference, DropdownPicker(typeof(PickableBehaviourAttribute))]
+        private List<SbBehaviour> behaviours = new();
+
+        /// <summary>
+        /// This method is intended to be overriden with the specific behaviour data that you want the behaviour container
+        /// to adopt. Inherit from BehaviourContainer in order to override and own this methods implementation.
+        /// </summary>
+        /// <param name="behaviourData"></param>
+        public virtual void HydrateWithBehaviourData(BehaviourData behaviourData) { }
+
+        public void Add(SbBehaviour behaviour) {
+            behaviour.BindEvents(Events);
+            _lookup[behaviour.GetType()] = behaviour;
+        }
 
         public void Remove<T>() where T : SbBehaviour => _lookup.Remove(typeof(T));
 
@@ -68,7 +99,10 @@ namespace Spellbound.Modifiers {
 
         public IEnumerable<T> GetAll<T>() => _lookup.Values.OfType<T>();
 
-        public void Clear() => _lookup.Clear();
+        public void Clear() {
+            _lookup.Clear();
+            Events.ClearAll();
+        }
 
         public int Count => _lookup.Count;
 
@@ -127,16 +161,7 @@ namespace Spellbound.Modifiers {
 
         #endregion
 
-        #region Inspector Authoring
-
-        // This list and the ISerializationCallbackReceiver methods below exist ONLY because Unity can't
-        // serialize the _lookup dictionary directly. Nothing in runtime gameplay code reads or writes this
-        // list — it's the persisted-and-inspector-editable form of _lookup, bridged into the dictionary on
-        // load. Runtime mutations to _lookup are intentionally NOT mirrored back, so transient buffs added
-        // during playmode don't stick to the scene asset on save.
-
-        [SerializeReference, DropdownPicker(typeof(PickableBehaviourAttribute))]
-        private List<SbBehaviour> behaviours = new();
+        #region Serialization
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }
 
@@ -145,7 +170,7 @@ namespace Spellbound.Modifiers {
 
             foreach (var b in behaviours) {
                 if (b != null)
-                    _lookup[b.GetType()] = b;
+                    Add(b);
             }
         }
 

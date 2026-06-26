@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2692293307788787289}
   - component: {fileID: 5283761191433558454}
   - component: {fileID: 6875201606690285933}
-  - component: {fileID: 142213950982811317}
+  - component: {fileID: 1501900336951117287}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -113,7 +113,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &142213950982811317
+--- !u!114 &1501900336951117287
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -122,9 +122,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 4957247672107628884}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44049091aa904369b7fb3e48a92740c7, type: 3}
+  m_Script: {fileID: 11500000, guid: 77d379c16508c2141a5cae3b42c93ff9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.EnemyTarget
-  targetRenderer: {fileID: 5283761191433558454}
-  defaultColor: {r: 1, g: 1, b: 1, a: 1}
-  ignitedColor: {r: 1, g: 0, b: 0, a: 1}
+  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Modifiers.Samples.EnemyController

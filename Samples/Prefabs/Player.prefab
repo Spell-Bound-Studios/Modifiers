@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5796744318095227861}
   - component: {fileID: 4509397414077537943}
   - component: {fileID: 2916885945477103705}
+  - component: {fileID: 3508092452086389895}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -88,4 +89,18 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3508092452086389895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1995389603694144288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddf87cd433c999f4c8fb3626f75ed2da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Modifiers.Samples.PlayerController
+  projectilePrefab: {fileID: 2249507177515892946, guid: c3f3a105cd47657438c7629544f61350, type: 3}

@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 6216520917124144796}
   - component: {fileID: 8487570620628839594}
   - component: {fileID: 5946702434664662569}
-  - component: {fileID: 4689439321415688771}
   - component: {fileID: 8190625748992254123}
+  - component: {fileID: -6255845566773066446}
   m_Layer: 0
   m_Name: Projectile
   m_TagString: Untagged
@@ -91,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &5946702434664662569
 SphereCollider:
@@ -113,18 +114,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &4689439321415688771
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2249507177515892946}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76c4e252110c402eb26e7576244bfb6f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Stats.Samples.SimpleProjectile
 --- !u!54 &8190625748992254123
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -152,3 +141,17 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-6255845566773066446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2249507177515892946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e57559476de7e174e95c09a21ba2d4f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Spellbound.Modifiers.Samples.FireballProjectile
+  maxDistance: 30
+  targetTag: Enemy

@@ -46,7 +46,7 @@ namespace Spellbound.Modifiers {
         /// "Set maximum Life to 1" (for certain unique mechanics)
         /// </example>
         /// <remarks>
-        /// 
+        /// CI.
         /// </remarks>
         Override = 3
     }

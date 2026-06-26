@@ -78,15 +78,16 @@ namespace Spellbound.Modifiers {
         }
 
         /// <summary>
-        /// Attempts to get the EventContainer from the ICanBeModified target if an IHasEvents exists on the target.
+        /// Attempts to get the shared event surface from the target — the <see cref="EventContainer"/> on its
+        /// <see cref="BehaviourContainer"/> — when the target exposes behaviours.
         /// </summary>
         protected bool TryGetEvents(ICanBeModified target, out EventContainer events) {
             events = null;
 
-            if (target is not IHasEvents he)
+            if (target is not IHasBehaviours hb)
                 return false;
 
-            events = he.Events;
+            events = hb.Behaviours.Events;
 
             return true;
         }

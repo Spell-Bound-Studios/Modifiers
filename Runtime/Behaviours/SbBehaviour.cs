@@ -36,9 +36,26 @@ namespace Spellbound.Modifiers {
         // If true, we need to recalculate before returning values
         private bool _isDirty = true;
 
-        #region Inspector Authoring
+        // True once DeclareOwnedStats defaults have been seeded into _baseValues (see EnsureSeeded).
+        private bool _seeded;
 
+        // Inspector-authored base values; mirrored into _baseValues on deserialize.
         [SerializeField] private List<StatBaseEntry> stats = new();
+
+        /// <summary>
+        /// Fires whenever stats may have changed. UI / debug surfaces subscribe and re-read; the engine flips
+        /// the dirty flag and recomputes lazily on next <see cref="GetValue(uint)"/>.
+        /// </summary>
+        public event Action OnStatsDirty;
+
+        /// <summary>
+        /// The shared event surface from this behaviour's container — the same <see cref="EventContainer"/>
+        /// exposed by <see cref="BehaviourContainer.Events"/> — bound on add. Null until the behaviour belongs
+        /// to a container.
+        /// </summary>
+        protected EventContainer Events { get; private set; }
+
+        #region Serialization
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }
 
@@ -64,12 +81,6 @@ namespace Spellbound.Modifiers {
             NotifyDirty();
         }
 
-        /// <summary>
-        /// Fires whenever stats may have changed. UI / debug surfaces subscribe and re-read; the engine flips
-        /// the dirty flag and recomputes lazily on next <see cref="GetValue(uint)"/>.
-        /// </summary>
-        public event Action OnStatsDirty;
-
         protected virtual void NotifyDirty() {
             _isDirty = true;
             OnStatsDirty?.Invoke();
@@ -78,12 +89,19 @@ namespace Spellbound.Modifiers {
         /// <summary>
         /// Get the base value for a stat before modifiers, or 0 if unset.
         /// </summary>
-        public float GetBase(uint statHash) =>
-                _baseValues.TryGetValue(statHash, out var value)
-                        ? StatSettings.ToExternal(value)
-                        : 0f;
+        public float GetBase(uint statHash) {
+            EnsureSeeded();
 
-        public bool HasBase(uint statHash) => _baseValues.ContainsKey(statHash);
+            return _baseValues.TryGetValue(statHash, out var value)
+                    ? StatSettings.ToExternal(value)
+                    : 0f;
+        }
+
+        public bool HasBase(uint statHash) {
+            EnsureSeeded();
+
+            return _baseValues.ContainsKey(statHash);
+        }
 
         /// <summary>
         /// Add a modifier to this container; applied during the next calculation.
@@ -122,6 +140,8 @@ namespace Spellbound.Modifiers {
         /// Get the final calculated value for a stat (base + all modifiers), recalculating if dirty.
         /// </summary>
         public float GetValue(uint statHash) {
+            EnsureSeeded();
+
             if (_isDirty)
                 Recalculate();
 
@@ -211,18 +231,58 @@ namespace Spellbound.Modifiers {
 
         #endregion
 
-        #region Owned Stat Declaration
+        #region Owned Stats
 
         /// <summary>
-        /// The stats this behaviour owns plus the base value each ships with. Override in a concrete behaviour
-        /// so the authoring inspector reveals exactly these (pre-filled, no orphans) and the runtime can seed
-        /// them as a fallback. Empty by default — a behaviour with no declaration authors via the raw stats list.
+        /// The stats this behaviour owns and the default base value each ships with. Override in a concrete
+        /// behaviour: the runtime seeds these as base values on first use (authored values win), the routing
+        /// layer treats the behaviour as their owner, and the inspector reveals exactly these. Empty by default.
         /// </summary>
-        public virtual IReadOnlyList<StatAndValue> Declare() => Array.Empty<StatAndValue>();
+        public virtual IReadOnlyList<StatAndValue> DeclareOwnedStats() => Array.Empty<StatAndValue>();
 
-        /// <summary>Builds a declared (stat, default-value) pair by name for use inside <see cref="Declare"/>.</summary>
-        protected static StatAndValue Own(string statName, float defaultValue) =>
-                new(StatRegistry.GetHash(statName), defaultValue);
+        /// <summary>
+        /// An owned stat and the default base value it ships with, for use inside
+        /// <see cref="DeclareOwnedStats"/>.
+        /// </summary>
+        protected static StatAndValue OwnedStat(string statName, float defaultBaseValue) =>
+                new(StatRegistry.GetHash(statName), defaultBaseValue);
+
+        /// <summary>
+        /// Seed the declared owned-stat defaults into the base values on first access — but only stats not
+        /// already set, so authored values win. Lazy so the stat-registry lookup never runs in a constructor
+        /// or mid-deserialize.
+        /// </summary>
+        private void EnsureSeeded() {
+            if (_seeded)
+                return;
+
+            _seeded = true;
+
+            foreach (var owned in DeclareOwnedStats()) {
+                if (!_baseValues.ContainsKey(owned.statHash))
+                    _baseValues[owned.statHash] = StatSettings.ToInternal(owned.amount);
+            }
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Bind the container's event surface. Called by <see cref="BehaviourContainer"/> when the behaviour is
+        /// added; not for general use.
+        /// </summary>
+        internal void BindEvents(EventContainer events) => Events = events;
+
+        /// <summary>
+        /// Raise an event onto the surface with a payload, but only when something is listening — an
+        /// unsubscribed event does no work. When the payload is expensive to build, gate its construction on
+        /// <see cref="Events"/>' <see cref="EventContainer.HasHandlers"/> first.
+        /// </summary>
+        protected void Raise<T>(uint eventId, T payload) {
+            if (Events != null && Events.HasHandlers(eventId))
+                Events.Invoke(eventId, payload);
+        }
 
         #endregion
 
