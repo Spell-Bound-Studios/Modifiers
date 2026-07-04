@@ -34,6 +34,23 @@ namespace Spellbound.Modifiers {
             _override = internalValue;
         }
 
+        public void Merge(in Accumulator other) {
+            _flat += other._flat;
+            _increased += other._increased;
+
+            if (other._hasMore) {
+                if (!_hasMore) {
+                    _hasMore = true;
+                    _moreProduct = StatSettings.Precision;
+                }
+
+                _moreProduct = _moreProduct * other._moreProduct / StatSettings.Precision;
+            }
+
+            if (other._hasOverride)
+                SetOverride(other._override);
+        }
+
         public void Apply(ModifierType type, int internalValue) {
             switch (type) {
                 case ModifierType.Flat:

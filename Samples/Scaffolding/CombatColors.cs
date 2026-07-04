@@ -12,6 +12,7 @@ namespace Spellbound.Modifiers.Samples {
         public static readonly Color Cold = new(0.45f, 0.78f, 1f);        // frosty blue
         public static readonly Color Lightning = new(1f, 0.92f, 0.2f);    // yellow
         public static readonly Color Physical = new(0.55f, 0.38f, 0.22f); // brown
+        public static readonly Color Chaos = new(0.75f, 0.35f, 0.9f);     // violet
         public static readonly Color Absorb = new(0.95f, 0.78f, 0.2f);    // amber (shield, not mana)
         public static readonly Color Deposit = new(0.85f, 0.2f, 0.2f);    // red
         public static readonly Color Neutral = new(0.3f, 0.34f, 0.42f);
@@ -20,6 +21,7 @@ namespace Spellbound.Modifiers.Samples {
         private static uint? _physical;
         private static uint? _cold;
         private static uint? _lightning;
+        private static uint? _chaos;
 
         /// <summary>
         /// The palette color for a damage-type stat, or white for anything unrecognized.
@@ -44,6 +46,11 @@ namespace Spellbound.Modifiers.Samples {
 
             if (statHash == _lightning)
                 return Lightning;
+
+            _chaos ??= StatRegistry.GetHash("sample_chaos_damage");
+
+            if (statHash == _chaos)
+                return Chaos;
 
             return Color.white;
         }

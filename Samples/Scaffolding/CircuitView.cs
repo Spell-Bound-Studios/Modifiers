@@ -1,5 +1,6 @@
 // Copyright 2026 Spellbound Studio Inc.
 
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,11 +16,11 @@ namespace Spellbound.Modifiers.Samples {
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class CircuitView : MonoBehaviour {
-        private static readonly (uint id, string label)[] StageOrder = {
-            (DemoStages.Convert, "CONVERT"),
-            (DemoStages.Mitigate, "MITIGATE"),
-            (DemoStages.Apply, "APPLY"),
-            (DemoStages.React, "REACT")
+        private static readonly Dictionary<uint, string> StageLabels = new() {
+            { DemoStages.Convert, "CONVERT" },
+            { DemoStages.Mitigate, "MITIGATE" },
+            { DemoStages.Apply, "APPLY" },
+            { DemoStages.React, "REACT" }
         };
 
         private VisualElement _panel;
@@ -89,16 +90,18 @@ namespace Spellbound.Modifiers.Samples {
         private void Rebuild(Circuit circuit) {
             _diagram.Clear();
 
-            for (var i = 0; i < StageOrder.Length; i++) {
-                if (!circuit.TryGetStage(StageOrder[i].id, out var stage))
-                    continue;
+            var stages = circuit.Stages;
 
+            for (var i = 0; i < stages.Count; i++) {
                 if (i > 0)
                     _diagram.Add(Arrow());
 
-                _diagram.Add(StepBox(i + 1, StageOrder[i].label, stage));
+                _diagram.Add(StepBox(i + 1, LabelForStage(stages[i]), stages[i]));
             }
         }
+
+        private static string LabelForStage(Stage stage) =>
+                StageLabels.TryGetValue(stage.Id, out var label) ? label : $"#{stage.Id}";
 
         private static VisualElement StepBox(int number, string label, Stage stage) {
             var box = new VisualElement();
@@ -205,12 +208,11 @@ namespace Spellbound.Modifiers.Samples {
 
         private static string Signature(Circuit circuit) {
             var sb = new StringBuilder(96);
+            var stages = circuit.Stages;
 
-            foreach (var (id, _) in StageOrder) {
-                if (!circuit.TryGetStage(id, out var stage))
-                    continue;
-
-                sb.Append(id).Append('(');
+            for (var s = 0; s < stages.Count; s++) {
+                var stage = stages[s];
+                sb.Append(stage.Id).Append('(');
 
                 var children = stage.Children;
 

@@ -29,8 +29,8 @@ namespace Spellbound.Modifiers.Tests {
         public void RemoveBySource_SweepsAllCircuits() {
             var set = new CircuitSet();
             const uint item = 55u;
-            set.GetOrCreate(1u).DefineStage(1u).Add(new RecordingLeaf(), 0, item);
-            set.GetOrCreate(2u).DefineStage(1u).Add(new RecordingLeaf(), 0, item);
+            set.GetOrCreate(1u).DefineStage(1u, 0).Add(new RecordingLeaf(), 0, item);
+            set.GetOrCreate(2u).DefineStage(1u, 0).Add(new RecordingLeaf(), 0, item);
 
             Assert.AreEqual(2, set.RemoveBySource(item));
         }

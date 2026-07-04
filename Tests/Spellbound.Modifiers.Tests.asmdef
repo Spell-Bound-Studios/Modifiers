@@ -4,7 +4,8 @@
     "references": [
         "Spellbound.Modifiers",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.PerformanceTesting"
     ],
     "includePlatforms": [
         "Editor"

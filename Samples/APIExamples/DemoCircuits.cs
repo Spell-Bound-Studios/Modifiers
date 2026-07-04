@@ -10,6 +10,11 @@ namespace Spellbound.Modifiers.Samples {
     /// shield is just another grant into Mitigate at <see cref="ShieldPriority"/>.
     /// </summary>
     public static class DemoCircuits {
+        public const int ConvertOrder = 0;
+        public const int MitigateOrder = 10;
+        public const int ApplyOrder = 20;
+        public const int ReactOrder = 30;
+
         public const int ShieldPriority = -10;
         public const int ResistancePriority = 0;
         public const int ArmorPriority = 10;
@@ -17,12 +22,10 @@ namespace Spellbound.Modifiers.Samples {
         public static Circuit BuildTakeHit(Modifiable modifiable, Action<float> drainLife) {
             var circuit = modifiable.CircuitFor(DemoEvents.TakeHit);
 
-            var convert = circuit.DefineStage(DemoStages.Convert);
-            var mitigate = circuit.DefineStage(DemoStages.Mitigate);
-            var apply = circuit.DefineStage(DemoStages.Apply);
-            var react = circuit.DefineStage(DemoStages.React);
-
-            circuit.Root = new Sequence(convert, mitigate, apply, react);
+            circuit.DefineStage(DemoStages.Convert, ConvertOrder);
+            var mitigate = circuit.DefineStage(DemoStages.Mitigate, MitigateOrder);
+            var apply = circuit.DefineStage(DemoStages.Apply, ApplyOrder);
+            circuit.DefineStage(DemoStages.React, ReactOrder);
 
             mitigate.Add(new ResistanceLeaf(DemoStats.FireDamage, DemoStats.FireResistance), ResistancePriority);
             mitigate.Add(new ResistanceLeaf(DemoStats.ColdDamage, DemoStats.ColdResistance), ResistancePriority);

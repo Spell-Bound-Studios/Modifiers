@@ -27,6 +27,9 @@ namespace Spellbound.Modifiers.Samples {
         public Func<int, Vector3[]> DirectionOverride { get; set; }
 
         private bool _empowermentEnabled;
+        private readonly CircuitContext _hitContext = new();
+        private readonly List<StatAndValue> _hitPacket = new(4);
+        private readonly List<StatAndValue> _reflectPacket = new(1);
 
         public bool EmpowermentEnabled {
             get => _empowermentEnabled;
@@ -62,8 +65,16 @@ namespace Spellbound.Modifiers.Samples {
                 SpawnProjectile(origin, direction, damage, color, canSplit: true, excluded: null);
         }
 
-        private List<StatAndValue> BuildDamage(bool empowered) =>
-                new() { new(DemoStats.FireDamage, FireDamage * (empowered ? 2f : 1f)) };
+        private List<StatAndValue> BuildDamage(bool empowered) {
+            var multiplier = empowered ? 2f : 1f;
+            var damage = new List<StatAndValue> { new(DemoStats.FireDamage, FireDamage * multiplier) };
+            var chaos = GetValue(DemoStats.ChaosDamage);
+
+            if (chaos > 0f)
+                damage.Add(new StatAndValue(DemoStats.ChaosDamage, chaos * multiplier));
+
+            return damage;
+        }
 
         private bool TrySpendEmpowerment() {
             if (!EmpowermentEnabled || Banked < 1f)
@@ -78,18 +89,22 @@ namespace Spellbound.Modifiers.Samples {
             if (enemy == null || enemy.IsDead)
                 return;
 
-            var ctx = new CircuitContext { Packet = Clone(damage) };
-            enemy.TakeHit(ctx);
+            _hitContext.Clear();
+            _hitPacket.Clear();
+            _hitPacket.AddRange(damage);
+            _hitContext.Packet = _hitPacket;
 
-            Receive(ctx.Consequence);
+            enemy.TakeHit(_hitContext);
 
-            var heal = ComputeHeal(ctx.Packet);
+            Receive(_hitContext.Consequence);
+
+            var heal = ComputeHeal(_hitContext.Packet);
 
             if (heal > 0f)
                 OnLifeSteal?.Invoke(heal);
 
             TryIgnite(enemy);
-            ReturnReflected(ctx.Consequence);
+            ReturnReflected(_hitContext.Consequence);
 
             if (projectile.CanSplit && SplitOnHit) {
                 foreach (var direction in SplitDirections(projectile.Direction, 3, 30f))
@@ -140,8 +155,12 @@ namespace Spellbound.Modifiers.Samples {
                     reflected += entry.amount;
             }
 
-            if (reflected > 0f)
-                Caster.TakeHit(new List<StatAndValue> { new(DemoStats.FireDamage, reflected) });
+            if (reflected <= 0f)
+                return;
+
+            _reflectPacket.Clear();
+            _reflectPacket.Add(new StatAndValue(DemoStats.FireDamage, reflected));
+            Caster.TakeHit(_reflectPacket);
         }
 
         private void SpawnProjectile(
@@ -201,15 +220,6 @@ namespace Spellbound.Modifiers.Samples {
                 directions[i] = Quaternion.AngleAxis(start + i * angleBetween, Vector3.up) * baseDirection;
 
             return directions;
-        }
-
-        private static List<StatAndValue> Clone(List<StatAndValue> damage) {
-            var copy = new List<StatAndValue>(damage.Count);
-
-            foreach (var entry in damage)
-                copy.Add(entry);
-
-            return copy;
         }
     }
 }

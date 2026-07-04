@@ -19,9 +19,13 @@ namespace Spellbound.Modifiers.Samples {
         private VisualElement _enemyPanel;
         private Label _status;
 
+        private ModifiableItem _flameHelmet;
         private ModifiableItem _fireDamage;
+        private ModifiableItem _chaosDamage;
         private ModifiableItem _projectiles;
         private ModifiableItem _ignite;
+        private ModifiableItem _chaosNoBypass;
+        private ModifiableItem _chaosHalfBypass;
         private ModifiableItem _fireResist;
         private ModifiableItem _coldResist;
         private ModifiableItem _lightningResist;
@@ -81,8 +85,12 @@ namespace Spellbound.Modifiers.Samples {
             panel.Add(Section("COMBAT"));
             panel.Add(ActionButton("Cast Fireball", () => demo.Cast()));
 
+            panel.Add(Section("PLAYER EQUIPMENT"));
+            panel.Add(ToggleButton("Flame Helmet (+5 Armor/Fire)", ToggleFlameHelmet));
+
             panel.Add(Section("FIREBALL MODIFIERS"));
             panel.Add(ToggleButton("+100% More Fire Damage", ToggleFireDamage));
+            panel.Add(ToggleButton("+20 Chaos Damage", ToggleChaosDamage));
             panel.Add(ToggleButton("+2 Projectiles", ToggleProjectiles));
             panel.Add(ToggleButton("Circular Nova", ToggleCircular));
             panel.Add(ToggleButton("Ignite", ToggleIgnite));
@@ -128,6 +136,8 @@ namespace Spellbound.Modifiers.Samples {
             panel.Add(ToggleButton("+40 Lightning Resistance", ToggleLightningResist));
             panel.Add(ToggleButton("+20 Armor", ToggleArmor));
             panel.Add(ToggleButton("Reflect Fire (25%)", ToggleReflectFire));
+            panel.Add(ToggleButton("Chaos Cannot Bypass Shield", ToggleChaosNoBypass));
+            panel.Add(ToggleButton("-50% Chaos Shield Bypass", ToggleChaosHalfBypass));
         }
 
         private static Label Section(string text) {
@@ -200,8 +210,16 @@ namespace Spellbound.Modifiers.Samples {
 
         #region Item toggles
 
+        private bool ToggleFlameHelmet() =>
+                ToggleOnPlayer(ref _flameHelmet, () => new StatItem(
+                    (DemoStats.Armor, ModifierType.Flat, 5f),
+                    (DemoStats.FireDamage, ModifierType.Flat, 5f)));
+
         private bool ToggleFireDamage() =>
                 ToggleOnFireball(ref _fireDamage, () => new StatItem((DemoStats.FireDamage, ModifierType.More, 1f)));
+
+        private bool ToggleChaosDamage() =>
+                ToggleOnFireball(ref _chaosDamage, () => new StatItem((DemoStats.ChaosDamage, ModifierType.Flat, 20f)));
 
         private bool ToggleProjectiles() =>
                 ToggleOnFireball(ref _projectiles, () => new StatItem((DemoStats.ProjectileCount, ModifierType.Flat, 2f)));
@@ -232,6 +250,25 @@ namespace Spellbound.Modifiers.Samples {
                 ToggleOnEnemies(ref _armor, () => new StatItem((DemoStats.Armor, ModifierType.Flat, 20f)));
 
         private bool ToggleReflectFire() => ToggleOnEnemies(ref _reflectFire, () => new ReflectFireItem());
+
+        private bool ToggleChaosNoBypass() =>
+                ToggleOnEnemies(ref _chaosNoBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ModifierType.Override, 0f)));
+
+        private bool ToggleChaosHalfBypass() =>
+                ToggleOnEnemies(ref _chaosHalfBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ModifierType.Flat, -50f)));
+
+        private bool ToggleOnPlayer(ref ModifiableItem item, Func<ModifiableItem> create) {
+            if (item == null) {
+                item = create();
+                item.Equip(demo.Player.Modifiable);
+            }
+            else {
+                item.Unequip(demo.Player.Modifiable);
+                item = null;
+            }
+
+            return item != null;
+        }
 
         private bool ToggleOnFireball(ref ModifiableItem item, Func<ModifiableItem> create) {
             if (item == null) {

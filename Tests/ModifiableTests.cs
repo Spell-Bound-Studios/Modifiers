@@ -23,11 +23,12 @@ namespace Spellbound.Modifiers.Tests {
         public void Run_SetsSubjectOnContext() {
             var modifiable = new Modifiable();
             var leaf = new RecordingLeaf();
-            modifiable.CircuitFor(5u).Root = leaf;
+            modifiable.CircuitFor(5u).DefineStage(1u, 0).Add(leaf);
 
             modifiable.Run(5u, new CircuitContext());
 
             Assert.AreSame(modifiable, leaf.LastSubject);
+            Assert.AreSame(modifiable, leaf.LastOwner);
         }
 
         [Test]
@@ -35,10 +36,12 @@ namespace Spellbound.Modifiers.Tests {
             var outer = new Modifiable();
             var inner = new Modifiable();
             var innerLeaf = new RecordingLeaf();
-            inner.CircuitFor(1u).Root = innerLeaf;
+            inner.CircuitFor(1u).DefineStage(1u, 0).Add(innerLeaf);
 
             var afterNested = new RecordingLeaf();
-            outer.CircuitFor(1u).Root = new Sequence(new RunOtherLeaf(inner, 1u), afterNested);
+            var outerStage = outer.CircuitFor(1u).DefineStage(1u, 0);
+            outerStage.Add(new RunOtherLeaf(inner, 1u));
+            outerStage.Add(afterNested);
 
             var ctx = new CircuitContext();
             outer.Run(1u, ctx);
@@ -55,9 +58,7 @@ namespace Spellbound.Modifiers.Tests {
             modifiable.Stats.SetBase(Armor, 100f);
             modifiable.Stats.AddModifier(Armor, ModifierType.Flat, 50f, item);
 
-            var circuit = modifiable.CircuitFor(5u);
-            var stage = circuit.DefineStage(1u);
-            circuit.Root = stage;
+            var stage = modifiable.CircuitFor(5u).DefineStage(1u, 0);
             var leaf = new RecordingLeaf();
             stage.Add(leaf, 0, item);
 

@@ -18,6 +18,7 @@ namespace Spellbound.Modifiers.Samples {
         private float _currentHealth;
         private uint _ringSourceId;
         private Fireball _fireball;
+        private readonly CircuitContext _takeHitContext = new();
 
         public Modifiable Modifiable => _modifiable;
         public Fireball Fireball => _fireball ??= BuildFireball();
@@ -43,8 +44,9 @@ namespace Spellbound.Modifiers.Samples {
         public void CastFireball() => Fireball.OnExecute(transform.position + transform.forward, transform.forward);
 
         public void TakeHit(List<StatAndValue> damage) {
-            var ctx = new CircuitContext { Packet = damage };
-            _modifiable.Run(DemoEvents.TakeHit, ctx);
+            _takeHitContext.Clear();
+            _takeHitContext.Packet = damage;
+            _modifiable.Run(DemoEvents.TakeHit, _takeHitContext);
         }
 
         public void Damage(float amount) => _currentHealth = Mathf.Max(0f, _currentHealth - amount);
@@ -75,6 +77,7 @@ namespace Spellbound.Modifiers.Samples {
 
         private Fireball BuildFireball() =>
                 new() {
+                    Parent = _modifiable,
                     ProjectilePrefab = projectilePrefab,
                     Caster = this,
                     OnLifeSteal = Heal

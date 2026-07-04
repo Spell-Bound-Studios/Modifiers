@@ -10,7 +10,10 @@ namespace Spellbound.Modifiers {
             _threshold = threshold;
         }
 
-        public override bool Met(CircuitContext ctx) =>
-                ctx.Subject != null && ctx.Subject.Stats.GetValue(_stat, ctx) >= _threshold;
+        public override bool Met(CircuitContext ctx) {
+            var owner = ctx.Owner ?? ctx.Subject;
+
+            return owner != null && owner.GetValue(_stat, ctx) >= _threshold;
+        }
     }
 }

@@ -18,35 +18,39 @@ namespace Spellbound.Modifiers.Samples {
         [SerializeField] private Color ignitedColor = new(1f, 0.4f, 0.1f);
         [SerializeField] private Color deadColor = Color.gray;
 
-        private readonly Modifiable _modifiable = new();
-        private float _currentHealth;
-        private float _currentShield;
         private Coroutine _igniteRoutine;
+        private readonly CircuitContext _igniteContext = new();
+        private readonly List<StatAndValue> _ignitePacket = new(1);
 
         public event Action<EnemyController> OnDeath;
 
-        public Modifiable Modifiable => _modifiable;
-        public float MaxHealth => _modifiable.GetValue(DemoStats.Health);
-        public float CurrentHealth => _currentHealth;
-        public float MaxShield => _modifiable.GetValue(DemoStats.Shield);
-        public float CurrentShield => _currentShield;
-        public bool IsDead => _currentHealth <= 0f;
+        public Modifiable Modifiable { get; } = new();
+
+        public float MaxHealth => Modifiable.GetValue(DemoStats.Health);
+        public float CurrentHealth { get; private set; }
+
+        public float MaxShield => Modifiable.GetValue(DemoStats.Shield);
+        public float CurrentShield { get; private set; }
+
+        public bool IsDead => CurrentHealth <= 0f;
 
         private void Awake() {
-            var stats = _modifiable.Stats;
+            var stats = Modifiable.Stats;
             stats.SetBase(DemoStats.Health, 100f);
             stats.SetBase(DemoStats.Shield, 50f);
             stats.SetBase(DemoStats.Armor, 10f);
             stats.SetBase(DemoStats.FireResistance, 20f);
             stats.SetBase(DemoStats.ColdResistance, 20f);
             stats.SetBase(DemoStats.LightningResistance, 20f);
+            stats.SetBase(DemoStats.ChaosBypassesShield, 100f);
 
-            var circuit = DemoCircuits.BuildTakeHit(_modifiable, Damage);
+            var circuit = DemoCircuits.BuildTakeHit(Modifiable, Damage);
             circuit.TryGetStage(DemoStages.Mitigate, out var mitigate);
-            mitigate.Add(new AbsorptionLeaf(Absorb), DemoCircuits.ShieldPriority);
+            mitigate.Add(new AbsorptionLeaf(Absorb, DemoStats.ChaosDamage, DemoStats.ChaosBypassesShield),
+                    DemoCircuits.ShieldPriority);
 
-            _currentHealth = MaxHealth;
-            _currentShield = MaxShield;
+            CurrentHealth = MaxHealth;
+            CurrentShield = MaxShield;
             stats.Changed += OnStatChanged;
 
             if (targetRenderer == null)
@@ -71,7 +75,7 @@ namespace Spellbound.Modifiers.Samples {
                 return;
             }
 
-            _modifiable.Run(DemoEvents.TakeHit, ctx);
+            Modifiable.Run(DemoEvents.TakeHit, ctx);
 
             PopNumbers(ctx.Packet);
 
@@ -81,11 +85,11 @@ namespace Spellbound.Modifiers.Samples {
             }
         }
 
-        public void Damage(float amount) => _currentHealth = Mathf.Max(0f, _currentHealth - amount);
+        public void Damage(float amount) => CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
 
         public float Absorb(float amount) {
-            var taken = Mathf.Min(_currentShield, amount);
-            _currentShield -= taken;
+            var taken = Mathf.Min(CurrentShield, amount);
+            CurrentShield -= taken;
 
             return taken;
         }
@@ -106,8 +110,8 @@ namespace Spellbound.Modifiers.Samples {
         public void Respawn() {
             StopIgnite();
             gameObject.SetActive(true);
-            _currentHealth = MaxHealth;
-            _currentShield = MaxShield;
+            CurrentHealth = MaxHealth;
+            CurrentShield = MaxShield;
 
             if (targetRenderer != null)
                 targetRenderer.material.color = defaultColor;
@@ -122,9 +126,11 @@ namespace Spellbound.Modifiers.Samples {
 
                 elapsed += tick;
 
-                TakeHit(new CircuitContext {
-                    Packet = new List<StatAndValue> { new(DemoStats.FireDamage, damagePerSecond * tick) }
-                });
+                _igniteContext.Clear();
+                _ignitePacket.Clear();
+                _ignitePacket.Add(new StatAndValue(DemoStats.FireDamage, damagePerSecond * tick));
+                _igniteContext.Packet = _ignitePacket;
+                TakeHit(_igniteContext);
             }
 
             if (!IsDead && targetRenderer != null)
@@ -153,9 +159,9 @@ namespace Spellbound.Modifiers.Samples {
 
         private void OnStatChanged(StatId stat) {
             if (stat == DemoStats.Health)
-                _currentHealth = Mathf.Min(_currentHealth, MaxHealth);
+                CurrentHealth = Mathf.Min(CurrentHealth, MaxHealth);
             else if (stat == DemoStats.Shield)
-                _currentShield = Mathf.Min(_currentShield, MaxShield);
+                CurrentShield = Mathf.Min(CurrentShield, MaxShield);
         }
 
         private void PopNumbers(List<StatAndValue> damage) {
@@ -187,7 +193,8 @@ namespace Spellbound.Modifiers.Samples {
                 new(DemoStats.PhysicalDamage, 40f),
                 new(DemoStats.FireDamage, 40f),
                 new(DemoStats.ColdDamage, 40f),
-                new(DemoStats.LightningDamage, 40f)
+                new(DemoStats.LightningDamage, 40f),
+                new(DemoStats.ChaosDamage, 40f)
             }
         });
     }

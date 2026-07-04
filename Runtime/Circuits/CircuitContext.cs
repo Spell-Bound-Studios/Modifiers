@@ -7,6 +7,7 @@ namespace Spellbound.Modifiers {
         public List<StatAndValue> Packet;
         public List<StatAndValue> Consequence;
         public Modifiable Subject;
+        public Modifiable Owner;
 
         public void Note(uint id, float amount) {
             Consequence ??= new List<StatAndValue>();
@@ -15,8 +16,9 @@ namespace Spellbound.Modifiers {
 
         public void Clear() {
             Packet = null;
-            Consequence = null;
+            Consequence?.Clear();
             Subject = null;
+            Owner = null;
         }
     }
 }

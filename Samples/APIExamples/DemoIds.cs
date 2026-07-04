@@ -19,6 +19,8 @@ namespace Spellbound.Modifiers.Samples {
         public static readonly StatId ProjectileSpeed = StatId.From("sample_projectile_speed");
         public static readonly StatId IgniteChance = StatId.From("sample_ignite_chance");
         public static readonly StatId IgniteDuration = StatId.From("sample_ignite_duration");
+        public static readonly StatId ChaosDamage = StatId.From("sample_chaos_damage");
+        public static readonly StatId ChaosBypassesShield = StatId.From("sample_chaos_bypasses_shield");
     }
 
     /// <summary>

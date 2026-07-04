@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEngine.TestTools;
 
 namespace Spellbound.Modifiers.Tests {
     public class StatBlockTests {
@@ -88,13 +87,8 @@ namespace Spellbound.Modifiers.Tests {
             var block = new StatBlock();
             block.AddModifier(Armor, ModifierType.Flat, 10f);
 
-            LogAssert.ignoreFailingMessages = true;
-
-            try {
+            using (new LogMute()) {
                 Assert.AreEqual(0, block.RemoveBySource(Contribution.Innate));
-            }
-            finally {
-                LogAssert.ignoreFailingMessages = false;
             }
         }
 
@@ -159,13 +153,8 @@ namespace Spellbound.Modifiers.Tests {
             modifiable.Stats.SetBase(Armor, 100f);
             modifiable.Stats.AddModifier(Armor, ModifierType.Increased, 1f, 5u, new StatAtLeast(Armor, 50f));
 
-            LogAssert.ignoreFailingMessages = true;
-
-            try {
+            using (new LogMute()) {
                 Assert.AreEqual(200f, modifiable.GetValue(Armor));
-            }
-            finally {
-                LogAssert.ignoreFailingMessages = false;
             }
         }
 
@@ -177,13 +166,8 @@ namespace Spellbound.Modifiers.Tests {
             modifiable.Stats.AddModifier(Armor, ModifierType.Flat, 50f, 1u, new StatAtLeast(Life, 5f));
             modifiable.Stats.AddModifier(Life, ModifierType.Flat, 50f, 2u, new StatAtLeast(Armor, 120f));
 
-            LogAssert.ignoreFailingMessages = true;
-
-            try {
+            using (new LogMute()) {
                 Assert.AreEqual(150f, modifiable.GetValue(Armor));
-            }
-            finally {
-                LogAssert.ignoreFailingMessages = false;
             }
         }
 

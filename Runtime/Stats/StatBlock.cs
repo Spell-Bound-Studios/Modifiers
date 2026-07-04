@@ -89,17 +89,26 @@ namespace Spellbound.Modifiers {
         #region Resolution
 
         public float GetValue(StatId stat, CircuitContext ctx) {
+            var accumulator = new Accumulator();
+            Accumulate(stat, ctx, ref accumulator);
+
+            var baseInternal = _base.TryGetValue(stat, out var b) ? b : 0;
+
+            return StatSettings.ToExternal(accumulator.Resolve(baseInternal));
+        }
+
+        public void Accumulate(StatId stat, CircuitContext ctx, ref Accumulator accumulator) {
             if (_dirty.Remove(stat))
                 RebuildStat(stat);
 
-            var accumulator = _staticCache.TryGetValue(stat, out var cached) ? cached : new Accumulator();
-            var baseInternal = _base.TryGetValue(stat, out var b) ? b : 0;
+            if (_staticCache.TryGetValue(stat, out var cached))
+                accumulator.Merge(cached);
 
             if (!_resolving.Add(stat)) {
                 Log.Error($"Stat condition cycle detected while resolving '{stat}'. " +
                           "Conditional modifiers were skipped for this read.");
 
-                return StatSettings.ToExternal(accumulator.Resolve(baseInternal));
+                return;
             }
 
             try {
@@ -115,9 +124,9 @@ namespace Spellbound.Modifiers {
             finally {
                 _resolving.Remove(stat);
             }
-
-            return StatSettings.ToExternal(accumulator.Resolve(baseInternal));
         }
+
+        public bool TryGetBaseInternal(StatId stat, out int baseInternal) => _base.TryGetValue(stat, out baseInternal);
 
         private void RebuildStat(StatId stat) {
             if (!_mods.TryGetValue(stat, out var list)) {

@@ -1,8 +1,26 @@
 // Copyright 2026 Spellbound Studio Inc.
 
+using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Spellbound.Modifiers.Tests {
+    internal sealed class LogMute : IDisposable {
+        private readonly bool _wasEnabled;
+
+        public LogMute() {
+            _wasEnabled = Debug.unityLogger.logEnabled;
+            Debug.unityLogger.logEnabled = false;
+            LogAssert.ignoreFailingMessages = true;
+        }
+
+        public void Dispose() {
+            Debug.unityLogger.logEnabled = _wasEnabled;
+            LogAssert.ignoreFailingMessages = false;
+        }
+    }
+
     internal sealed class StubCondition : Condition {
         public bool Result;
         public int EvaluationCount;
@@ -34,6 +52,7 @@ namespace Spellbound.Modifiers.Tests {
 
         public int ProcessCount;
         public Modifiable LastSubject;
+        public Modifiable LastOwner;
 
         public RecordingLeaf(List<string> log = null, string name = null) {
             _log = log;
@@ -43,6 +62,7 @@ namespace Spellbound.Modifiers.Tests {
         public override void Process(CircuitContext ctx) {
             ProcessCount++;
             LastSubject = ctx.Subject;
+            LastOwner = ctx.Owner;
             _log?.Add(_name);
         }
     }
