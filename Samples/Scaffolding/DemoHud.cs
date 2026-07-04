@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Spellbound.Modifiers.Samples {
     /// <summary>
-    /// Sample HUD: a UI Toolkit control panel that equips fireball + enemy modifiers and drives the scene.
+    /// Sample HUD: a UI Toolkit control panel that equips fireball + enemy items and drives the scene.
     /// Health bars and combat numbers are world-space, anchored to the entities — not part of this panel.
     /// Needs a <see cref="UIDocument"/> with a Panel Settings asset; resolves its <see cref="CombatDemo"/> itself.
     /// </summary>
@@ -19,18 +19,18 @@ namespace Spellbound.Modifiers.Samples {
         private VisualElement _enemyPanel;
         private Label _status;
 
-        private IncreasedFireDamageModifier _fireDamageMod;
-        private AddedProjectileCountModifier _projectilesMod;
-        private CircularPatternModifier _circularMod;
-        private IgniteModifier _igniteMod;
-        private SplitOnHitModifier _splitMod;
-        private EmpowerOnKillModifier _empowerMod;
-        private LifeStealModifier _lifeStealMod;
-        private FireResistanceModifier _fireResistMod;
-        private ColdResistanceModifier _coldResistMod;
-        private LightningResistanceModifier _lightningResistMod;
-        private ArmorModifier _armorMod;
-        private ReflectFireModifier _reflectFireMod;
+        private ModifiableItem _fireDamage;
+        private ModifiableItem _projectiles;
+        private ModifiableItem _ignite;
+        private ModifiableItem _fireResist;
+        private ModifiableItem _coldResist;
+        private ModifiableItem _lightningResist;
+        private ModifiableItem _armor;
+        private ModifiableItem _reflectFire;
+        private FireballItem _circular;
+        private FireballItem _split;
+        private FireballItem _empower;
+        private FireballItem _lifeSteal;
 
         private void OnEnable() {
             if (demo == null)
@@ -82,7 +82,7 @@ namespace Spellbound.Modifiers.Samples {
             panel.Add(ActionButton("Cast Fireball", () => demo.Cast()));
 
             panel.Add(Section("FIREBALL MODIFIERS"));
-            panel.Add(ToggleButton("+100% Fire Damage", ToggleFireDamage));
+            panel.Add(ToggleButton("+100% More Fire Damage", ToggleFireDamage));
             panel.Add(ToggleButton("+2 Projectiles", ToggleProjectiles));
             panel.Add(ToggleButton("Circular Nova", ToggleCircular));
             panel.Add(ToggleButton("Ignite", ToggleIgnite));
@@ -196,54 +196,86 @@ namespace Spellbound.Modifiers.Samples {
             element.style.borderBottomRightRadius = 5;
         }
 
-        #endregion
+        #endregion Panel
 
-        #region Modifier toggles
+        #region Item toggles
 
-        private bool ToggleFireDamage() => Toggle(ref _fireDamageMod, demo.Player.Fireball);
-        private bool ToggleProjectiles() => Toggle(ref _projectilesMod, demo.Player.Fireball);
-        private bool ToggleCircular() => Toggle(ref _circularMod, demo.Player.Fireball);
-        private bool ToggleIgnite() => Toggle(ref _igniteMod, demo.Player.Fireball);
-        private bool ToggleSplit() => Toggle(ref _splitMod, demo.Player.Fireball);
-        private bool ToggleEmpower() => Toggle(ref _empowerMod, demo.Player.Fireball);
-        private bool ToggleLifeSteal() => Toggle(ref _lifeStealMod, demo.Player.Fireball);
+        private bool ToggleFireDamage() =>
+                ToggleOnFireball(ref _fireDamage, () => new StatItem((DemoStats.FireDamage, ModifierType.More, 1f)));
 
-        private static bool Toggle<T>(ref T modifier, ICanBeModified target) where T : SbModifier, new() {
-            if (modifier == null) {
-                modifier = new T();
-                modifier.Apply(target);
+        private bool ToggleProjectiles() =>
+                ToggleOnFireball(ref _projectiles, () => new StatItem((DemoStats.ProjectileCount, ModifierType.Flat, 2f)));
+
+        private bool ToggleIgnite() =>
+                ToggleOnFireball(ref _ignite, () => new StatItem(
+                    (DemoStats.IgniteChance, ModifierType.Flat, 1f),
+                    (DemoStats.IgniteDuration, ModifierType.Flat, 3f)));
+
+        private bool ToggleCircular() => ToggleCapability(ref _circular, () => new CircularNovaItem());
+
+        private bool ToggleSplit() => ToggleCapability(ref _split, () => new SplitOnHitItem());
+
+        private bool ToggleEmpower() => ToggleCapability(ref _empower, () => new EmpowerOnKillItem());
+
+        private bool ToggleLifeSteal() => ToggleCapability(ref _lifeSteal, () => new LifeStealItem());
+
+        private bool ToggleFireResist() =>
+                ToggleOnEnemies(ref _fireResist, () => new StatItem((DemoStats.FireResistance, ModifierType.Flat, 40f)));
+
+        private bool ToggleColdResist() =>
+                ToggleOnEnemies(ref _coldResist, () => new StatItem((DemoStats.ColdResistance, ModifierType.Flat, 40f)));
+
+        private bool ToggleLightningResist() =>
+                ToggleOnEnemies(ref _lightningResist, () => new StatItem((DemoStats.LightningResistance, ModifierType.Flat, 40f)));
+
+        private bool ToggleArmor() =>
+                ToggleOnEnemies(ref _armor, () => new StatItem((DemoStats.Armor, ModifierType.Flat, 20f)));
+
+        private bool ToggleReflectFire() => ToggleOnEnemies(ref _reflectFire, () => new ReflectFireItem());
+
+        private bool ToggleOnFireball(ref ModifiableItem item, Func<ModifiableItem> create) {
+            if (item == null) {
+                item = create();
+                item.Equip(demo.Player.Fireball);
             }
             else {
-                modifier.Remove(target);
-                modifier = default;
+                item.Unequip(demo.Player.Fireball);
+                item = null;
             }
 
-            return modifier != null;
+            return item != null;
         }
 
-        private bool ToggleFireResist() => ToggleEnemyMod(ref _fireResistMod);
-        private bool ToggleColdResist() => ToggleEnemyMod(ref _coldResistMod);
-        private bool ToggleLightningResist() => ToggleEnemyMod(ref _lightningResistMod);
-        private bool ToggleArmor() => ToggleEnemyMod(ref _armorMod);
-        private bool ToggleReflectFire() => ToggleEnemyMod(ref _reflectFireMod);
+        private bool ToggleCapability(ref FireballItem item, Func<FireballItem> create) {
+            if (item == null) {
+                item = create();
+                item.Equip(demo.Player.Fireball);
+            }
+            else {
+                item.Unequip(demo.Player.Fireball);
+                item = null;
+            }
 
-        private bool ToggleEnemyMod<T>(ref T modifier) where T : SbModifier, new() {
-            if (modifier == null) {
-                modifier = new T();
+            return item != null;
+        }
+
+        private bool ToggleOnEnemies(ref ModifiableItem item, Func<ModifiableItem> create) {
+            if (item == null) {
+                item = create();
 
                 foreach (var enemy in demo.Enemies)
-                    modifier.Apply(enemy);
+                    item.Equip(enemy.Modifiable);
             }
             else {
                 foreach (var enemy in demo.Enemies)
-                    modifier.Remove(enemy);
+                    item.Unequip(enemy.Modifiable);
 
-                modifier = default;
+                item = null;
             }
 
-            return modifier != null;
+            return item != null;
         }
 
-        #endregion
+        #endregion Item toggles
     }
 }

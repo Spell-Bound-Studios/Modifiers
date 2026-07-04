@@ -34,7 +34,9 @@ namespace Spellbound.Modifiers.Samples {
             Build();
         }
 
-        /// <summary>Bind an absorption pool to draw a blue shield bar above the health bar; it hides when empty.</summary>
+        /// <summary>
+        /// Bind an absorption pool to draw a blue shield bar above the health bar; it hides when empty.
+        /// </summary>
         public void BindShield(Func<float> current, Func<float> max) {
             _shieldCurrent = current;
             _shieldMax = max;

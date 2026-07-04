@@ -195,7 +195,7 @@ namespace Spellbound.Modifiers.Samples {
             }
         }
 
-        #endregion
+        #endregion Spawning
 
         #region Movement
 
@@ -222,6 +222,6 @@ namespace Spellbound.Modifiers.Samples {
             }
         }
 
-        #endregion
+        #endregion Movement
     }
 }

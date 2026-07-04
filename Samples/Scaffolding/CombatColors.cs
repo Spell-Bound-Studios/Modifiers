@@ -21,7 +21,9 @@ namespace Spellbound.Modifiers.Samples {
         private static uint? _cold;
         private static uint? _lightning;
 
-        /// <summary>The palette color for a damage-type stat, or white for anything unrecognized.</summary>
+        /// <summary>
+        /// The palette color for a damage-type stat, or white for anything unrecognized.
+        /// </summary>
         public static Color ForDamage(uint statHash) {
             _fire ??= StatRegistry.GetHash("sample_fire_damage");
 
@@ -46,7 +48,9 @@ namespace Spellbound.Modifiers.Samples {
             return Color.white;
         }
 
-        /// <summary>The palette color for a circuit node, keyed by its id.</summary>
+        /// <summary>
+        /// The palette color for a circuit node, keyed by its id.
+        /// </summary>
         public static Color ForNode(string nodeId) => nodeId switch {
             "absorption" => Absorb,
             "fire" => Fire,
