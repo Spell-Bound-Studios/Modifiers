@@ -34,6 +34,19 @@ namespace Spellbound.Modifiers.Tests {
         public static ModifierDefinition.ContributionRange Range(
                 StatDefinition stat, ContributionType type, float min, float max, float step = 0f) =>
                 new() { stat = stat, type = type, min = min, max = max, step = step };
+
+        public static StatTemplate CreateTemplate(
+                StatTemplate.BaseStat[] bases, params ModifierDefinition[] innates) {
+            var template = new StatTemplate();
+            typeof(StatTemplate)
+                    .GetField("baseStats", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(template, new List<StatTemplate.BaseStat>(bases));
+            typeof(StatTemplate)
+                    .GetField("innateModifiers", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(template, new List<ModifierDefinition>(innates));
+
+            return template;
+        }
     }
 
     internal sealed class LogMute : IDisposable {
