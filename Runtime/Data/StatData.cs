@@ -20,19 +20,27 @@ namespace Spellbound.Modifiers {
         public List<StatAndValue> statModifiers; // Affix and Traits
         // Buffs
         // Debuffs
+        
+        public static class Context {
+            public const byte Silent = 0;
+            public const byte ResourcesGained = 1;
+            public const byte ResourcesLost = 2;
+            public const byte ResourcesUnchanged = 3;
+            public const byte Died = 4;
+        }
 
         #region IPackerObjectData
 
         public IPackerObjectData GetEmptyData() => new StatData();
 
         public void InvokeChangeCallback(
-            byte context, ObjectParent parent, int instanceIndex,
-            ObjectPreset preset, int surfaceIndex, TransformData transformData) =>
+            byte context, ObjectParent parent, int instanceIndex, ObjectPreset preset, byte surfaceIndex,
+            TransformData transformData) =>
                 this.ChangeCallback(context, parent, instanceIndex, preset, surfaceIndex, transformData);
 
         public void InvokeResolveCallback(
-            byte context, ObjectParent parent, int instanceIndex,
-            ObjectPreset preset, int surfaceIndex, TransformData transformData) =>
+            byte context, ObjectParent parent, int instanceIndex, ObjectPreset preset, byte surfaceIndex,
+            TransformData transformData) =>
                 this.ResolveCallback(context, parent, instanceIndex, preset, surfaceIndex, transformData);
 
         #endregion IPackerObjectData
