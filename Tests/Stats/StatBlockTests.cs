@@ -8,7 +8,13 @@ namespace Spellbound.Modifiers.Tests {
         private static readonly StatId Armor = new(1u);
         private static readonly StatId Life = new(2u);
 
-        private static float Value(StatBlock block, StatId stat) => block.GetValue(stat, new CircuitContext());
+        private static float Value(StatBlock block, StatId stat) {
+            var accumulator = new Accumulator();
+            block.Accumulate(stat, new CircuitContext(), ref accumulator);
+            block.TryGetBaseInternal(stat, out var baseInternal);
+
+            return StatSettings.ToExternal(accumulator.Resolve(baseInternal));
+        }
 
         [Test]
         public void GetBase_Unset_ReturnsZero() {

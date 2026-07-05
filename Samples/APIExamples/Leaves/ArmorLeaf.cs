@@ -21,7 +21,7 @@ namespace Spellbound.Modifiers.Samples {
             if (packet == null)
                 return;
 
-            var armor = ctx.Subject.Stats.GetValue(_armor, ctx);
+            var armor = ctx.Subject.GetValue(_armor, ctx);
 
             if (armor <= 0f)
                 return;

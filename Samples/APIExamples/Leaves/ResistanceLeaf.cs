@@ -23,7 +23,7 @@ namespace Spellbound.Modifiers.Samples {
             if (packet == null)
                 return;
 
-            var resistance = ctx.Subject.Stats.GetValue(_resistance, ctx);
+            var resistance = ctx.Subject.GetValue(_resistance, ctx);
 
             if (resistance <= 0f)
                 return;

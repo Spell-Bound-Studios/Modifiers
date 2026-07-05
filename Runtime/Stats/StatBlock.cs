@@ -88,15 +88,6 @@ namespace Spellbound.Modifiers {
 
         #region Resolution
 
-        public float GetValue(StatId stat, CircuitContext ctx) {
-            var accumulator = new Accumulator();
-            Accumulate(stat, ctx, ref accumulator);
-
-            var baseInternal = _base.TryGetValue(stat, out var b) ? b : 0;
-
-            return StatSettings.ToExternal(accumulator.Resolve(baseInternal));
-        }
-
         public void Accumulate(StatId stat, CircuitContext ctx, ref Accumulator accumulator) {
             if (_dirty.Remove(stat))
                 RebuildStat(stat);
