@@ -9,9 +9,7 @@
     "email": "Judsin1349@gmail.com",
     "url": "https://github.com/Spell-Bound-Studios/Modifiers"
   },
-  "dependencies": {
-    "com.spellboundstudios.core": "1.1.0"
-  },
+  "dependencies": {},
   "keywords": [
     "modifiers",
     "modular",

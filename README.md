@@ -4,15 +4,17 @@ A Unity library for games where everything can be modified. An entity exposes st
 
 ## Installation
 
-Requires Unity 6000.0+ and [Spellbound.Core](https://github.com/Spell-Bound-Studios/Core). Add both to `Packages/manifest.json`:
+Requires Unity 6000.0+ and [Spellbound.Core](https://github.com/Spell-Bound-Studios/Core) 1.1.0 or newer — UPM cannot resolve git-to-git dependencies, so Core must be added to the project alongside this package. Add both to `Packages/manifest.json`:
 
 ```json
 {
   "dependencies": {
-    "com.spellboundstudios.core": "git@github.com:Spell-Bound-Studios/Core.git",
+    "com.spellboundstudios.core": "git@github.com:Spell-Bound-Studios/Core.git#dev",
     "com.spellboundstudios.modifiers": "git@github.com:Spell-Bound-Studios/Modifiers.git"
   }
 }
 ```
+
+Drop `#dev` once Core 1.1.0 lands on its main branch.
 
 Or via **Window → Package Manager → + → Add package from git URL** using the same URLs. A playable combat demo lives in `Samples/`, and `CHANGELOG.md` tracks the API.
