@@ -8,21 +8,21 @@ using UnityEngine.TestTools;
 
 namespace Spellbound.Modifiers.Tests {
     internal static class Definitions {
-        public static ModifierDefinition Create(params ModifierDefinition.ContributionRange[] contributions) {
+        public static ModifierDefinition Create(params ContributionRange[] contributions) {
             var definition = ScriptableObject.CreateInstance<ModifierDefinition>();
             typeof(ModifierDefinition)
                     .GetField("contributions", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .SetValue(definition, new List<ModifierDefinition.ContributionRange>(contributions));
+                    .SetValue(definition, new List<ContributionRange>(contributions));
 
             return definition;
         }
 
         public static ModifierPool CreatePool(params (ModifierDefinition candidate, int weight)[] entries) {
             var pool = ScriptableObject.CreateInstance<ModifierPool>();
-            var list = new List<WeightedPool<ModifierDefinition>.WeightedEntry>();
+            var list = new List<WeightedEntry<ModifierDefinition>>();
 
             foreach (var (candidate, weight) in entries)
-                list.Add(new WeightedPool<ModifierDefinition>.WeightedEntry { candidate = candidate, weight = weight });
+                list.Add(new WeightedEntry<ModifierDefinition> { candidate = candidate, weight = weight });
 
             typeof(WeightedPool<ModifierDefinition>)
                     .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance)
@@ -31,7 +31,7 @@ namespace Spellbound.Modifiers.Tests {
             return pool;
         }
 
-        public static ModifierDefinition.ContributionRange Range(
+        public static ContributionRange Range(
                 StatDefinition stat, ContributionType type, float min, float max, float step = 0f) =>
                 new() { stat = stat, type = type, min = min, max = max, step = step };
 

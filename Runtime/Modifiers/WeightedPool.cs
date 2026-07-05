@@ -6,15 +6,9 @@ using UnityEngine;
 
 namespace Spellbound.Modifiers {
     public abstract class WeightedPool<T> : ScriptableObject where T : class {
-        [Serializable]
-        public struct WeightedEntry {
-            public T candidate;
-            public int weight;
-        }
+        [SerializeField] private List<WeightedEntry<T>> entries = new();
 
-        [SerializeField] private List<WeightedEntry> entries = new();
-
-        public IReadOnlyList<WeightedEntry> Entries => entries;
+        public IReadOnlyList<WeightedEntry<T>> Entries => entries;
 
         public List<T> Sample(int count, System.Random rng, bool withReplacement = false) {
             var result = new List<T>(Math.Max(count, 0));
