@@ -7,16 +7,12 @@ using UnityEngine;
 namespace Spellbound.Modifiers {
     [Serializable]
     public class StatTemplate {
-        [Serializable]
-        public struct BaseStat {
-            public StatDefinition stat;
-            public float value;
-        }
-
         [SerializeField] private List<BaseStat> baseStats = new();
+        [SerializeField] private List<ResourcePoolStat> resourcePools = new();
         [SerializeField] private List<ModifierDefinition> innateModifiers = new();
 
         public IReadOnlyList<BaseStat> BaseStats => baseStats;
+        public IReadOnlyList<ResourcePoolStat> ResourcePools => resourcePools;
         public IReadOnlyList<ModifierDefinition> InnateModifiers => innateModifiers;
 
         public virtual void ApplyTo(Modifiable target) {

@@ -36,10 +36,10 @@ namespace Spellbound.Modifiers.Samples {
         public float CurrentMana { get; private set; }
 
         private static ModifierDefinition _hardened;
-        private static ModifierDefinition Hardened => _hardened ??= ModifierRegistry.GetDefinition("hardened");
+        private static ModifierDefinition Hardened => _hardened ??= ModifierRegistry.GetDefinition("sample_hardened");
 
         private static ModifierDefinition _ignited;
-        private static ModifierDefinition Ignited => _ignited ??= ModifierRegistry.GetDefinition("ignited");
+        private static ModifierDefinition Ignited => _ignited ??= ModifierRegistry.GetDefinition("sample_ignited");
 
         private string _ownBuffIcons = "";
         private string _debuffIcons = "";

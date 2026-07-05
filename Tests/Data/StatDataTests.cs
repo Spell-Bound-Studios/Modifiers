@@ -9,7 +9,7 @@ namespace Spellbound.Modifiers.Tests {
         private static StatId Armor => new(StatRegistry.GetHash("sample_armor"));
 
         private static RolledModifier RollThickHide(uint sourceId, int seed = 7) =>
-                ModifierRegistry.GetDefinition("thick_hide").Roll(new System.Random(seed), sourceId);
+                ModifierRegistry.GetDefinition("sample_thick_hide").Roll(new System.Random(seed), sourceId);
 
         [Test]
         public void PackedSize_Empty_MatchesWrittenBytes() {

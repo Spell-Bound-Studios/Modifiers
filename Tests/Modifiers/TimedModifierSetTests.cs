@@ -17,7 +17,7 @@ namespace Spellbound.Modifiers.Tests {
             target.Stats.SetBase(Armor, 100f);
             var set = new TimedModifierSet(target);
 
-            var rolled = Roll("thick_hide", 11u);
+            var rolled = Roll("sample_thick_hide", 11u);
             set.Apply(rolled, 5f);
 
             Assert.AreEqual(100f + rolled.values[0], target.GetValue(Armor), 0.001f);
@@ -29,7 +29,7 @@ namespace Spellbound.Modifiers.Tests {
             var target = new Modifiable();
             target.Stats.SetBase(Armor, 100f);
             var set = new TimedModifierSet(target);
-            set.Apply(Roll("thick_hide", 11u), 5f);
+            set.Apply(Roll("sample_thick_hide", 11u), 5f);
 
             set.Tick(4.9f);
 
@@ -47,10 +47,10 @@ namespace Spellbound.Modifiers.Tests {
             target.Stats.SetBase(Armor, 100f);
             var set = new TimedModifierSet(target);
 
-            set.Apply(Roll("thick_hide", 11u, 7), 5f);
+            set.Apply(Roll("sample_thick_hide", 11u, 7), 5f);
             set.Tick(4f);
 
-            var second = Roll("thick_hide", 12u, 8);
+            var second = Roll("sample_thick_hide", 12u, 8);
             set.Apply(second, 5f);
 
             Assert.AreEqual(1, set.Active.Count);
@@ -71,9 +71,9 @@ namespace Spellbound.Modifiers.Tests {
             var target = new Modifiable();
             target.Stats.SetBase(Armor, 100f);
             var set = new TimedModifierSet(target);
-            set.Apply(Roll("thick_hide", 11u), 5f);
+            set.Apply(Roll("sample_thick_hide", 11u), 5f);
 
-            var hash = ModifierRegistry.GetDefinition("thick_hide").Hash;
+            var hash = ModifierRegistry.GetDefinition("sample_thick_hide").Hash;
 
             Assert.AreEqual(1, set.Dispel(hash));
             Assert.AreEqual(0, set.Active.Count);
@@ -86,8 +86,8 @@ namespace Spellbound.Modifiers.Tests {
             target.Stats.SetBase(Armor, 100f);
             target.Stats.SetBase(Health, 100f);
             var set = new TimedModifierSet(target);
-            set.Apply(Roll("thick_hide", 11u), 5f);
-            set.Apply(Roll("vigorous", 12u), 5f);
+            set.Apply(Roll("sample_thick_hide", 11u), 5f);
+            set.Apply(Roll("sample_vigorous", 12u), 5f);
 
             set.Clear();
 
@@ -103,10 +103,10 @@ namespace Spellbound.Modifiers.Tests {
             var count = 0;
             set.Changed += () => count++;
 
-            set.Apply(Roll("thick_hide", 11u), 1f);
+            set.Apply(Roll("sample_thick_hide", 11u), 1f);
             set.Tick(1.1f);
-            set.Apply(Roll("thick_hide", 12u), 5f);
-            set.Dispel(ModifierRegistry.GetDefinition("thick_hide").Hash);
+            set.Apply(Roll("sample_thick_hide", 12u), 5f);
+            set.Dispel(ModifierRegistry.GetDefinition("sample_thick_hide").Hash);
 
             Assert.AreEqual(4, count);
         }
@@ -117,7 +117,7 @@ namespace Spellbound.Modifiers.Tests {
             target.Stats.SetBase(Armor, 100f);
             var set = new TimedModifierSet(target);
 
-            var entry = new TimedModifier { modifier = Roll("thick_hide", 11u), duration = 5f, remaining = 2f };
+            var entry = new TimedModifier { modifier = Roll("sample_thick_hide", 11u), duration = 5f, remaining = 2f };
             set.Restore(entry);
 
             Assert.Greater(target.GetValue(Armor), 100f);

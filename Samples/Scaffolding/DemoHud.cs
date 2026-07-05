@@ -259,7 +259,7 @@ namespace Spellbound.Modifiers.Samples {
             bottomRow.Add(QuadCell("III · DEBUFFS", "harmful effects — bottom-left of the nameplate",
                     out var debuffContent));
 
-            var ignited = ModifierRegistry.GetDefinition("ignited");
+            var ignited = ModifierRegistry.GetDefinition("sample_ignited");
 
             if (ignited != null)
                 debuffContent.Add(LegendRow(CombatColors.ForModifier(ignited.Hash), ignited.DisplayName,
@@ -293,7 +293,7 @@ namespace Spellbound.Modifiers.Samples {
                 }
             }
 
-            var hardened = ModifierRegistry.GetDefinition("hardened");
+            var hardened = ModifierRegistry.GetDefinition("sample_hardened");
 
             if (hardened != null)
                 _buffQuadContent.Add(LegendRow(CombatColors.ForModifier(hardened.Hash), hardened.DisplayName,

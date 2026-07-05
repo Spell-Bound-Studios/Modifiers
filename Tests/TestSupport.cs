@@ -36,11 +36,11 @@ namespace Spellbound.Modifiers.Tests {
                 new() { stat = stat, type = type, min = min, max = max, step = step };
 
         public static StatTemplate CreateTemplate(
-                StatTemplate.BaseStat[] bases, params ModifierDefinition[] innates) {
+                BaseStat[] bases, params ModifierDefinition[] innates) {
             var template = new StatTemplate();
             typeof(StatTemplate)
                     .GetField("baseStats", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .SetValue(template, new List<StatTemplate.BaseStat>(bases));
+                    .SetValue(template, new List<BaseStat>(bases));
             typeof(StatTemplate)
                     .GetField("innateModifiers", BindingFlags.NonPublic | BindingFlags.Instance)
                     .SetValue(template, new List<ModifierDefinition>(innates));

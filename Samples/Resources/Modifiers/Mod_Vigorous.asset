@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   guid: 30400d8c942a12e1bac4982726b5845a
   hash: 3915479941
-  modifierName: vigorous
+  modifierName: sample_vigorous
   displayName: Vigorous
   description: +30-60 max health
   icon: {fileID: 0}

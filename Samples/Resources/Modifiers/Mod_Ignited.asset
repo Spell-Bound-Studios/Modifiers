@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   guid: 70def3433a1b2a9e5bee5ce5d825ca40
   hash: 776103241
-  modifierName: ignited
+  modifierName: sample_ignited
   displayName: Ignited
   description: burning damage over time
   icon: {fileID: 0}

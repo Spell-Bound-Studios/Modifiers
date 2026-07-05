@@ -7,7 +7,7 @@ namespace Spellbound.Modifiers.Tests {
         private static StatId Armor => new(StatRegistry.GetHash("sample_armor"));
         private static StatId Health => new(StatRegistry.GetHash("sample_health"));
 
-        private static StatTemplate.BaseStat Base(string statName, float value) =>
+        private static BaseStat Base(string statName, float value) =>
                 new() { stat = StatRegistry.GetDefinition(statName), value = value };
 
         [Test]
@@ -27,7 +27,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void ApplyTo_SkipsNullStats() {
             var template = Definitions.CreateTemplate(new[] {
-                new StatTemplate.BaseStat { stat = null, value = 5f },
+                new BaseStat { stat = null, value = 5f },
                 Base("sample_armor", 10f)
             });
 
@@ -39,9 +39,9 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void RollInnate_RollsEachDefinition() {
-            var thickHide = ModifierRegistry.GetDefinition("thick_hide");
-            var vigorous = ModifierRegistry.GetDefinition("vigorous");
-            var template = Definitions.CreateTemplate(new StatTemplate.BaseStat[0], thickHide, vigorous);
+            var thickHide = ModifierRegistry.GetDefinition("sample_thick_hide");
+            var vigorous = ModifierRegistry.GetDefinition("sample_vigorous");
+            var template = Definitions.CreateTemplate(new BaseStat[0], thickHide, vigorous);
 
             var rolled = template.RollInnate(new System.Random(7));
 
@@ -54,16 +54,16 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void RollInnate_SkipsNullDefinitions() {
-            var template = Definitions.CreateTemplate(new StatTemplate.BaseStat[0],
-                null, ModifierRegistry.GetDefinition("thick_hide"));
+            var template = Definitions.CreateTemplate(new BaseStat[0],
+                null, ModifierRegistry.GetDefinition("sample_thick_hide"));
 
             Assert.AreEqual(1, template.RollInnate(new System.Random(7)).Count);
         }
 
         [Test]
         public void RollInnate_SameSeed_SameRolls() {
-            var template = Definitions.CreateTemplate(new StatTemplate.BaseStat[0],
-                ModifierRegistry.GetDefinition("thick_hide"));
+            var template = Definitions.CreateTemplate(new BaseStat[0],
+                ModifierRegistry.GetDefinition("sample_thick_hide"));
 
             var first = template.RollInnate(new System.Random(42));
             var second = template.RollInnate(new System.Random(42));
@@ -75,7 +75,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void SpawnFlow_BasesPlusInnates_Compose() {
             var template = Definitions.CreateTemplate(new[] { Base("sample_armor", 10f) },
-                ModifierRegistry.GetDefinition("thick_hide"));
+                ModifierRegistry.GetDefinition("sample_thick_hide"));
 
             var target = new Modifiable();
             template.ApplyTo(target);

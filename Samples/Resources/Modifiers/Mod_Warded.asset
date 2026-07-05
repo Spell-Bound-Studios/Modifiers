@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   guid: feb7f43409e856adb2b707ec0fa6c14a
   hash: 296000630
-  modifierName: warded
+  modifierName: sample_warded
   displayName: Warded
   description: +30-60% increased shield
   icon: {fileID: 0}

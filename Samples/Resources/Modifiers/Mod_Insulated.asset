@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   guid: 6e9f49e3863465b6126f1ea9f037016a
   hash: 1177998537
-  modifierName: insulated
+  modifierName: sample_insulated
   displayName: Insulated
   description: +10-20 all resistances
   icon: {fileID: 0}

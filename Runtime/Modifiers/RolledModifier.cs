@@ -37,6 +37,8 @@ namespace Spellbound.Modifiers {
 
         public int RemoveFrom(Modifiable target) => target.RemoveSource(sourceId);
 
+        public int PackedSize => 2 * sizeof(uint) + sizeof(int) + (values?.Length ?? 0) * sizeof(float);
+
         public void Pack(ref Span<byte> buffer) {
             Packer.WriteUInt(ref buffer, modifierHash);
             Packer.WriteUInt(ref buffer, sourceId);

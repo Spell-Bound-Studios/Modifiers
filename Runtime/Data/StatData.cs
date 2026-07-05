@@ -178,20 +178,17 @@ namespace Spellbound.Modifiers {
                 var size = 4 * CountPrefixBytes + ResourceCount * ResourceBytes;
 
                 for (var i = 0; i < ModifierCount; i++)
-                    size += RolledModifierBytes(modifiers[i]);
+                    size += modifiers[i].PackedSize;
 
                 for (var i = 0; i < BuffCount; i++)
-                    size += RolledModifierBytes(buffs[i].modifier) + 2 * sizeof(float);
+                    size += buffs[i].PackedSize;
 
                 for (var i = 0; i < DebuffCount; i++)
-                    size += RolledModifierBytes(debuffs[i].modifier) + 2 * sizeof(float);
+                    size += debuffs[i].PackedSize;
 
                 return size;
             }
         }
-
-        private static int RolledModifierBytes(in RolledModifier modifier) =>
-                2 * sizeof(uint) + sizeof(int) + (modifier.values?.Length ?? 0) * sizeof(float);
 
         #endregion Queries
     }

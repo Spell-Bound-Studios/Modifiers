@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   guid: 2b84c7dd34ce1e90b4e066838a3249e9
   hash: 3009119414
-  modifierName: thick_hide
+  modifierName: sample_thick_hide
   displayName: Thick Hide
   description: +8-15 armor
   icon: {fileID: 0}

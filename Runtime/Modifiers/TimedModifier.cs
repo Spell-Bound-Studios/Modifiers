@@ -10,6 +10,8 @@ namespace Spellbound.Modifiers {
         public float duration;
         public float remaining;
 
+        public int PackedSize => modifier.PackedSize + 2 * sizeof(float);
+
         public void Pack(ref Span<byte> buffer) {
             modifier.Pack(ref buffer);
             Packer.WriteFloat(ref buffer, duration);
