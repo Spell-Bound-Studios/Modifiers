@@ -212,22 +212,22 @@ namespace Spellbound.Modifiers.Samples {
 
         private bool ToggleFlameHelmet() =>
                 ToggleOnPlayer(ref _flameHelmet, () => new StatItem(
-                    (DemoStats.Armor, ModifierType.Flat, 5f),
-                    (DemoStats.FireDamage, ModifierType.Flat, 5f)));
+                    (DemoStats.Armor, ContributionType.Flat, 5f),
+                    (DemoStats.FireDamage, ContributionType.Flat, 5f)));
 
         private bool ToggleFireDamage() =>
-                ToggleOnFireball(ref _fireDamage, () => new StatItem((DemoStats.FireDamage, ModifierType.More, 1f)));
+                ToggleOnFireball(ref _fireDamage, () => new StatItem((DemoStats.FireDamage, ContributionType.More, 1f)));
 
         private bool ToggleChaosDamage() =>
-                ToggleOnFireball(ref _chaosDamage, () => new StatItem((DemoStats.ChaosDamage, ModifierType.Flat, 20f)));
+                ToggleOnFireball(ref _chaosDamage, () => new StatItem((DemoStats.ChaosDamage, ContributionType.Flat, 20f)));
 
         private bool ToggleProjectiles() =>
-                ToggleOnFireball(ref _projectiles, () => new StatItem((DemoStats.ProjectileCount, ModifierType.Flat, 2f)));
+                ToggleOnFireball(ref _projectiles, () => new StatItem((DemoStats.ProjectileCount, ContributionType.Flat, 2f)));
 
         private bool ToggleIgnite() =>
                 ToggleOnFireball(ref _ignite, () => new StatItem(
-                    (DemoStats.IgniteChance, ModifierType.Flat, 1f),
-                    (DemoStats.IgniteDuration, ModifierType.Flat, 3f)));
+                    (DemoStats.IgniteChance, ContributionType.Flat, 1f),
+                    (DemoStats.IgniteDuration, ContributionType.Flat, 3f)));
 
         private bool ToggleCircular() => ToggleCapability(ref _circular, () => new CircularNovaItem());
 
@@ -238,24 +238,24 @@ namespace Spellbound.Modifiers.Samples {
         private bool ToggleLifeSteal() => ToggleCapability(ref _lifeSteal, () => new LifeStealItem());
 
         private bool ToggleFireResist() =>
-                ToggleOnEnemies(ref _fireResist, () => new StatItem((DemoStats.FireResistance, ModifierType.Flat, 40f)));
+                ToggleOnEnemies(ref _fireResist, () => new StatItem((DemoStats.FireResistance, ContributionType.Flat, 40f)));
 
         private bool ToggleColdResist() =>
-                ToggleOnEnemies(ref _coldResist, () => new StatItem((DemoStats.ColdResistance, ModifierType.Flat, 40f)));
+                ToggleOnEnemies(ref _coldResist, () => new StatItem((DemoStats.ColdResistance, ContributionType.Flat, 40f)));
 
         private bool ToggleLightningResist() =>
-                ToggleOnEnemies(ref _lightningResist, () => new StatItem((DemoStats.LightningResistance, ModifierType.Flat, 40f)));
+                ToggleOnEnemies(ref _lightningResist, () => new StatItem((DemoStats.LightningResistance, ContributionType.Flat, 40f)));
 
         private bool ToggleArmor() =>
-                ToggleOnEnemies(ref _armor, () => new StatItem((DemoStats.Armor, ModifierType.Flat, 20f)));
+                ToggleOnEnemies(ref _armor, () => new StatItem((DemoStats.Armor, ContributionType.Flat, 20f)));
 
         private bool ToggleReflectFire() => ToggleOnEnemies(ref _reflectFire, () => new ReflectFireItem());
 
         private bool ToggleChaosNoBypass() =>
-                ToggleOnEnemies(ref _chaosNoBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ModifierType.Override, 0f)));
+                ToggleOnEnemies(ref _chaosNoBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ContributionType.Override, 0f)));
 
         private bool ToggleChaosHalfBypass() =>
-                ToggleOnEnemies(ref _chaosHalfBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ModifierType.Flat, -50f)));
+                ToggleOnEnemies(ref _chaosHalfBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ContributionType.Flat, -50f)));
 
         private bool ToggleOnPlayer(ref ModifiableItem item, Func<ModifiableItem> create) {
             if (item == null) {

@@ -111,9 +111,9 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void Apply_DispatchesByType() {
             var acc = new Accumulator();
-            acc.Apply(ModifierType.Flat, Internal(10f));
-            acc.Apply(ModifierType.Increased, Internal(0.5f));
-            acc.Apply(ModifierType.More, Internal(0.1f));
+            acc.Apply(ContributionType.Flat, Internal(10f));
+            acc.Apply(ContributionType.Increased, Internal(0.5f));
+            acc.Apply(ContributionType.More, Internal(0.1f));
 
             Assert.AreEqual(Internal(181.5f), acc.Resolve(Internal(100f)));
         }
@@ -122,7 +122,7 @@ namespace Spellbound.Modifiers.Tests {
         public void Apply_UnknownType_Throws() {
             var acc = new Accumulator();
 
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => acc.Apply((ModifierType)99, 0));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => acc.Apply((ContributionType)99, 0));
         }
     }
 }

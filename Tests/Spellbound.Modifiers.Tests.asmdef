@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Spellbound.Modifiers",
+        "GUID:c14a5db03514b8d4ba10b621ed3627d5",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.PerformanceTesting"

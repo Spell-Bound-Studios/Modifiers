@@ -43,9 +43,9 @@ namespace Spellbound.Modifiers.Tests {
         public void GetValue_CombinesFlatIncreasedMore() {
             var block = new StatBlock();
             block.SetBase(Armor, 100f);
-            block.AddModifier(Armor, ModifierType.Flat, 20f);
-            block.AddModifier(Armor, ModifierType.Increased, 0.5f);
-            block.AddModifier(Armor, ModifierType.More, 0.1f);
+            block.AddContribution(Armor, ContributionType.Flat, 20f);
+            block.AddContribution(Armor, ContributionType.Increased, 0.5f);
+            block.AddContribution(Armor, ContributionType.More, 0.1f);
 
             Assert.AreEqual(198f, Value(block, Armor));
         }
@@ -55,7 +55,7 @@ namespace Spellbound.Modifiers.Tests {
             var block = new StatBlock();
             var condition = new StubCondition(false);
             block.SetBase(Armor, 100f);
-            block.AddModifier(Armor, ModifierType.Increased, 1f, 5u, condition);
+            block.AddContribution(Armor, ContributionType.Increased, 1f, 5u, condition);
 
             Assert.AreEqual(100f, Value(block, Armor));
 
@@ -74,9 +74,9 @@ namespace Spellbound.Modifiers.Tests {
             const uint ring = 77u;
             block.SetBase(Armor, 100f);
             block.SetBase(Life, 50f);
-            block.AddModifier(Armor, ModifierType.Flat, 10f, ring);
-            block.AddModifier(Life, ModifierType.Flat, 25f, ring);
-            block.AddModifier(Life, ModifierType.Flat, 5f, 88u);
+            block.AddContribution(Armor, ContributionType.Flat, 10f, ring);
+            block.AddContribution(Life, ContributionType.Flat, 25f, ring);
+            block.AddContribution(Life, ContributionType.Flat, 5f, 88u);
 
             Assert.AreEqual(2, block.RemoveBySource(ring));
             Assert.AreEqual(100f, Value(block, Armor));
@@ -91,7 +91,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void RemoveBySource_Innate_ReturnsZero() {
             var block = new StatBlock();
-            block.AddModifier(Armor, ModifierType.Flat, 10f);
+            block.AddContribution(Armor, ContributionType.Flat, 10f);
 
             using (new LogMute()) {
                 Assert.AreEqual(0, block.RemoveBySource(Contribution.Innate));
@@ -105,7 +105,7 @@ namespace Spellbound.Modifiers.Tests {
             block.Changed += received.Add;
 
             block.SetBase(Armor, 10f);
-            block.AddModifier(Armor, ModifierType.Flat, 5f, 9u);
+            block.AddContribution(Armor, ContributionType.Flat, 5f, 9u);
             block.RemoveBySource(9u);
 
             CollectionAssert.AreEqual(new[] { Armor, Armor, Armor }, received);
@@ -129,7 +129,7 @@ namespace Spellbound.Modifiers.Tests {
             var block = new StatBlock();
             const uint buff = 42u;
             block.SetBase(Armor, 100f);
-            block.AddModifier(Armor, ModifierType.More, 0.5f, buff);
+            block.AddContribution(Armor, ContributionType.More, 0.5f, buff);
 
             Assert.AreEqual(150f, Value(block, Armor));
 
@@ -143,8 +143,8 @@ namespace Spellbound.Modifiers.Tests {
             var block = new StatBlock();
             var frozen = new StubCondition();
             block.SetBase(Armor, 100f);
-            block.AddModifier(Armor, ModifierType.Override, 30f);
-            block.AddModifier(Armor, ModifierType.Override, 0f, 5u, frozen);
+            block.AddContribution(Armor, ContributionType.Override, 30f);
+            block.AddContribution(Armor, ContributionType.Override, 0f, 5u, frozen);
 
             Assert.AreEqual(0f, Value(block, Armor));
 
@@ -157,7 +157,7 @@ namespace Spellbound.Modifiers.Tests {
         public void GetValue_SelfReferentialCondition_FallsBackWithoutOverflow() {
             var modifiable = new Modifiable();
             modifiable.Stats.SetBase(Armor, 100f);
-            modifiable.Stats.AddModifier(Armor, ModifierType.Increased, 1f, 5u, new StatAtLeast(Armor, 50f));
+            modifiable.Stats.AddContribution(Armor, ContributionType.Increased, 1f, 5u, new StatAtLeast(Armor, 50f));
 
             using (new LogMute()) {
                 Assert.AreEqual(200f, modifiable.GetValue(Armor));
@@ -169,8 +169,8 @@ namespace Spellbound.Modifiers.Tests {
             var modifiable = new Modifiable();
             modifiable.Stats.SetBase(Armor, 100f);
             modifiable.Stats.SetBase(Life, 10f);
-            modifiable.Stats.AddModifier(Armor, ModifierType.Flat, 50f, 1u, new StatAtLeast(Life, 5f));
-            modifiable.Stats.AddModifier(Life, ModifierType.Flat, 50f, 2u, new StatAtLeast(Armor, 120f));
+            modifiable.Stats.AddContribution(Armor, ContributionType.Flat, 50f, 1u, new StatAtLeast(Life, 5f));
+            modifiable.Stats.AddContribution(Life, ContributionType.Flat, 50f, 2u, new StatAtLeast(Armor, 120f));
 
             using (new LogMute()) {
                 Assert.AreEqual(150f, modifiable.GetValue(Armor));
@@ -181,7 +181,7 @@ namespace Spellbound.Modifiers.Tests {
         public void Clear_ResetsEverything() {
             var block = new StatBlock();
             block.SetBase(Armor, 100f);
-            block.AddModifier(Armor, ModifierType.Flat, 10f, 7u);
+            block.AddContribution(Armor, ContributionType.Flat, 10f, 7u);
             block.Clear();
 
             Assert.AreEqual(0f, Value(block, Armor));

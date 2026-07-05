@@ -58,8 +58,8 @@ namespace Spellbound.Modifiers.Samples {
                 return;
 
             _ringSourceId = StableHash.Fnv1A32($"sapphire_ring_{GetInstanceID()}");
-            _modifiable.Stats.AddModifier(DemoStats.ColdResistance, ModifierType.Flat, 30f, _ringSourceId);
-            _modifiable.Stats.AddModifier(DemoStats.Health, ModifierType.Increased, 0.2f, _ringSourceId);
+            _modifiable.Stats.AddContribution(DemoStats.ColdResistance, ContributionType.Flat, 30f, _ringSourceId);
+            _modifiable.Stats.AddContribution(DemoStats.Health, ContributionType.Increased, 0.2f, _ringSourceId);
         }
 
         public void UnequipSapphireRing() {

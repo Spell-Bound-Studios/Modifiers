@@ -51,18 +51,18 @@ namespace Spellbound.Modifiers {
                 SetOverride(other._override);
         }
 
-        public void Apply(ModifierType type, int internalValue) {
+        public void Apply(ContributionType type, int internalValue) {
             switch (type) {
-                case ModifierType.Flat:
+                case ContributionType.Flat:
                     AddFlat(internalValue);
                     break;
-                case ModifierType.Increased:
+                case ContributionType.Increased:
                     AddIncreased(internalValue);
                     break;
-                case ModifierType.More:
+                case ContributionType.More:
                     MultiplyMore(internalValue);
                     break;
-                case ModifierType.Override:
+                case ContributionType.Override:
                     SetOverride(internalValue);
                     break;
                 default:

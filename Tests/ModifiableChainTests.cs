@@ -14,12 +14,12 @@ namespace Spellbound.Modifiers.Tests {
             var fireball = new Modifiable { Parent = player };
 
             fireball.Stats.SetBase(Fire, 30f);
-            fireball.Stats.AddModifier(Fire, ModifierType.Increased, 0.2f);
-            fireball.Stats.AddModifier(Fire, ModifierType.More, 0.25f);
+            fireball.Stats.AddContribution(Fire, ContributionType.Increased, 0.2f);
+            fireball.Stats.AddContribution(Fire, ContributionType.More, 0.25f);
 
-            player.Stats.AddModifier(Fire, ModifierType.Flat, 5f);
-            player.Stats.AddModifier(Fire, ModifierType.Increased, 0.3f);
-            player.Stats.AddModifier(Fire, ModifierType.More, 0.1f);
+            player.Stats.AddContribution(Fire, ContributionType.Flat, 5f);
+            player.Stats.AddContribution(Fire, ContributionType.Increased, 0.3f);
+            player.Stats.AddContribution(Fire, ContributionType.More, 0.1f);
 
             Assert.AreEqual(72.1875f, fireball.GetValue(Fire));
         }
@@ -32,9 +32,9 @@ namespace Spellbound.Modifiers.Tests {
 
             fireball.Stats.SetBase(Fire, 30f);
             flamethrower.Stats.SetBase(Fire, 20f);
-            flamethrower.Stats.AddModifier(Fire, ModifierType.Flat, 10f);
+            flamethrower.Stats.AddContribution(Fire, ContributionType.Flat, 10f);
 
-            player.Stats.AddModifier(Fire, ModifierType.Flat, 5f);
+            player.Stats.AddContribution(Fire, ContributionType.Flat, 5f);
 
             Assert.AreEqual(35f, fireball.GetValue(Fire));
             Assert.AreEqual(35f, flamethrower.GetValue(Fire));
@@ -67,8 +67,8 @@ namespace Spellbound.Modifiers.Tests {
             var skill = new Modifiable { Parent = player };
             skill.Stats.SetBase(Fire, 30f);
 
-            player.Stats.AddModifier(Fire, ModifierType.Override, 10f);
-            skill.Stats.AddModifier(Fire, ModifierType.Override, 3f);
+            player.Stats.AddContribution(Fire, ContributionType.Override, 10f);
+            skill.Stats.AddContribution(Fire, ContributionType.Override, 3f);
 
             Assert.AreEqual(3f, skill.GetValue(Fire));
         }
@@ -83,8 +83,8 @@ namespace Spellbound.Modifiers.Tests {
             flamethrower.Stats.SetBase(Fire, 20f);
 
             const uint helmet = 77u;
-            player.Stats.AddModifier(Armor, ModifierType.Flat, 5f, helmet);
-            player.Stats.AddModifier(Fire, ModifierType.Flat, 5f, helmet);
+            player.Stats.AddContribution(Armor, ContributionType.Flat, 5f, helmet);
+            player.Stats.AddContribution(Fire, ContributionType.Flat, 5f, helmet);
 
             Assert.AreEqual(35f, fireball.GetValue(Fire));
             Assert.AreEqual(25f, flamethrower.GetValue(Fire));
@@ -103,7 +103,7 @@ namespace Spellbound.Modifiers.Tests {
 
             player.Stats.SetBase(Strength, 50f);
             skill.Stats.SetBase(Fire, 30f);
-            skill.Stats.AddModifier(Fire, ModifierType.Increased, 1f, 5u, new StatAtLeast(Strength, 50f));
+            skill.Stats.AddContribution(Fire, ContributionType.Increased, 1f, 5u, new StatAtLeast(Strength, 50f));
 
             Assert.AreEqual(60f, skill.GetValue(Fire));
 
@@ -118,7 +118,7 @@ namespace Spellbound.Modifiers.Tests {
             var skill = new Modifiable { Parent = character };
 
             character.Stats.SetBase(Strength, 100f);
-            character.Stats.AddModifier(Fire, ModifierType.Increased, 0.4f, 5u, new StatAtLeast(Strength, 100f));
+            character.Stats.AddContribution(Fire, ContributionType.Increased, 0.4f, 5u, new StatAtLeast(Strength, 100f));
 
             skill.Stats.SetBase(Fire, 30f);
             skill.Stats.SetBase(Strength, 0f);
@@ -132,11 +132,11 @@ namespace Spellbound.Modifiers.Tests {
             var skill = new Modifiable { Parent = character };
 
             character.Stats.SetBase(Strength, 100f);
-            character.Stats.AddModifier(Fire, ModifierType.Increased, 0.5f, 5u, new StatAtLeast(Strength, 100f));
+            character.Stats.AddContribution(Fire, ContributionType.Increased, 0.5f, 5u, new StatAtLeast(Strength, 100f));
 
             skill.Stats.SetBase(Fire, 30f);
             skill.Stats.SetBase(Strength, 0f);
-            skill.Stats.AddModifier(Fire, ModifierType.Increased, 0.5f, 6u, new StatAtLeast(Strength, 50f));
+            skill.Stats.AddContribution(Fire, ContributionType.Increased, 0.5f, 6u, new StatAtLeast(Strength, 50f));
 
             Assert.AreEqual(45f, skill.GetValue(Fire));
         }

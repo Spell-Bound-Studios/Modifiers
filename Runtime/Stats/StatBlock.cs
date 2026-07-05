@@ -31,8 +31,8 @@ namespace Spellbound.Modifiers {
 
         #region Modifiers
 
-        public void AddModifier(
-                StatId stat, ModifierType type, float value, uint sourceId = Contribution.Innate,
+        public void AddContribution(
+                StatId stat, ContributionType type, float value, uint sourceId = Contribution.Innate,
                 Condition condition = null) {
             if (!_mods.TryGetValue(stat, out var list)) {
                 list = new List<Contribution>();

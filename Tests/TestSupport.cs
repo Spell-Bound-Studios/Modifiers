@@ -2,10 +2,40 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Spellbound.Modifiers.Tests {
+    internal static class Definitions {
+        public static ModifierDefinition Create(params ModifierDefinition.ContributionRange[] contributions) {
+            var definition = ScriptableObject.CreateInstance<ModifierDefinition>();
+            typeof(ModifierDefinition)
+                    .GetField("contributions", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(definition, new List<ModifierDefinition.ContributionRange>(contributions));
+
+            return definition;
+        }
+
+        public static ModifierPool CreatePool(params (ModifierDefinition candidate, int weight)[] entries) {
+            var pool = ScriptableObject.CreateInstance<ModifierPool>();
+            var list = new List<WeightedPool<ModifierDefinition>.WeightedEntry>();
+
+            foreach (var (candidate, weight) in entries)
+                list.Add(new WeightedPool<ModifierDefinition>.WeightedEntry { candidate = candidate, weight = weight });
+
+            typeof(WeightedPool<ModifierDefinition>)
+                    .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(pool, list);
+
+            return pool;
+        }
+
+        public static ModifierDefinition.ContributionRange Range(
+                StatDefinition stat, ContributionType type, float min, float max, float step = 0f) =>
+                new() { stat = stat, type = type, min = min, max = max, step = step };
+    }
+
     internal sealed class LogMute : IDisposable {
         private readonly bool _wasEnabled;
 

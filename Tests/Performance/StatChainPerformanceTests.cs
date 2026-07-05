@@ -19,16 +19,16 @@ namespace Spellbound.Modifiers.Tests.Performance {
         public void SetUp() {
             _player = new Modifiable();
             _player.Stats.SetBase(Strength, 50f);
-            _player.Stats.AddModifier(Fire, ModifierType.Flat, 5f);
-            _player.Stats.AddModifier(Fire, ModifierType.Increased, 0.3f);
+            _player.Stats.AddContribution(Fire, ContributionType.Flat, 5f);
+            _player.Stats.AddContribution(Fire, ContributionType.Increased, 0.3f);
 
             _skills = new Modifiable[SkillCount];
 
             for (var i = 0; i < SkillCount; i++) {
                 var skill = new Modifiable { Parent = _player };
                 skill.Stats.SetBase(Fire, 30f);
-                skill.Stats.AddModifier(Fire, ModifierType.Increased, 0.2f);
-                skill.Stats.AddModifier(Fire, ModifierType.More, 0.25f);
+                skill.Stats.AddContribution(Fire, ContributionType.Increased, 0.2f);
+                skill.Stats.AddContribution(Fire, ContributionType.More, 0.25f);
                 _skills[i] = skill;
             }
 
@@ -57,7 +57,7 @@ namespace Spellbound.Modifiers.Tests.Performance {
         [Test, Performance]
         public void Read_FortySkills_AfterParentMutation() {
             Measure.Method(() => {
-                        _player.Stats.AddModifier(Fire, ModifierType.Flat, 1f, 99u);
+                        _player.Stats.AddContribution(Fire, ContributionType.Flat, 1f, 99u);
                         _player.RemoveSource(99u);
                         ReadAll();
                     })
@@ -71,8 +71,8 @@ namespace Spellbound.Modifiers.Tests.Performance {
         [Test, Performance]
         public void EquipUnequip_OnParent_CostIsBlockLocal() {
             Measure.Method(() => {
-                        _player.Stats.AddModifier(Fire, ModifierType.Flat, 5f, 77u);
-                        _player.Stats.AddModifier(Strength, ModifierType.Flat, 5f, 77u);
+                        _player.Stats.AddContribution(Fire, ContributionType.Flat, 5f, 77u);
+                        _player.Stats.AddContribution(Strength, ContributionType.Flat, 5f, 77u);
                         _player.RemoveSource(77u);
                     })
                     .WarmupCount(10)
@@ -86,8 +86,8 @@ namespace Spellbound.Modifiers.Tests.Performance {
         public void Read_FortySkills_FiveConditionalsEach() {
             for (var i = 0; i < SkillCount; i++) {
                 for (var c = 0; c < 5; c++) {
-                    _skills[i].Stats.AddModifier(
-                        Fire, ModifierType.Increased, 0.1f, (uint)(1000 + c),
+                    _skills[i].Stats.AddContribution(
+                        Fire, ContributionType.Increased, 0.1f, (uint)(1000 + c),
                         new StatAtLeast(Strength, 25f));
                 }
             }

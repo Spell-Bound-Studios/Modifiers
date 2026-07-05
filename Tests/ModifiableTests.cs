@@ -56,7 +56,7 @@ namespace Spellbound.Modifiers.Tests {
             var modifiable = new Modifiable();
             const uint item = 77u;
             modifiable.Stats.SetBase(Armor, 100f);
-            modifiable.Stats.AddModifier(Armor, ModifierType.Flat, 50f, item);
+            modifiable.Stats.AddContribution(Armor, ContributionType.Flat, 50f, item);
 
             var stage = modifiable.CircuitFor(5u).DefineStage(1u, 0);
             var leaf = new RecordingLeaf();
