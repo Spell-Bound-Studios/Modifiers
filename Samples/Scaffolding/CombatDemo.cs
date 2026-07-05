@@ -13,6 +13,7 @@ namespace Spellbound.Modifiers.Samples {
     public sealed class CombatDemo : MonoBehaviour {
         [Header("Scene"), SerializeField] private PlayerController player;
         [SerializeField] private GameObject enemyPrefab;
+        [SerializeField] private ModifierPool modifierPool;
 
         [Header("Rings"), SerializeField] private float innerRingDistance = 5f;
         [SerializeField] private float outerRingDistance = 10f;
@@ -27,22 +28,35 @@ namespace Spellbound.Modifiers.Samples {
         private int _outerEnemyCount = 14;
         private float _radiusJitter;
         private bool _enemiesMove;
+        private readonly System.Random _rng = new(1337);
 
         public PlayerController Player => player;
+        public LevelController Level { get; private set; }
+        public ModifierPool Pool => modifierPool;
         public int InnerCount => _innerEnemyCount;
         public int OuterCount => _outerEnemyCount;
-        public bool EnemiesMove { get => _enemiesMove; set => _enemiesMove = value; }
-        public bool AutoRespawn { get => autoRespawn; set => autoRespawn = value; }
+
+        public bool EnemiesMove {
+            get => _enemiesMove;
+            set => _enemiesMove = value;
+        }
+
+        public bool AutoRespawn {
+            get => autoRespawn;
+            set => autoRespawn = value;
+        }
 
         public IEnumerable<EnemyController> Enemies {
             get {
-                foreach (var enemy in _innerEnemies)
+                foreach (var enemy in _innerEnemies) {
                     if (enemy != null)
                         yield return enemy;
+                }
 
-                foreach (var enemy in _outerEnemies)
+                foreach (var enemy in _outerEnemies) {
                     if (enemy != null)
                         yield return enemy;
+                }
             }
         }
 
@@ -50,15 +64,26 @@ namespace Spellbound.Modifiers.Samples {
             get {
                 var count = 0;
 
-                foreach (var enemy in Enemies)
+                foreach (var enemy in Enemies) {
                     if (!enemy.IsDead)
                         count++;
+                }
 
                 return count;
             }
         }
 
-        private void Start() => SpawnAllEnemies();
+        private void Awake() {
+            if (modifierPool == null)
+                modifierPool = Resources.Load<ModifierPool>("SampleModifierPool");
+        }
+
+        private void Start() {
+            Level = new GameObject("Level").AddComponent<LevelController>();
+            Level.Reroll(modifierPool, 1, _rng);
+
+            SpawnAllEnemies();
+        }
 
         private void Update() {
             if (_enemiesMove)
@@ -67,14 +92,18 @@ namespace Spellbound.Modifiers.Samples {
 
         public void Cast() => player.CastFireball();
 
-        public void RespawnAll() {
-            foreach (var enemy in _innerEnemies)
-                if (enemy != null && enemy.IsDead)
-                    enemy.Respawn();
+        public void RerollLevel() => Level.Reroll(modifierPool, 2, _rng);
 
-            foreach (var enemy in _outerEnemies)
+        public void RespawnAll() {
+            foreach (var enemy in _innerEnemies) {
                 if (enemy != null && enemy.IsDead)
                     enemy.Respawn();
+            }
+
+            foreach (var enemy in _outerEnemies) {
+                if (enemy != null && enemy.IsDead)
+                    enemy.Respawn();
+            }
         }
 
         public void SetInnerCount(int count) {
@@ -115,8 +144,8 @@ namespace Spellbound.Modifiers.Samples {
 
             if (!player.gameObject.scene.IsValid()) {
                 Debug.LogError($"[CombatDemo] 'player' ({player.name}) is a PREFAB ASSET, not a scene instance — " +
-                        "its Awake never runs, it's invisible, and reflect/health silently no-op against it. " +
-                        "Drag the player from the HIERARCHY into the Player field, not the prefab from the Project.");
+                               "its Awake never runs, it's invisible, and reflect/health silently no-op against it. " +
+                               "Drag the player from the HIERARCHY into the Player field, not the prefab from the Project.");
 
                 return;
             }
@@ -148,15 +177,17 @@ namespace Spellbound.Modifiers.Samples {
                     continue;
                 }
 
+                enemy.Configure(modifierPool, _rng, Level);
                 enemy.OnDeath += OnEnemyDeath;
                 enemies.Add(enemy);
             }
         }
 
         private void RespawnRing(List<EnemyController> enemies, int count, float distance, string prefix) {
-            foreach (var enemy in enemies)
+            foreach (var enemy in enemies) {
                 if (enemy != null)
                     Destroy(enemy.gameObject);
+            }
 
             SpawnRing(enemies, count, distance, prefix);
         }
@@ -195,7 +226,7 @@ namespace Spellbound.Modifiers.Samples {
             }
         }
 
-        #endregion
+        #endregion Spawning
 
         #region Movement
 
@@ -222,6 +253,6 @@ namespace Spellbound.Modifiers.Samples {
             }
         }
 
-        #endregion
+        #endregion Movement
     }
 }

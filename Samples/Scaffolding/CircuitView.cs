@@ -1,102 +1,96 @@
 // Copyright 2026 Spellbound Studio Inc.
 
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Spellbound.Modifiers.Samples {
-    /// <summary>
-    /// Scaffolding: draws the live damage circuit of an enemy's <see cref="PipelineBehaviour"/> in UI Toolkit.
-    /// The top-level sequence is numbered boxes (1..n) flowing left-to-right with arrows; a parallel tier stacks
-    /// its stages inside its box. Stage colors come from <see cref="CombatColors"/> so the diagram and the
-    /// floating numbers read together. Rebuilt only when the circuit's shape changes, so stages visibly appear
-    /// and leave as modifiers reshape it. Needs a <see cref="UIDocument"/> + Panel Settings, like the HUD.
-    /// </summary>
-    [RequireComponent(typeof(UIDocument))]
     public sealed class CircuitView : MonoBehaviour {
-        private VisualElement _panel;
-        private Label _title;
+        private static readonly Dictionary<uint, string> StageLabels = new() {
+            { DemoStages.Convert, "CONVERT" },
+            { DemoStages.Mitigate, "MITIGATE" },
+            { DemoStages.Apply, "APPLY" },
+            { DemoStages.React, "REACT" }
+        };
+
+        private Label _subtitle;
         private VisualElement _diagram;
         private EnemyController _enemy;
         private string _signature;
 
-        private void OnEnable() {
-            var root = GetComponent<UIDocument>().rootVisualElement;
-
-            _panel?.RemoveFromHierarchy();
-
-            _panel = new VisualElement();
-            _panel.style.position = Position.Absolute;
-            _panel.style.right = 12;
-            _panel.style.top = 12;
-            _panel.style.paddingLeft = 12;
-            _panel.style.paddingRight = 12;
-            _panel.style.paddingTop = 10;
-            _panel.style.paddingBottom = 12;
-            _panel.style.backgroundColor = new Color(0.05f, 0.05f, 0.08f, 0.9f);
-            Round(_panel, 6);
-            root.Add(_panel);
-
-            _title = new Label("DAMAGE CIRCUIT");
-            _title.style.color = Color.white;
-            _title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _title.style.fontSize = 12;
-            _title.style.marginBottom = 8;
-            _panel.Add(_title);
-
-            _diagram = new VisualElement();
-            _diagram.style.flexDirection = FlexDirection.Row;
-            _diagram.style.alignItems = Align.Center;
-            _panel.Add(_diagram);
-        }
-
         private void LateUpdate() {
-            var root = ResolveCircuit();
+            if (_diagram == null && !TryAttach())
+                return;
 
-            if (root == null) {
-                _panel.style.display = DisplayStyle.None;
+            var circuit = ResolveCircuit();
+
+            if (circuit == null) {
+                _subtitle.style.display = DisplayStyle.None;
+                _diagram.style.display = DisplayStyle.None;
 
                 return;
             }
 
-            _panel.style.display = DisplayStyle.Flex;
-            _title.text = $"DAMAGE CIRCUIT — {_enemy.name}";
+            _subtitle.style.display = DisplayStyle.Flex;
+            _diagram.style.display = DisplayStyle.Flex;
+            _subtitle.text = _enemy.name;
 
-            var signature = Signature(root);
+            var signature = Signature(circuit);
 
             if (signature == _signature)
                 return;
 
             _signature = signature;
-            Rebuild(root);
+            Rebuild(circuit);
         }
 
-        private PipelineNode<DamageContext> ResolveCircuit() {
+        private bool TryAttach() {
+            var hud = FindAnyObjectByType<DemoHud>();
+            var host = hud != null ? hud.CircuitHost : null;
+
+            if (host == null)
+                return false;
+
+            _subtitle = new Label("");
+            _subtitle.style.color = new Color(0.6f, 0.66f, 0.78f);
+            _subtitle.style.fontSize = 10;
+            _subtitle.style.marginBottom = 4;
+            host.Add(_subtitle);
+
+            _diagram = new VisualElement();
+            _diagram.style.flexDirection = FlexDirection.Row;
+            _diagram.style.flexWrap = Wrap.Wrap;
+            _diagram.style.alignItems = Align.FlexStart;
+            host.Add(_diagram);
+
+            return true;
+        }
+
+        private Circuit ResolveCircuit() {
             if (_enemy == null)
                 _enemy = FindAnyObjectByType<EnemyController>();
 
-            return _enemy == null
-                    ? null
-                    : _enemy.Behaviours.GetBehaviour<PipelineBehaviour>()?.Root;
+            return _enemy == null ? null : _enemy.Modifiable.CircuitFor(DemoEvents.TakeHit);
         }
 
-        private void Rebuild(PipelineNode<DamageContext> root) {
+        private void Rebuild(Circuit circuit) {
             _diagram.Clear();
 
-            if (root is GroupNode<DamageContext> sequence && sequence.Kind == PipelineGroupKind.Sequence) {
-                for (var i = 0; i < sequence.Children.Count; i++) {
-                    _diagram.Add(StepBox(i + 1, sequence.Children[i]));
+            var stages = circuit.Stages;
 
-                    if (i < sequence.Children.Count - 1)
-                        _diagram.Add(Arrow());
-                }
+            for (var i = 0; i < stages.Count; i++) {
+                if (i > 0)
+                    _diagram.Add(Arrow());
 
-                return;
+                _diagram.Add(StepBox(i + 1, LabelForStage(stages[i]), stages[i]));
             }
-
-            _diagram.Add(RenderNode(root));
         }
 
-        private VisualElement StepBox(int number, PipelineNode<DamageContext> node) {
+        private static string LabelForStage(Stage stage) =>
+                StageLabels.TryGetValue(stage.Id, out var label) ? label : $"#{stage.Id}";
+
+        private static VisualElement StepBox(int number, string label, Stage stage) {
             var box = new VisualElement();
             box.style.flexDirection = FlexDirection.Column;
             box.style.alignItems = Align.Center;
@@ -104,47 +98,40 @@ namespace Spellbound.Modifiers.Samples {
             box.style.paddingRight = 6;
             box.style.paddingTop = 4;
             box.style.paddingBottom = 6;
+            box.style.marginBottom = 4;
             Border(box, new Color(0.4f, 0.45f, 0.55f));
             Round(box, 5);
 
-            var parallel = node is GroupNode<DamageContext> group && group.Kind == PipelineGroupKind.Parallel;
-
-            var header = new Label(parallel ? $"{number}   ∥" : number.ToString());
+            var header = new Label($"{number}   {label}");
             header.style.color = new Color(0.6f, 0.66f, 0.78f);
             header.style.fontSize = 10;
             header.style.unityFontStyleAndWeight = FontStyle.Bold;
             header.style.marginBottom = 4;
             box.Add(header);
 
-            box.Add(RenderNode(node));
+            var children = stage.Children;
+
+            if (children.Count == 0) {
+                var empty = new Label("—");
+                empty.style.color = new Color(0.4f, 0.44f, 0.52f);
+                empty.style.fontSize = 11;
+                empty.style.unityTextAlign = TextAnchor.MiddleCenter;
+                empty.style.minWidth = 80;
+                box.Add(empty);
+
+                return box;
+            }
+
+            foreach (var child in children)
+                box.Add(LeafBox(LabelFor(child)));
 
             return box;
         }
 
-        private VisualElement RenderNode(PipelineNode<DamageContext> node) {
-            if (node is not GroupNode<DamageContext> group)
-                return StageBox(node.Id);
+        private static Label LeafBox(string label) {
+            var background = CombatColors.ForNode(label);
 
-            var container = new VisualElement();
-            container.style.flexDirection = group.Kind == PipelineGroupKind.Parallel
-                    ? FlexDirection.Column
-                    : FlexDirection.Row;
-            container.style.alignItems = Align.Center;
-
-            for (var i = 0; i < group.Children.Count; i++) {
-                container.Add(RenderNode(group.Children[i]));
-
-                if (group.Kind == PipelineGroupKind.Sequence && i < group.Children.Count - 1)
-                    container.Add(Arrow());
-            }
-
-            return container;
-        }
-
-        private static Label StageBox(string id) {
-            var background = CombatColors.ForNode(id);
-
-            var box = new Label(id) {
+            var box = new Label(label) {
                 style = {
                     backgroundColor = background,
                     color = TextOn(background),
@@ -166,12 +153,20 @@ namespace Spellbound.Modifiers.Samples {
             return box;
         }
 
+        private static string LabelFor(Node node) {
+            var label = node.ToString();
+
+            return label == node.GetType().FullName ? node.GetType().Name : label;
+        }
+
         private static Label Arrow() {
             var arrow = new Label("→");
             arrow.style.color = Color.white;
             arrow.style.fontSize = 18;
             arrow.style.marginLeft = 4;
             arrow.style.marginRight = 4;
+            arrow.style.alignSelf = Align.FlexStart;
+            arrow.style.marginTop = 6;
 
             return arrow;
         }
@@ -200,16 +195,23 @@ namespace Spellbound.Modifiers.Samples {
             return luminance > 0.6f ? new Color(0.1f, 0.1f, 0.1f) : Color.white;
         }
 
-        private static string Signature(PipelineNode<DamageContext> node) {
-            if (node is not GroupNode<DamageContext> group)
-                return node.Id;
+        private static string Signature(Circuit circuit) {
+            var sb = new StringBuilder(96);
+            var stages = circuit.Stages;
 
-            var result = $"{group.Kind}:{node.Id}(";
+            for (var s = 0; s < stages.Count; s++) {
+                var stage = stages[s];
+                sb.Append(stage.Id).Append('(');
 
-            foreach (var child in group.Children)
-                result += Signature(child) + ",";
+                var children = stage.Children;
 
-            return result + ")";
+                for (var i = 0; i < children.Count; i++)
+                    sb.Append(LabelFor(children[i])).Append(',');
+
+                sb.Append(')');
+            }
+
+            return sb.ToString();
         }
     }
 }

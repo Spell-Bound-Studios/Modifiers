@@ -12,7 +12,7 @@ namespace Spellbound.Modifiers {
         public float max;
         public float min;
         public float current;
-        
+
         /// <summary>
         /// Overload ctor for full customization of a resource data type.
         /// </summary>
@@ -26,7 +26,7 @@ namespace Spellbound.Modifiers {
             this.min = min;
             this.current = current;
         }
-        
+
         /// <summary>
         /// Overload ctor intended to be used for standard resources like: health, mana, etc.
         /// </summary>
@@ -55,8 +55,8 @@ namespace Spellbound.Modifiers {
 
         public override string ToString() =>
                 StatRegistry.TryGetName(
-                    statHash, out var n) 
-                        ? $"{n} max: {max}=min: {min} current: {current}" 
+                    statHash, out var n)
+                        ? $"{n} max: {max}=min: {min} current: {current}"
                         : $"#{statHash} max: {max}=min: {min} current: {current}";
     }
 }

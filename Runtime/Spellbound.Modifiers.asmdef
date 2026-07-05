@@ -1,16 +1,16 @@
 {
-    "name": "Spellbound.Modifiers",
-    "rootNamespace": "",
-    "references": [
-        "GUID:c14a5db03514b8d4ba10b621ed3627d5"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "Spellbound.Modifiers",
+  "rootNamespace": "",
+  "references": [
+    "GUID:c14a5db03514b8d4ba10b621ed3627d5"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

@@ -1,88 +1,87 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using System.Collections.Generic;
+using Spellbound.Core.Hashing;
 using UnityEngine;
-using Spellbound.Core.Logging;
 
 namespace Spellbound.Modifiers.Samples {
     /// <summary>
-    /// Sample player: a modifiable thing with the same defensive stack a target has — an <see cref="ArmorBehaviour"/>,
-    /// a <see cref="PipelineBehaviour"/>, and a <see cref="ResourceBehaviour"/> at 50 health — plus the
-    /// <see cref="Fireball"/> it casts. The fireball names the player as the attacker on every hit, so reflected
-    /// damage comes back to <see cref="TakeHit"/> and runs through the player's own circuit; life steal heals it.
-    /// All of that is built lazily, NOT in Awake — see <see cref="EnsureReady"/>.
+    /// Sample player: a MonoBehaviour composing a <see cref="Modifiable"/>. Base stats are set in Awake, the
+    /// take-hit circuit is built once with all four stages pre-defined (an empty stage costs nothing, and
+    /// pre-defining them gives later modifiers somewhere to land), and the sapphire ring shows the equip /
+    /// unequip shape: contributions under one instance-derived source id, stripped with RemoveSource.
     /// </summary>
-    public sealed class PlayerController : MonoBehaviour, ICanBeModified, IHasBehaviours {
+    public sealed class PlayerController : MonoBehaviour {
         [SerializeField] private GameObject projectilePrefab;
 
-        public BehaviourContainer Behaviours { get; } = new();
-
+        private readonly Modifiable _modifiable = new();
+        private float _currentHealth;
+        private uint _ringSourceId;
         private Fireball _fireball;
-        private ResourceBehaviour _resource;
-        private PipelineBehaviour _pipeline;
-        private bool _ready;
+        private readonly CircuitContext _takeHitContext = new();
 
+        public Modifiable Modifiable => _modifiable;
         public Fireball Fireball => _fireball ??= BuildFireball();
-
-        public float CurrentHealth => Resource.Current;
-        public float MaxHealth => Resource.Max;
-
-        private ResourceBehaviour Resource {
-            get {
-                EnsureReady();
-
-                return _resource;
-            }
-        }
+        public float MaxHealth => _modifiable.GetValue(DemoStats.Health);
+        public float CurrentHealth => _currentHealth;
 
         private void Awake() {
-            Log.Debug($"[Reflect] Player Awake on #{GetInstanceID()} '{name}' @ {transform.position} — creating bar");
+            var stats = _modifiable.Stats;
+            stats.SetBase(DemoStats.Health, 50f);
+            stats.SetBase(DemoStats.Armor, 10f);
+            stats.SetBase(DemoStats.FireResistance, 20f);
+            stats.SetBase(DemoStats.ColdResistance, 20f);
+            stats.SetBase(DemoStats.LightningResistance, 20f);
+
+            DemoCircuits.BuildTakeHit(_modifiable, Damage);
+
+            _currentHealth = MaxHealth;
+            stats.Changed += OnStatChanged;
+
             CreateHealthBar();
         }
 
         public void CastFireball() => Fireball.OnExecute(transform.position + transform.forward, transform.forward);
 
-        /// <summary>
-        /// Take a hit through the player's own circuit — this is where reflected damage lands. No attacker is
-        /// passed on, so the player can't reflect it back: one bounce, never a loop.
-        /// </summary>
         public void TakeHit(List<StatAndValue> damage) {
-            EnsureReady();
-
-            var before = _resource.Current;
-            _pipeline.Mitigate(damage, Behaviours);
-
-            Log.Debug($"[Reflect] Player #{GetInstanceID()} '{name}' @ {transform.position} Max={MaxHealth} " +
-                    $"TakeHit {damage.Count}: health {before} -> {_resource.Current}");
+            _takeHitContext.Clear();
+            _takeHitContext.Packet = damage;
+            _modifiable.Run(DemoEvents.TakeHit, _takeHitContext);
         }
 
-        /// <summary>
-        /// Build the defensive stack on first use, NOT in Awake. The demo's player is wired as a prefab-asset
-        /// reference whose Awake never fires, so anything set up there silently never happens — which is exactly
-        /// what stopped reflect (a null <see cref="Fireball.Caster"/>) and the Hurt button before it.
-        /// </summary>
-        private void EnsureReady() {
-            if (_ready)
+        public void Damage(float amount) => _currentHealth = Mathf.Max(0f, _currentHealth - amount);
+
+        public void Heal(float amount) => _currentHealth = Mathf.Min(MaxHealth, _currentHealth + amount);
+
+        public void EquipSapphireRing() {
+            if (_ringSourceId != 0)
                 return;
 
-            _ready = true;
-            Behaviours.Add(new ArmorBehaviour());
-            _resource = new ResourceBehaviour();
-            Behaviours.Add(_resource);
-            _resource.SetBase("sample_health", 50f);
-            _pipeline = new PipelineBehaviour();
-            Behaviours.Add(_pipeline);
+            _ringSourceId = StableHash.Fnv1A32($"sapphire_ring_{GetInstanceID()}");
+            _modifiable.Stats.AddContribution(DemoStats.ColdResistance, ContributionType.Flat, 30f, _ringSourceId);
+            _modifiable.Stats.AddContribution(DemoStats.Health, ContributionType.Increased, 0.2f, _ringSourceId);
         }
 
-        private Fireball BuildFireball() {
-            EnsureReady();
+        public void UnequipSapphireRing() {
+            if (_ringSourceId == 0)
+                return;
 
-            return new Fireball {
-                ProjectilePrefab = projectilePrefab,
-                Caster = this,
-                OnLifeSteal = amount => _resource.Heal(amount)
-            };
+            _modifiable.RemoveSource(_ringSourceId);
+            _ringSourceId = 0;
         }
+
+        private void OnStatChanged(StatId stat) {
+            if (stat == DemoStats.Health)
+                _currentHealth = Mathf.Min(_currentHealth, MaxHealth);
+        }
+
+        private Fireball BuildFireball() =>
+                new() {
+                    Parent = _modifiable,
+                    ProjectilePrefab = projectilePrefab,
+                    Caster = this,
+                    OnLifeSteal = Heal
+                };
 
         private void CreateHealthBar() {
             var bar = new GameObject("HealthBar");

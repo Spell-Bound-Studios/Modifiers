@@ -4,10 +4,6 @@ using System;
 using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers {
-    /// <summary>
-    /// Runtime (stat hash, amount) pair — the universal currency for costs, damage entries, and wire
-    /// payloads. The runtime twin of the authored <see cref="StatValueEntry"/>.
-    /// </summary>
     [Serializable]
     public struct StatAndValue : IPacker {
         public uint statHash;
