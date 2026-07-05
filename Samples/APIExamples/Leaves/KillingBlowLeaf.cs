@@ -6,7 +6,9 @@ namespace Spellbound.Modifiers.Samples {
     public sealed class KillingBlowLeaf : ModifierLeaf {
         private readonly Func<bool> _isDead;
 
-        public KillingBlowLeaf(Func<bool> isDead) => _isDead = isDead;
+        public KillingBlowLeaf(Func<bool> isDead) {
+            _isDead = isDead;
+        }
 
         public override void Process(CircuitContext ctx) {
             if (_isDead())

@@ -36,10 +36,10 @@ namespace Spellbound.Modifiers.Samples {
     public static class DemoNames {
         public static string Short(StatId stat) =>
                 stat.ToString()
-                    .Replace("sample_", string.Empty)
-                    .Replace("_damage", string.Empty)
-                    .Replace("_resistance", string.Empty)
-                    .Replace('_', ' ');
+                        .Replace("sample_", string.Empty)
+                        .Replace("_damage", string.Empty)
+                        .Replace("_resistance", string.Empty)
+                        .Replace('_', ' ');
     }
 
     /// <summary>

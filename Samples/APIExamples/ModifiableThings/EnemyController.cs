@@ -68,8 +68,9 @@ namespace Spellbound.Modifiers.Samples {
 
             var circuit = DemoCircuits.BuildTakeHit(Modifiable, Damage);
             circuit.TryGetStage(DemoStages.Mitigate, out var mitigate);
+
             mitigate.Add(new AbsorptionLeaf(Absorb, DemoStats.ChaosDamage, DemoStats.ChaosBypassesShield),
-                    DemoCircuits.ShieldPriority);
+                DemoCircuits.ShieldPriority);
             circuit.TryGetStage(DemoStages.React, out var react);
             react.Add(new KillingBlowLeaf(() => IsDead));
 
@@ -106,7 +107,7 @@ namespace Spellbound.Modifiers.Samples {
                 return;
 
             CurrentShield = Mathf.Min(MaxShield,
-                    CurrentShield + Modifiable.GetValue(DemoStats.ShieldRegen) * Time.deltaTime);
+                CurrentShield + Modifiable.GetValue(DemoStats.ShieldRegen) * Time.deltaTime);
         }
 
         public void Configure(ModifierPool pool, System.Random rng, LevelController level) {
@@ -304,6 +305,7 @@ namespace Spellbound.Modifiers.Samples {
             healthBar.Bind(() => CurrentHealth, () => MaxHealth);
             healthBar.BindShield(() => CurrentShield, () => MaxShield);
             healthBar.BindMana(() => CurrentMana, () => MaxMana);
+
             healthBar.BindStatus(
                 () => ModifierIcons,
                 BuffIcons,
@@ -311,14 +313,15 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         [ContextMenu("Take Test Hit")]
-        private void TakeTestHit() => TakeHit(new CircuitContext {
-            Packet = new List<StatAndValue> {
-                new(DemoStats.PhysicalDamage, 40f),
-                new(DemoStats.FireDamage, 40f),
-                new(DemoStats.ColdDamage, 40f),
-                new(DemoStats.LightningDamage, 40f),
-                new(DemoStats.ChaosDamage, 40f)
-            }
-        });
+        private void TakeTestHit() =>
+                TakeHit(new CircuitContext {
+                    Packet = new List<StatAndValue> {
+                        new(DemoStats.PhysicalDamage, 40f),
+                        new(DemoStats.FireDamage, 40f),
+                        new(DemoStats.ColdDamage, 40f),
+                        new(DemoStats.LightningDamage, 40f),
+                        new(DemoStats.ChaosDamage, 40f)
+                    }
+                });
     }
 }

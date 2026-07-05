@@ -1,26 +1,26 @@
 {
-    "name": "Spellbound.Modifiers.Tests",
-    "rootNamespace": "",
-    "references": [
-        "Spellbound.Modifiers",
-        "GUID:c14a5db03514b8d4ba10b621ed3627d5",
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
-        "Unity.PerformanceTesting"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": true,
-    "precompiledReferences": [
-        "nunit.framework.dll"
-    ],
-    "autoReferenced": false,
-    "defineConstraints": [
-        "UNITY_INCLUDE_TESTS"
-    ],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "Spellbound.Modifiers.Tests",
+  "rootNamespace": "",
+  "references": [
+    "Spellbound.Modifiers",
+    "GUID:c14a5db03514b8d4ba10b621ed3627d5",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "Unity.PerformanceTesting"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

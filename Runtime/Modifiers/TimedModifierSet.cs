@@ -10,7 +10,9 @@ namespace Spellbound.Modifiers {
 
         public event Action Changed;
 
-        public TimedModifierSet(Modifiable target) => _target = target;
+        public TimedModifierSet(Modifiable target) {
+            _target = target;
+        }
 
         public IReadOnlyList<TimedModifier> Active => _active;
 

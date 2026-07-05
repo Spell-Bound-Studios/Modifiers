@@ -42,9 +42,10 @@ namespace Spellbound.Modifiers.Samples {
             for (var i = 0; i < packet.Count; i++) {
                 var entry = packet[i];
 
-                if (entry.statHash == _bypassDamage.Hash)
+                if (entry.statHash == _bypassDamage.Hash) {
                     packet[i] = new StatAndValue(entry.statHash,
-                            entry.amount * bypass + entry.amount * (1f - bypass) * factor);
+                        entry.amount * bypass + entry.amount * (1f - bypass) * factor);
+                }
                 else
                     packet[i] = new StatAndValue(entry.statHash, entry.amount * factor);
             }

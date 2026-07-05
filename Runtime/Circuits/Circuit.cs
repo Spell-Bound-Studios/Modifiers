@@ -28,9 +28,10 @@ namespace Spellbound.Modifiers {
             if (_byId.TryGetValue(id, out var existing)) {
                 var definedOrder = OrderOf(existing);
 
-                if (definedOrder != order)
+                if (definedOrder != order) {
                     Log.Warn($"DefineStage: stage {id} is already defined at order {definedOrder}; " +
                              $"requested order {order} ignored.");
+                }
 
                 return existing;
             }

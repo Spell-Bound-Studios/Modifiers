@@ -12,9 +12,7 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void TryGet_UnknownIdentity_ReturnsFalse() {
-            Assert.IsFalse(new CircuitSet().TryGet(7u, out _));
-        }
+        public void TryGet_UnknownIdentity_ReturnsFalse() => Assert.IsFalse(new CircuitSet().TryGet(7u, out _));
 
         [Test]
         public void TryGet_AfterGetOrCreate_ReturnsCircuit() {

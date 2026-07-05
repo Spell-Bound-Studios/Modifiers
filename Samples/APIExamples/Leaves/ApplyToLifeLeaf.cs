@@ -10,7 +10,9 @@ namespace Spellbound.Modifiers.Samples {
     public sealed class ApplyToLifeLeaf : ActionLeaf {
         private readonly Action<float> _drain;
 
-        public ApplyToLifeLeaf(Action<float> drain) => _drain = drain;
+        public ApplyToLifeLeaf(Action<float> drain) {
+            _drain = drain;
+        }
 
         public override void Process(CircuitContext ctx) {
             var packet = ctx.Packet;

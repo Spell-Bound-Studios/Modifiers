@@ -15,9 +15,8 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void Run_UnknownIdentity_DoesNotThrow() {
-            Assert.DoesNotThrow(() => new Modifiable().Run(5u, new CircuitContext()));
-        }
+        public void Run_UnknownIdentity_DoesNotThrow() =>
+                Assert.DoesNotThrow(() => new Modifiable().Run(5u, new CircuitContext()));
 
         [Test]
         public void Run_SetsSubjectOnContext() {

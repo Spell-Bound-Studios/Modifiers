@@ -31,10 +31,11 @@ namespace Spellbound.Modifiers {
             if (precision == Precision)
                 return;
 
-            if (_locked)
+            if (_locked) {
                 throw new System.InvalidOperationException(
                     $"Stat precision is locked at {Precision} because stat conversions have already run. " +
                     "Set it once at startup before any stats are created.");
+            }
 
             Precision = precision;
         }

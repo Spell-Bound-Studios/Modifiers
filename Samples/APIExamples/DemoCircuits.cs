@@ -29,7 +29,9 @@ namespace Spellbound.Modifiers.Samples {
 
             mitigate.Add(new ResistanceLeaf(DemoStats.FireDamage, DemoStats.FireResistance), ResistancePriority);
             mitigate.Add(new ResistanceLeaf(DemoStats.ColdDamage, DemoStats.ColdResistance), ResistancePriority);
-            mitigate.Add(new ResistanceLeaf(DemoStats.LightningDamage, DemoStats.LightningResistance), ResistancePriority);
+
+            mitigate.Add(new ResistanceLeaf(DemoStats.LightningDamage, DemoStats.LightningResistance),
+                ResistancePriority);
             mitigate.Add(new ArmorLeaf(DemoStats.PhysicalDamage, DemoStats.Armor), ArmorPriority);
 
             apply.Add(new ApplyToLifeLeaf(drainLife));

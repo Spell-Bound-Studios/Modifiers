@@ -10,7 +10,9 @@ namespace Spellbound.Modifiers.Samples {
     public abstract class DemoItem {
         private static uint _instances;
 
-        protected DemoItem() => SourceId = StableHash.Fnv1A32($"{GetType().Name}_{++_instances}");
+        protected DemoItem() {
+            SourceId = StableHash.Fnv1A32($"{GetType().Name}_{++_instances}");
+        }
 
         public uint SourceId { get; }
     }
@@ -26,5 +28,4 @@ namespace Spellbound.Modifiers.Samples {
 
         protected abstract void OnEquip(Modifiable target);
     }
-
 }

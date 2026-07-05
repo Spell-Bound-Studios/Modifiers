@@ -52,9 +52,10 @@ namespace Spellbound.Modifiers {
         public static uint GetHash(string statName) {
             EnsureLoaded();
 
-            if (!NameIndex.TryGetValue(statName, out var definition))
+            if (!NameIndex.TryGetValue(statName, out var definition)) {
                 throw new KeyNotFoundException(
                     $"Stat '{statName}' is not registered. Author a StatDefinition for it under Resources/{ResourceFolder}.");
+            }
 
             return definition.Hash;
         }
@@ -127,15 +128,17 @@ namespace Spellbound.Modifiers {
 
             try {
                 foreach (var definition in Resources.LoadAll<StatDefinition>(ResourceFolder)) {
-                    if (Registry.Contains(definition.Hash))
+                    if (Registry.Contains(definition.Hash)) {
                         throw new InvalidOperationException(
                             $"Stat hash collision: '{definition.StatName}' (asset '{definition.name}') collides with an " +
                             $"already-registered stat at hash {definition.Hash}. Regenerate one asset's GUID to resolve.");
+                    }
 
-                    if (!NameIndex.TryAdd(definition.StatName, definition))
+                    if (!NameIndex.TryAdd(definition.StatName, definition)) {
                         throw new InvalidOperationException(
                             $"Duplicate stat name: '{definition.StatName}' (asset '{definition.name}') is already " +
                             "registered by another StatDefinition. Stat names must be unique — rename one.");
+                    }
 
                     Registry.Add(definition);
                 }

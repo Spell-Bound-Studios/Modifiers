@@ -17,7 +17,9 @@ namespace Spellbound.Modifiers {
         private bool _dirty;
         private int _sequence;
 
-        public Stage(uint id) => Id = id;
+        public Stage(uint id) {
+            Id = id;
+        }
 
         public uint Id { get; }
 

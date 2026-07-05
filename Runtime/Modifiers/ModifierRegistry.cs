@@ -40,10 +40,11 @@ namespace Spellbound.Modifiers {
         public static uint GetHash(string modifierName) {
             EnsureLoaded();
 
-            if (!NameIndex.TryGetValue(modifierName, out var definition))
+            if (!NameIndex.TryGetValue(modifierName, out var definition)) {
                 throw new KeyNotFoundException(
                     $"Modifier '{modifierName}' is not registered. Author a ModifierDefinition for it under " +
                     $"Resources/{ResourceFolder}.");
+            }
 
             return definition.Hash;
         }
@@ -98,24 +99,27 @@ namespace Spellbound.Modifiers {
 
             try {
                 foreach (var definition in Resources.LoadAll<ModifierDefinition>(ResourceFolder)) {
-                    if (Registry.Contains(definition.Hash))
+                    if (Registry.Contains(definition.Hash)) {
                         throw new InvalidOperationException(
                             $"Modifier hash collision: '{definition.ModifierName}' (asset '{definition.name}') collides " +
                             $"with an already-registered modifier at hash {definition.Hash}. Regenerate one asset's " +
                             "GUID to resolve.");
+                    }
 
-                    if (!NameIndex.TryAdd(definition.ModifierName, definition))
+                    if (!NameIndex.TryAdd(definition.ModifierName, definition)) {
                         throw new InvalidOperationException(
                             $"Duplicate modifier name: '{definition.ModifierName}' (asset '{definition.name}') is " +
                             "already registered by another ModifierDefinition. Modifier names must be unique — rename one.");
+                    }
 
                     var ranges = definition.Contributions;
 
                     for (var i = 0; i < ranges.Count; i++) {
-                        if (ranges[i].stat == null)
+                        if (ranges[i].stat == null) {
                             throw new InvalidOperationException(
                                 $"Modifier '{definition.ModifierName}' (asset '{definition.name}') has no stat assigned " +
                                 $"on contribution {i}.");
+                        }
                     }
 
                     Registry.Add(definition);

@@ -7,12 +7,15 @@ namespace Spellbound.Modifiers {
     public sealed class Any : Condition {
         private readonly Condition[] _conditions;
 
-        public Any(params Condition[] conditions) => _conditions = conditions;
+        public Any(params Condition[] conditions) {
+            _conditions = conditions;
+        }
 
         public override bool Met(CircuitContext ctx) {
-            for (var i = 0; i < _conditions.Length; i++)
+            for (var i = 0; i < _conditions.Length; i++) {
                 if (_conditions[i].Met(ctx))
                     return true;
+            }
 
             return false;
         }

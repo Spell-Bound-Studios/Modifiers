@@ -4,6 +4,5 @@ namespace Spellbound.Modifiers {
     /// <summary>
     /// A leaf that causes an effect on the world.
     /// </summary>
-    public abstract class ActionLeaf : Leaf {
-    }
+    public abstract class ActionLeaf : Leaf { }
 }

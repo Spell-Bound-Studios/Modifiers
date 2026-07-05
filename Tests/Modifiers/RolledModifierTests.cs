@@ -40,7 +40,8 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void TryApplyTo_UnknownHash_ReturnsFalse() {
             using (new LogMute()) {
-                var rolled = new RolledModifier { modifierHash = 999999u, sourceId = 1u, values = Array.Empty<float>() };
+                var rolled = new RolledModifier
+                        { modifierHash = 999999u, sourceId = 1u, values = Array.Empty<float>() };
 
                 Assert.IsFalse(rolled.TryApplyTo(new Modifiable()));
             }

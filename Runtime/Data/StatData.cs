@@ -31,7 +31,8 @@ namespace Spellbound.Modifiers {
 
         #region Hydration
 
-        public readonly void ApplyTo(Modifiable target, TimedModifierSet buffSet = null, TimedModifierSet debuffSet = null) {
+        public readonly void ApplyTo(
+            Modifiable target, TimedModifierSet buffSet = null, TimedModifierSet debuffSet = null) {
             if (modifiers != null) {
                 for (var i = 0; i < modifiers.Count; i++)
                     modifiers[i].TryApplyTo(target);
@@ -49,8 +50,8 @@ namespace Spellbound.Modifiers {
         }
 
         public static StatData Capture(
-                List<ResourceData> resources, List<RolledModifier> applied,
-                TimedModifierSet buffSet = null, TimedModifierSet debuffSet = null) =>
+            List<ResourceData> resources, List<RolledModifier> applied,
+            TimedModifierSet buffSet = null, TimedModifierSet debuffSet = null) =>
                 new() {
                     resourceData = resources,
                     modifiers = applied != null ? new List<RolledModifier>(applied) : null,
@@ -117,11 +118,12 @@ namespace Spellbound.Modifiers {
 
         public override string ToString() {
             var sb = new StringBuilder(64);
+
             sb.Append("StatData [resources: ").Append(ResourceCount)
-              .Append(", modifiers: ").Append(ModifierCount)
-              .Append(", buffs: ").Append(BuffCount)
-              .Append(", debuffs: ").Append(DebuffCount)
-              .Append(", packed: ").Append(PackedSize).Append(" B]");
+                    .Append(", modifiers: ").Append(ModifierCount)
+                    .Append(", buffs: ").Append(BuffCount)
+                    .Append(", debuffs: ").Append(DebuffCount)
+                    .Append(", packed: ").Append(PackedSize).Append(" B]");
 
             for (var i = 0; i < ResourceCount; i++)
                 sb.Append("\n    res[").Append(i).Append("] ").Append(resourceData[i]);

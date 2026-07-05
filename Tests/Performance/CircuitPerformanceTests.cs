@@ -62,22 +62,20 @@ namespace Spellbound.Modifiers.Tests.Performance {
         }
 
         [Test, Performance]
-        public void TakeHit_ThousandHitsThroughFullPipeline() {
-            Measure.Method(() => {
-                        for (var hit = 0; hit < 1000; hit++)
-                            RunOneHit();
-                    })
-                    .WarmupCount(5)
-                    .MeasurementCount(20)
-                    .IterationsPerMeasurement(1)
-                    .GC()
-                    .Run();
-        }
+        public void TakeHit_ThousandHitsThroughFullPipeline() =>
+                Measure.Method(() => {
+                            for (var hit = 0; hit < 1000; hit++)
+                                RunOneHit();
+                        })
+                        .WarmupCount(5)
+                        .MeasurementCount(20)
+                        .IterationsPerMeasurement(1)
+                        .GC()
+                        .Run();
 
         [Test]
-        public void TakeHit_SteadyState_DoesNotAllocate() {
-            Assert.That(() => RunOneHit(), Is.Not.AllocatingGCMemory());
-        }
+        public void TakeHit_SteadyState_DoesNotAllocate() =>
+                Assert.That(() => RunOneHit(), Is.Not.AllocatingGCMemory());
 
         private sealed class PercentReduceLeaf : ModifierLeaf {
             private readonly StatId _damage;
@@ -134,7 +132,9 @@ namespace Spellbound.Modifiers.Tests.Performance {
         private sealed class DrainLeaf : ActionLeaf {
             private readonly Action<float> _drain;
 
-            public DrainLeaf(Action<float> drain) => _drain = drain;
+            public DrainLeaf(Action<float> drain) {
+                _drain = drain;
+            }
 
             public override void Process(CircuitContext ctx) {
                 var packet = ctx.Packet;

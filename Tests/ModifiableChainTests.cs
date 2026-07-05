@@ -118,7 +118,9 @@ namespace Spellbound.Modifiers.Tests {
             var skill = new Modifiable { Parent = character };
 
             character.Stats.SetBase(Strength, 100f);
-            character.Stats.AddContribution(Fire, ContributionType.Increased, 0.4f, 5u, new StatAtLeast(Strength, 100f));
+
+            character.Stats.AddContribution(Fire, ContributionType.Increased, 0.4f, 5u,
+                new StatAtLeast(Strength, 100f));
 
             skill.Stats.SetBase(Fire, 30f);
             skill.Stats.SetBase(Strength, 0f);
@@ -132,7 +134,9 @@ namespace Spellbound.Modifiers.Tests {
             var skill = new Modifiable { Parent = character };
 
             character.Stats.SetBase(Strength, 100f);
-            character.Stats.AddContribution(Fire, ContributionType.Increased, 0.5f, 5u, new StatAtLeast(Strength, 100f));
+
+            character.Stats.AddContribution(Fire, ContributionType.Increased, 0.5f, 5u,
+                new StatAtLeast(Strength, 100f));
 
             skill.Stats.SetBase(Fire, 30f);
             skill.Stats.SetBase(Strength, 0f);

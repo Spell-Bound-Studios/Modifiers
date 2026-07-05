@@ -45,14 +45,15 @@ namespace Spellbound.Modifiers.Samples {
 
             var sprite = Square();
 
-            var background = Child("ShieldBackground", new Vector3(0f, ShieldY, 0f), new Vector3(Width, ThinHeight, 1f));
+            var background = Child("ShieldBackground", new Vector3(0f, ShieldY, 0f),
+                new Vector3(Width, ThinHeight, 1f));
             _shieldBackground = background.AddComponent<SpriteRenderer>();
             _shieldBackground.sprite = sprite;
             _shieldBackground.color = new Color(0f, 0f, 0f, 0.7f);
             _shieldBackground.sortingOrder = 103;
 
             var fill = Child("ShieldFill", new Vector3(-Width / 2f, ShieldY, -0.01f),
-                    new Vector3(Width, ThinHeight * 0.8f, 1f));
+                new Vector3(Width, ThinHeight * 0.8f, 1f));
             _shieldFill = fill.AddComponent<SpriteRenderer>();
             _shieldFill.sprite = sprite;
             _shieldFill.color = CombatColors.Absorb;
@@ -72,7 +73,7 @@ namespace Spellbound.Modifiers.Samples {
             backgroundRenderer.sortingOrder = 103;
 
             var fill = Child("ManaFill", new Vector3(-Width / 2f, ManaY, -0.01f),
-                    new Vector3(Width, ThinHeight * 0.8f, 1f));
+                new Vector3(Width, ThinHeight * 0.8f, 1f));
             _manaFill = fill.AddComponent<SpriteRenderer>();
             _manaFill.sprite = sprite;
             _manaFill.color = new Color(0.25f, 0.5f, 1f);
@@ -85,11 +86,13 @@ namespace Spellbound.Modifiers.Samples {
             _debuffs = debuffs;
 
             _buffLabel = MakeStatusLabel("Buffs", new Vector3(-Width / 2f + 2f, 0.52f, 0f),
-                    TextAlignmentOptions.Left);
+                TextAlignmentOptions.Left);
+
             _modifierLabel = MakeStatusLabel("Modifiers", new Vector3(Width / 2f - 2f, 0.52f, 0f),
-                    TextAlignmentOptions.Right);
+                TextAlignmentOptions.Right);
+
             _debuffLabel = MakeStatusLabel("Debuffs", new Vector3(-Width / 2f + 2f, -0.34f, 0f),
-                    TextAlignmentOptions.Left);
+                TextAlignmentOptions.Left);
         }
 
         private TextMeshPro MakeStatusLabel(string childName, Vector3 position, TextAlignmentOptions alignment) {

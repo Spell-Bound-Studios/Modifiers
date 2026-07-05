@@ -29,7 +29,7 @@ namespace Spellbound.Modifiers.Tests {
             var only = Definitions.Create();
             var pool = Definitions.CreatePool((only, 1));
 
-            var picked = pool.Sample(3, new System.Random(7), withReplacement: true);
+            var picked = pool.Sample(3, new System.Random(7), true);
 
             Assert.AreEqual(3, picked.Count);
 

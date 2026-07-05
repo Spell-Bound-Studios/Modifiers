@@ -241,10 +241,10 @@ namespace Spellbound.Modifiers.Samples {
             _quadHost.Add(bottomRow);
 
             topRow.Add(QuadCell("II · BUFFS", "inherited from the level — top-left of the nameplate",
-                    out _buffQuadContent));
+                out _buffQuadContent));
 
             topRow.Add(QuadCell("I · MODIFIERS", "rolled per enemy at spawn — top-right of the nameplate",
-                    out var modifierContent));
+                out var modifierContent));
 
             foreach (var entry in demo.Pool.Entries) {
                 if (entry.candidate == null)
@@ -257,13 +257,14 @@ namespace Spellbound.Modifiers.Samples {
             }
 
             bottomRow.Add(QuadCell("III · DEBUFFS", "harmful effects — bottom-left of the nameplate",
-                    out var debuffContent));
+                out var debuffContent));
 
             var ignited = ModifierRegistry.GetDefinition("sample_ignited");
 
-            if (ignited != null)
+            if (ignited != null) {
                 debuffContent.Add(LegendRow(CombatColors.ForModifier(ignited.Hash), ignited.DisplayName,
-                        ignited.Description));
+                    ignited.Description));
+            }
 
             bottomRow.Add(QuadCell("IV · RESERVED", "bottom-right of the nameplate", out var reservedContent));
             var reserved = new Label("—");
@@ -295,9 +296,10 @@ namespace Spellbound.Modifiers.Samples {
 
             var hardened = ModifierRegistry.GetDefinition("sample_hardened");
 
-            if (hardened != null)
+            if (hardened != null) {
                 _buffQuadContent.Add(LegendRow(CombatColors.ForModifier(hardened.Hash), hardened.DisplayName,
-                        hardened.Description));
+                    hardened.Description));
+            }
 
             if (_buffQuadContent.childCount == 0) {
                 var none = new Label("—");
@@ -390,16 +392,20 @@ namespace Spellbound.Modifiers.Samples {
                     (DemoStats.FireDamage, ContributionType.Flat, 5f)));
 
         private bool ToggleFireDamage() =>
-                ToggleOnFireball(ref _fireDamage, () => new StatItem((DemoStats.FireDamage, ContributionType.More, 1f)));
+                ToggleOnFireball(ref _fireDamage,
+                    () => new StatItem((DemoStats.FireDamage, ContributionType.More, 1f)));
 
         private bool ToggleChaosDamage() =>
-                ToggleOnFireball(ref _chaosDamage, () => new StatItem((DemoStats.ChaosDamage, ContributionType.Flat, 20f)));
+                ToggleOnFireball(ref _chaosDamage,
+                    () => new StatItem((DemoStats.ChaosDamage, ContributionType.Flat, 20f)));
 
         private bool ToggleProjectiles() =>
-                ToggleOnFireball(ref _projectiles, () => new StatItem((DemoStats.ProjectileCount, ContributionType.Flat, 2f)));
+                ToggleOnFireball(ref _projectiles,
+                    () => new StatItem((DemoStats.ProjectileCount, ContributionType.Flat, 2f)));
 
         private bool ToggleCircular() =>
-                ToggleOnFireball(ref _circular, () => new StatItem((DemoStats.ProjectilePattern, ContributionType.Override, 1f)));
+                ToggleOnFireball(ref _circular,
+                    () => new StatItem((DemoStats.ProjectilePattern, ContributionType.Override, 1f)));
 
         private bool ToggleIgnite() =>
                 ToggleOnFireball(ref _ignite, () => new StatItem(
@@ -410,19 +416,24 @@ namespace Spellbound.Modifiers.Samples {
                 ToggleOnFireball(ref _split, () => new StatItem((DemoStats.SplitOnHit, ContributionType.Flat, 1f)));
 
         private bool ToggleEmpower() =>
-                ToggleOnFireball(ref _empower, () => new StatItem((DemoStats.EmpowerOnKill, ContributionType.Flat, 1f)));
+                ToggleOnFireball(ref _empower,
+                    () => new StatItem((DemoStats.EmpowerOnKill, ContributionType.Flat, 1f)));
 
         private bool ToggleLifeSteal() =>
-                ToggleOnFireball(ref _lifeSteal, () => new StatItem((DemoStats.LifeSteal, ContributionType.Flat, 0.3f)));
+                ToggleOnFireball(ref _lifeSteal,
+                    () => new StatItem((DemoStats.LifeSteal, ContributionType.Flat, 0.3f)));
 
         private bool ToggleFireResist() =>
-                ToggleOnEnemies(ref _fireResist, () => new StatItem((DemoStats.FireResistance, ContributionType.Flat, 40f)));
+                ToggleOnEnemies(ref _fireResist,
+                    () => new StatItem((DemoStats.FireResistance, ContributionType.Flat, 40f)));
 
         private bool ToggleColdResist() =>
-                ToggleOnEnemies(ref _coldResist, () => new StatItem((DemoStats.ColdResistance, ContributionType.Flat, 40f)));
+                ToggleOnEnemies(ref _coldResist,
+                    () => new StatItem((DemoStats.ColdResistance, ContributionType.Flat, 40f)));
 
         private bool ToggleLightningResist() =>
-                ToggleOnEnemies(ref _lightningResist, () => new StatItem((DemoStats.LightningResistance, ContributionType.Flat, 40f)));
+                ToggleOnEnemies(ref _lightningResist,
+                    () => new StatItem((DemoStats.LightningResistance, ContributionType.Flat, 40f)));
 
         private bool ToggleArmor() =>
                 ToggleOnEnemies(ref _armor, () => new StatItem((DemoStats.Armor, ContributionType.Flat, 20f)));
@@ -430,10 +441,12 @@ namespace Spellbound.Modifiers.Samples {
         private bool ToggleReflectFire() => ToggleOnEnemies(ref _reflectFire, () => new ReflectFireItem());
 
         private bool ToggleChaosNoBypass() =>
-                ToggleOnEnemies(ref _chaosNoBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ContributionType.Override, 0f)));
+                ToggleOnEnemies(ref _chaosNoBypass,
+                    () => new StatItem((DemoStats.ChaosBypassesShield, ContributionType.Override, 0f)));
 
         private bool ToggleChaosHalfBypass() =>
-                ToggleOnEnemies(ref _chaosHalfBypass, () => new StatItem((DemoStats.ChaosBypassesShield, ContributionType.Flat, -50f)));
+                ToggleOnEnemies(ref _chaosHalfBypass,
+                    () => new StatItem((DemoStats.ChaosBypassesShield, ContributionType.Flat, -50f)));
 
         private bool ToggleOnPlayer(ref ModifiableItem item, Func<ModifiableItem> create) {
             if (item == null) {

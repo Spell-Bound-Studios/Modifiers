@@ -19,7 +19,7 @@ namespace Spellbound.Modifiers {
         public bool IsConditional => Condition != null;
 
         public static Contribution Of(
-                ContributionType type, float value, uint sourceId = Innate, Condition condition = null) =>
+            ContributionType type, float value, uint sourceId = Innate, Condition condition = null) =>
                 new(type, StatSettings.ToInternal(value), sourceId, condition);
     }
 }

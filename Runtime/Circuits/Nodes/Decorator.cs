@@ -7,6 +7,8 @@ namespace Spellbound.Modifiers {
     public abstract class Decorator : Node {
         protected readonly Node Child;
 
-        protected Decorator(Node child) => Child = child;
+        protected Decorator(Node child) {
+            Child = child;
+        }
     }
 }

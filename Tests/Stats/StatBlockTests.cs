@@ -17,9 +17,7 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void GetBase_Unset_ReturnsZero() {
-            Assert.AreEqual(0f, new StatBlock().GetBase(Armor));
-        }
+        public void GetBase_Unset_ReturnsZero() => Assert.AreEqual(0f, new StatBlock().GetBase(Armor));
 
         [Test]
         public void SetBase_RoundTrips() {
@@ -84,18 +82,15 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void RemoveBySource_UnknownSource_ReturnsZero() {
-            Assert.AreEqual(0, new StatBlock().RemoveBySource(123u));
-        }
+        public void RemoveBySource_UnknownSource_ReturnsZero() =>
+                Assert.AreEqual(0, new StatBlock().RemoveBySource(123u));
 
         [Test]
         public void RemoveBySource_Innate_ReturnsZero() {
             var block = new StatBlock();
             block.AddContribution(Armor, ContributionType.Flat, 10f);
 
-            using (new LogMute()) {
-                Assert.AreEqual(0, block.RemoveBySource(Contribution.Innate));
-            }
+            using (new LogMute()) Assert.AreEqual(0, block.RemoveBySource(Contribution.Innate));
         }
 
         [Test]
@@ -159,9 +154,7 @@ namespace Spellbound.Modifiers.Tests {
             modifiable.Stats.SetBase(Armor, 100f);
             modifiable.Stats.AddContribution(Armor, ContributionType.Increased, 1f, 5u, new StatAtLeast(Armor, 50f));
 
-            using (new LogMute()) {
-                Assert.AreEqual(200f, modifiable.GetValue(Armor));
-            }
+            using (new LogMute()) Assert.AreEqual(200f, modifiable.GetValue(Armor));
         }
 
         [Test]
@@ -172,9 +165,7 @@ namespace Spellbound.Modifiers.Tests {
             modifiable.Stats.AddContribution(Armor, ContributionType.Flat, 50f, 1u, new StatAtLeast(Life, 5f));
             modifiable.Stats.AddContribution(Life, ContributionType.Flat, 50f, 2u, new StatAtLeast(Armor, 120f));
 
-            using (new LogMute()) {
-                Assert.AreEqual(150f, modifiable.GetValue(Armor));
-            }
+            using (new LogMute()) Assert.AreEqual(150f, modifiable.GetValue(Armor));
         }
 
         [Test]

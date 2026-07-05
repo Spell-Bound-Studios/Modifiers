@@ -35,18 +35,28 @@ namespace Spellbound.Modifiers.Samples {
         public ModifierPool Pool => modifierPool;
         public int InnerCount => _innerEnemyCount;
         public int OuterCount => _outerEnemyCount;
-        public bool EnemiesMove { get => _enemiesMove; set => _enemiesMove = value; }
-        public bool AutoRespawn { get => autoRespawn; set => autoRespawn = value; }
+
+        public bool EnemiesMove {
+            get => _enemiesMove;
+            set => _enemiesMove = value;
+        }
+
+        public bool AutoRespawn {
+            get => autoRespawn;
+            set => autoRespawn = value;
+        }
 
         public IEnumerable<EnemyController> Enemies {
             get {
-                foreach (var enemy in _innerEnemies)
+                foreach (var enemy in _innerEnemies) {
                     if (enemy != null)
                         yield return enemy;
+                }
 
-                foreach (var enemy in _outerEnemies)
+                foreach (var enemy in _outerEnemies) {
                     if (enemy != null)
                         yield return enemy;
+                }
             }
         }
 
@@ -54,9 +64,10 @@ namespace Spellbound.Modifiers.Samples {
             get {
                 var count = 0;
 
-                foreach (var enemy in Enemies)
+                foreach (var enemy in Enemies) {
                     if (!enemy.IsDead)
                         count++;
+                }
 
                 return count;
             }
@@ -84,13 +95,15 @@ namespace Spellbound.Modifiers.Samples {
         public void RerollLevel() => Level.Reroll(modifierPool, 2, _rng);
 
         public void RespawnAll() {
-            foreach (var enemy in _innerEnemies)
+            foreach (var enemy in _innerEnemies) {
                 if (enemy != null && enemy.IsDead)
                     enemy.Respawn();
+            }
 
-            foreach (var enemy in _outerEnemies)
+            foreach (var enemy in _outerEnemies) {
                 if (enemy != null && enemy.IsDead)
                     enemy.Respawn();
+            }
         }
 
         public void SetInnerCount(int count) {
@@ -131,8 +144,8 @@ namespace Spellbound.Modifiers.Samples {
 
             if (!player.gameObject.scene.IsValid()) {
                 Debug.LogError($"[CombatDemo] 'player' ({player.name}) is a PREFAB ASSET, not a scene instance — " +
-                        "its Awake never runs, it's invisible, and reflect/health silently no-op against it. " +
-                        "Drag the player from the HIERARCHY into the Player field, not the prefab from the Project.");
+                               "its Awake never runs, it's invisible, and reflect/health silently no-op against it. " +
+                               "Drag the player from the HIERARCHY into the Player field, not the prefab from the Project.");
 
                 return;
             }
@@ -171,9 +184,10 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private void RespawnRing(List<EnemyController> enemies, int count, float distance, string prefix) {
-            foreach (var enemy in enemies)
+            foreach (var enemy in enemies) {
                 if (enemy != null)
                     Destroy(enemy.gameObject);
+            }
 
             SpawnRing(enemies, count, distance, prefix);
         }

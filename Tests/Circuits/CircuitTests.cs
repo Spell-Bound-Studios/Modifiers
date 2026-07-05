@@ -6,9 +6,8 @@ using NUnit.Framework;
 namespace Spellbound.Modifiers.Tests {
     public class CircuitTests {
         [Test]
-        public void Evaluate_NoStages_DoesNotThrow() {
-            Assert.DoesNotThrow(() => new Circuit().Evaluate(new CircuitContext()));
-        }
+        public void Evaluate_NoStages_DoesNotThrow() =>
+                Assert.DoesNotThrow(() => new Circuit().Evaluate(new CircuitContext()));
 
         [Test]
         public void Evaluate_RunsStagesInAscendingOrder() {
@@ -84,9 +83,7 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void TryGetStage_UnknownId_ReturnsFalse() {
-            Assert.IsFalse(new Circuit().TryGetStage(3u, out _));
-        }
+        public void TryGetStage_UnknownId_ReturnsFalse() => Assert.IsFalse(new Circuit().TryGetStage(3u, out _));
 
         [Test]
         public void TryGetStage_DefinedId_ReturnsStage() {

@@ -1,7 +1,6 @@
 // Copyright 2026 Spellbound Studio Inc.
 
 using Spellbound.Core.Registries;
-using Spellbound.Core.Tooling;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {

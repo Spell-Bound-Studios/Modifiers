@@ -37,6 +37,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void Roll_ValueCountMatchesContributions() {
             var stat = ScriptableObject.CreateInstance<StatDefinition>();
+
             var definition = Definitions.Create(
                 Definitions.Range(stat, ContributionType.Flat, 1f, 2f),
                 Definitions.Range(stat, ContributionType.Increased, 0.1f, 0.2f));

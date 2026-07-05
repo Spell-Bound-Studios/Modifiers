@@ -7,7 +7,9 @@ namespace Spellbound.Modifiers {
     public sealed class When : Decorator {
         private readonly Condition _condition;
 
-        public When(Condition condition, Node child) : base(child) => _condition = condition;
+        public When(Condition condition, Node child) : base(child) {
+            _condition = condition;
+        }
 
         public override void Process(CircuitContext ctx) {
             if (_condition.Met(ctx))

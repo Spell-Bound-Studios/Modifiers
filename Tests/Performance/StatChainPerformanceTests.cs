@@ -45,42 +45,39 @@ namespace Spellbound.Modifiers.Tests.Performance {
         }
 
         [Test, Performance]
-        public void Read_FortySkills_HotPath() {
-            Measure.Method(() => ReadAll())
-                    .WarmupCount(10)
-                    .MeasurementCount(20)
-                    .IterationsPerMeasurement(100)
-                    .GC()
-                    .Run();
-        }
+        public void Read_FortySkills_HotPath() =>
+                Measure.Method(() => ReadAll())
+                        .WarmupCount(10)
+                        .MeasurementCount(20)
+                        .IterationsPerMeasurement(100)
+                        .GC()
+                        .Run();
 
         [Test, Performance]
-        public void Read_FortySkills_AfterParentMutation() {
-            Measure.Method(() => {
-                        _player.Stats.AddContribution(Fire, ContributionType.Flat, 1f, 99u);
-                        _player.RemoveSource(99u);
-                        ReadAll();
-                    })
-                    .WarmupCount(10)
-                    .MeasurementCount(20)
-                    .IterationsPerMeasurement(100)
-                    .GC()
-                    .Run();
-        }
+        public void Read_FortySkills_AfterParentMutation() =>
+                Measure.Method(() => {
+                            _player.Stats.AddContribution(Fire, ContributionType.Flat, 1f, 99u);
+                            _player.RemoveSource(99u);
+                            ReadAll();
+                        })
+                        .WarmupCount(10)
+                        .MeasurementCount(20)
+                        .IterationsPerMeasurement(100)
+                        .GC()
+                        .Run();
 
         [Test, Performance]
-        public void EquipUnequip_OnParent_CostIsBlockLocal() {
-            Measure.Method(() => {
-                        _player.Stats.AddContribution(Fire, ContributionType.Flat, 5f, 77u);
-                        _player.Stats.AddContribution(Strength, ContributionType.Flat, 5f, 77u);
-                        _player.RemoveSource(77u);
-                    })
-                    .WarmupCount(10)
-                    .MeasurementCount(20)
-                    .IterationsPerMeasurement(500)
-                    .GC()
-                    .Run();
-        }
+        public void EquipUnequip_OnParent_CostIsBlockLocal() =>
+                Measure.Method(() => {
+                            _player.Stats.AddContribution(Fire, ContributionType.Flat, 5f, 77u);
+                            _player.Stats.AddContribution(Strength, ContributionType.Flat, 5f, 77u);
+                            _player.RemoveSource(77u);
+                        })
+                        .WarmupCount(10)
+                        .MeasurementCount(20)
+                        .IterationsPerMeasurement(500)
+                        .GC()
+                        .Run();
 
         [Test, Performance]
         public void Read_FortySkills_FiveConditionalsEach() {

@@ -57,8 +57,7 @@ namespace Spellbound.Modifiers.Samples {
             return Color.white;
         }
 
-        public static Color ForModifier(uint modifierHash) =>
-                Color.HSVToRGB(modifierHash % 360u / 360f, 0.65f, 0.95f);
+        public static Color ForModifier(uint modifierHash) => Color.HSVToRGB(modifierHash % 360u / 360f, 0.65f, 0.95f);
 
         public static string ModifierIcons(IReadOnlyList<RolledModifier> rolled) {
             if (rolled == null || rolled.Count == 0)
@@ -92,16 +91,17 @@ namespace Spellbound.Modifiers.Samples {
         /// <summary>
         /// The palette color for a circuit node, keyed by its id.
         /// </summary>
-        public static Color ForNode(string nodeId) => nodeId switch {
-            "absorption" => Absorb,
-            "fire" => Fire,
-            "cold" => Cold,
-            "lightning" => Lightning,
-            "armor" => Physical,
-            "deposit" => Deposit,
-            "killing-blow" => Deposit,
-            "reflect-fire" => Fire,
-            _ => Neutral
-        };
+        public static Color ForNode(string nodeId) =>
+                nodeId switch {
+                    "absorption" => Absorb,
+                    "fire" => Fire,
+                    "cold" => Cold,
+                    "lightning" => Lightning,
+                    "armor" => Physical,
+                    "deposit" => Deposit,
+                    "killing-blow" => Deposit,
+                    "reflect-fire" => Fire,
+                    _ => Neutral
+                };
     }
 }

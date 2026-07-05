@@ -8,14 +8,11 @@ namespace Spellbound.Modifiers.Tests {
         private static readonly StatId Armor = new(1u);
 
         [Test]
-        public void All_Empty_IsTrue() {
-            Assert.IsTrue(new All().Met(new CircuitContext()));
-        }
+        public void All_Empty_IsTrue() => Assert.IsTrue(new All().Met(new CircuitContext()));
 
         [Test]
-        public void All_AllTrue_IsTrue() {
-            Assert.IsTrue(new All(new StubCondition(), new StubCondition()).Met(new CircuitContext()));
-        }
+        public void All_AllTrue_IsTrue() =>
+                Assert.IsTrue(new All(new StubCondition(), new StubCondition()).Met(new CircuitContext()));
 
         [Test]
         public void All_ShortCircuitsOnFirstFalse() {
@@ -26,9 +23,7 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void Any_Empty_IsFalse() {
-            Assert.IsFalse(new Any().Met(new CircuitContext()));
-        }
+        public void Any_Empty_IsFalse() => Assert.IsFalse(new Any().Met(new CircuitContext()));
 
         [Test]
         public void Any_ShortCircuitsOnFirstTrue() {
@@ -39,9 +34,8 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void Any_AllFalse_IsFalse() {
-            Assert.IsFalse(new Any(new StubCondition(false), new StubCondition(false)).Met(new CircuitContext()));
-        }
+        public void Any_AllFalse_IsFalse() =>
+                Assert.IsFalse(new Any(new StubCondition(false), new StubCondition(false)).Met(new CircuitContext()));
 
         [Test]
         public void Not_Inverts() {
@@ -68,9 +62,8 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void StatAtLeast_NullSubject_IsFalse() {
-            Assert.IsFalse(new StatAtLeast(Armor, 0f).Met(new CircuitContext()));
-        }
+        public void StatAtLeast_NullSubject_IsFalse() =>
+                Assert.IsFalse(new StatAtLeast(Armor, 0f).Met(new CircuitContext()));
 
         [Test]
         public void When_ConditionFalse_SkipsChild() {

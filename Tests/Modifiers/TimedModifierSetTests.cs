@@ -9,7 +9,7 @@ namespace Spellbound.Modifiers.Tests {
         private static StatId Health => new(StatRegistry.GetHash("sample_health"));
 
         private static RolledModifier Roll(string modifierName, uint sourceId, int seed = 7) =>
-                ModifierRegistry.GetDefinition(modifierName).Roll(new System.Random(seed), sourceId);
+                ModifierRegistry.GetDefinition(modifierName).Roll(new Random(seed), sourceId);
 
         [Test]
         public void Apply_AddsContributions() {

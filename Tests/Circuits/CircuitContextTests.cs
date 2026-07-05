@@ -8,9 +8,7 @@ using Is = UnityEngine.TestTools.Constraints.Is;
 namespace Spellbound.Modifiers.Tests {
     public class CircuitContextTests {
         [Test]
-        public void Consequence_IsNullUntilNoted() {
-            Assert.IsNull(new CircuitContext().Consequence);
-        }
+        public void Consequence_IsNullUntilNoted() => Assert.IsNull(new CircuitContext().Consequence);
 
         [Test]
         public void Note_AppendsEntries() {

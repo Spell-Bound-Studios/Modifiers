@@ -6,7 +6,9 @@ namespace Spellbound.Modifiers {
     public readonly struct StatId : IEquatable<StatId> {
         public readonly uint Hash;
 
-        public StatId(uint hash) => Hash = hash;
+        public StatId(uint hash) {
+            Hash = hash;
+        }
 
         public static StatId From(string name) => new(StatRegistry.GetHash(name));
 

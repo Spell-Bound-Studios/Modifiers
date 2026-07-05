@@ -7,6 +7,8 @@ namespace Spellbound.Modifiers {
     public abstract class Composite : Node {
         protected readonly Node[] Children;
 
-        protected Composite(params Node[] children) => Children = children;
+        protected Composite(params Node[] children) {
+            Children = children;
+        }
     }
 }

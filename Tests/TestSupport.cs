@@ -10,6 +10,7 @@ namespace Spellbound.Modifiers.Tests {
     internal static class Definitions {
         public static ModifierDefinition Create(params ContributionRange[] contributions) {
             var definition = ScriptableObject.CreateInstance<ModifierDefinition>();
+
             typeof(ModifierDefinition)
                     .GetField("contributions", BindingFlags.NonPublic | BindingFlags.Instance)
                     .SetValue(definition, new List<ContributionRange>(contributions));
@@ -32,15 +33,17 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         public static ContributionRange Range(
-                StatDefinition stat, ContributionType type, float min, float max, float step = 0f) =>
+            StatDefinition stat, ContributionType type, float min, float max, float step = 0f) =>
                 new() { stat = stat, type = type, min = min, max = max, step = step };
 
         public static StatTemplate CreateTemplate(
-                BaseStat[] bases, params ModifierDefinition[] innates) {
+            BaseStat[] bases, params ModifierDefinition[] innates) {
             var template = new StatTemplate();
+
             typeof(StatTemplate)
                     .GetField("baseStats", BindingFlags.NonPublic | BindingFlags.Instance)
                     .SetValue(template, new List<BaseStat>(bases));
+
             typeof(StatTemplate)
                     .GetField("innateModifiers", BindingFlags.NonPublic | BindingFlags.Instance)
                     .SetValue(template, new List<ModifierDefinition>(innates));
@@ -68,7 +71,9 @@ namespace Spellbound.Modifiers.Tests {
         public bool Result;
         public int EvaluationCount;
 
-        public StubCondition(bool result = true) => Result = result;
+        public StubCondition(bool result = true) {
+            Result = result;
+        }
 
         public override bool Met(CircuitContext ctx) {
             EvaluationCount++;

@@ -8,7 +8,9 @@ namespace Spellbound.Modifiers.Samples {
     public sealed class StatItem : ModifiableItem {
         private readonly (StatId stat, ContributionType type, float value)[] _entries;
 
-        public StatItem(params (StatId stat, ContributionType type, float value)[] entries) => _entries = entries;
+        public StatItem(params (StatId stat, ContributionType type, float value)[] entries) {
+            _entries = entries;
+        }
 
         protected override void OnEquip(Modifiable target) {
             foreach (var (stat, type, value) in _entries)

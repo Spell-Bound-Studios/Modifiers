@@ -41,7 +41,7 @@ namespace Spellbound.Modifiers.Samples {
             var color = empowered ? EmpoweredColor : FireColor;
 
             foreach (var direction in WorldDirections(forward, Count))
-                SpawnProjectile(origin, direction, damage, color, canSplit: true, excluded: null);
+                SpawnProjectile(origin, direction, damage, color, true, null);
         }
 
         private void OnOwnStatChanged(StatId stat) {
@@ -91,9 +91,10 @@ namespace Spellbound.Modifiers.Samples {
             ReturnReflected(_hitContext.Consequence);
 
             if (projectile.CanSplit && GetValue(DemoStats.SplitOnHit) > 0f) {
-                foreach (var direction in SplitDirections(projectile.Direction, 3, 30f))
+                foreach (var direction in SplitDirections(projectile.Direction, 3, 30f)) {
                     SpawnProjectile(projectile.transform.position, direction, damage, projectile.Tint,
-                            canSplit: false, excluded: enemy.gameObject);
+                        false, enemy.gameObject);
+                }
             }
         }
 
@@ -150,8 +151,8 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private void SpawnProjectile(
-                Vector3 origin, Vector3 direction, List<StatAndValue> damage, Color color, bool canSplit,
-                GameObject excluded) {
+            Vector3 origin, Vector3 direction, List<StatAndValue> damage, Color color, bool canSplit,
+            GameObject excluded) {
             var obj = Object.Instantiate(ProjectilePrefab, origin, Quaternion.identity);
             var projectile = obj.GetComponent<FireballProjectile>();
 

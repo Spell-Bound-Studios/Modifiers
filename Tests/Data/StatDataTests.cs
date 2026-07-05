@@ -9,7 +9,7 @@ namespace Spellbound.Modifiers.Tests {
         private static StatId Armor => new(StatRegistry.GetHash("sample_armor"));
 
         private static RolledModifier RollThickHide(uint sourceId, int seed = 7) =>
-                ModifierRegistry.GetDefinition("sample_thick_hide").Roll(new System.Random(seed), sourceId);
+                ModifierRegistry.GetDefinition("sample_thick_hide").Roll(new Random(seed), sourceId);
 
         [Test]
         public void PackedSize_Empty_MatchesWrittenBytes() {
@@ -24,6 +24,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void PackUnpack_RoundTrips_AndPackedSizeMatches() {
             var rolled = RollThickHide(11u);
+
             var data = new StatData {
                 resourceData = new List<ResourceData> {
                     new(StatRegistry.GetHash("sample_health"), 100f, 0f, 62.5f)
@@ -33,7 +34,11 @@ namespace Spellbound.Modifiers.Tests {
                     new() { modifier = RollThickHide(22u, 8), duration = 5f, remaining = 2.5f }
                 },
                 debuffs = new List<TimedModifier> {
-                    new() { modifier = new RolledModifier { modifierHash = 9u, sourceId = 3u, values = Array.Empty<float>() }, duration = 3f, remaining = 1f }
+                    new() {
+                        modifier = new RolledModifier
+                                { modifierHash = 9u, sourceId = 3u, values = Array.Empty<float>() },
+                        duration = 3f, remaining = 1f
+                    }
                 }
             };
 

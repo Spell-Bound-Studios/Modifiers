@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Spellbound.Core.Registries;
-using Spellbound.Core.Tooling;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
