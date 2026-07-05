@@ -6,12 +6,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
-    /// <summary>
-    /// Sample enemy: the standard take-hit pipeline plus a shield pool granted into Mitigate ahead of the
-    /// resists, so absorption eats first. TakeHit mitigates the caller's packet in place and reports outcomes
-    /// — the killing blow, reflected amounts — on the context's consequence list. Recolor, ignite DoT, and
-    /// death/respawn make it visible; the health bar and floating numbers live elsewhere.
-    /// </summary>
     public sealed class EnemyController : MonoBehaviour {
         [Header("Visual"), SerializeField] private Renderer targetRenderer;
         [SerializeField] private Color defaultColor = Color.white;
@@ -21,6 +15,12 @@ namespace Spellbound.Modifiers.Samples {
         private Coroutine _igniteRoutine;
         private readonly CircuitContext _igniteContext = new();
         private readonly List<StatAndValue> _ignitePacket = new(1);
+
+        private readonly List<RolledModifier> _rolled = new();
+        private ModifierPool _pool;
+        private System.Random _rng;
+        private LevelController _level;
+        private float _lastDamageTime;
 
         public event Action<EnemyController> OnDeath;
 
@@ -32,12 +32,23 @@ namespace Spellbound.Modifiers.Samples {
         public float MaxShield => Modifiable.GetValue(DemoStats.Shield);
         public float CurrentShield { get; private set; }
 
+        public float MaxMana => Modifiable.GetValue(DemoStats.Mana);
+        public float CurrentMana { get; private set; }
+
+        private static readonly string IgniteIcon =
+                $"<color=#{ColorUtility.ToHtmlStringRGB(CombatColors.Fire)}>■</color>";
+
         public bool IsDead => CurrentHealth <= 0f;
+        public bool IsIgnited { get; private set; }
+        public string ModifierIcons { get; private set; } = "";
 
         private void Awake() {
             var stats = Modifiable.Stats;
             stats.SetBase(DemoStats.Health, 100f);
             stats.SetBase(DemoStats.Shield, 50f);
+            stats.SetBase(DemoStats.Mana, 30f);
+            stats.SetBase(DemoStats.ShieldRegen, 5f);
+            stats.SetBase(DemoStats.ShieldRegenDelay, 4f);
             stats.SetBase(DemoStats.Armor, 10f);
             stats.SetBase(DemoStats.FireResistance, 20f);
             stats.SetBase(DemoStats.ColdResistance, 20f);
@@ -48,9 +59,13 @@ namespace Spellbound.Modifiers.Samples {
             circuit.TryGetStage(DemoStages.Mitigate, out var mitigate);
             mitigate.Add(new AbsorptionLeaf(Absorb, DemoStats.ChaosDamage, DemoStats.ChaosBypassesShield),
                     DemoCircuits.ShieldPriority);
+            circuit.TryGetStage(DemoStages.React, out var react);
+            react.Add(new KillingBlowLeaf(() => IsDead));
 
             CurrentHealth = MaxHealth;
             CurrentShield = MaxShield;
+            CurrentMana = MaxMana;
+            _lastDamageTime = Time.time;
             stats.Changed += OnStatChanged;
 
             if (targetRenderer == null)
@@ -64,10 +79,30 @@ namespace Spellbound.Modifiers.Samples {
             CreateHealthBar();
         }
 
-        /// <summary>
-        /// Run a caller-owned context through the take-hit circuit. The packet is mitigated in place; outcomes
-        /// (the killing blow, reflected amounts) are reported on the context's consequence list.
-        /// </summary>
+        private void Update() {
+            if (IsDead || CurrentShield >= MaxShield)
+                return;
+
+            if (Time.time - _lastDamageTime < Modifiable.GetValue(DemoStats.ShieldRegenDelay))
+                return;
+
+            CurrentShield = Mathf.Min(MaxShield,
+                    CurrentShield + Modifiable.GetValue(DemoStats.ShieldRegen) * Time.deltaTime);
+        }
+
+        public void Configure(ModifierPool pool, System.Random rng, LevelController level) {
+            _pool = pool;
+            _rng = rng;
+            _level = level;
+            Modifiable.Parent = level != null ? level.Modifiable : null;
+
+            RollModifiers();
+
+            CurrentHealth = MaxHealth;
+            CurrentShield = MaxShield;
+            CurrentMana = MaxMana;
+        }
+
         public void TakeHit(CircuitContext ctx) {
             if (IsDead) {
                 ctx.Packet?.Clear();
@@ -75,14 +110,13 @@ namespace Spellbound.Modifiers.Samples {
                 return;
             }
 
+            _lastDamageTime = Time.time;
             Modifiable.Run(DemoEvents.TakeHit, ctx);
 
             PopNumbers(ctx.Packet);
 
-            if (IsDead) {
+            if (IsDead)
                 Die();
-                ctx.Note(DemoConsequences.KillingBlow, 1f);
-            }
         }
 
         public void Damage(float amount) => CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
@@ -101,6 +135,8 @@ namespace Spellbound.Modifiers.Samples {
             if (_igniteRoutine != null)
                 StopCoroutine(_igniteRoutine);
 
+            IsIgnited = true;
+
             if (targetRenderer != null)
                 targetRenderer.material.color = ignitedColor;
 
@@ -110,11 +146,32 @@ namespace Spellbound.Modifiers.Samples {
         public void Respawn() {
             StopIgnite();
             gameObject.SetActive(true);
+            RollModifiers();
             CurrentHealth = MaxHealth;
             CurrentShield = MaxShield;
+            CurrentMana = MaxMana;
+            _lastDamageTime = Time.time;
 
             if (targetRenderer != null)
                 targetRenderer.material.color = defaultColor;
+        }
+
+        private void RollModifiers() {
+            foreach (var modifier in _rolled)
+                modifier.RemoveFrom(Modifiable);
+
+            _rolled.Clear();
+
+            if (_pool != null && _rng != null) {
+                var starRoll = _rng.Next(100);
+                var stars = starRoll < 50 ? 0 : starRoll < 85 ? 1 : 2;
+                _rolled.AddRange(_pool.Roll(stars, _rng));
+
+                foreach (var modifier in _rolled)
+                    modifier.TryApplyTo(Modifiable);
+            }
+
+            ModifierIcons = CombatColors.ModifierIcons(_rolled);
         }
 
         private IEnumerator IgniteRoutine(float damagePerSecond, float duration) {
@@ -133,6 +190,8 @@ namespace Spellbound.Modifiers.Samples {
                 TakeHit(_igniteContext);
             }
 
+            IsIgnited = false;
+
             if (!IsDead && targetRenderer != null)
                 targetRenderer.material.color = defaultColor;
 
@@ -150,6 +209,8 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private void StopIgnite() {
+            IsIgnited = false;
+
             if (_igniteRoutine == null)
                 return;
 
@@ -162,6 +223,8 @@ namespace Spellbound.Modifiers.Samples {
                 CurrentHealth = Mathf.Min(CurrentHealth, MaxHealth);
             else if (stat == DemoStats.Shield)
                 CurrentShield = Mathf.Min(CurrentShield, MaxShield);
+            else if (stat == DemoStats.Mana)
+                CurrentMana = Mathf.Min(CurrentMana, MaxMana);
         }
 
         private void PopNumbers(List<StatAndValue> damage) {
@@ -185,6 +248,11 @@ namespace Spellbound.Modifiers.Samples {
             var healthBar = bar.AddComponent<HealthBar>();
             healthBar.Bind(() => CurrentHealth, () => MaxHealth);
             healthBar.BindShield(() => CurrentShield, () => MaxShield);
+            healthBar.BindMana(() => CurrentMana, () => MaxMana);
+            healthBar.BindStatus(
+                () => ModifierIcons,
+                () => _level != null ? _level.RolledIcons : "",
+                () => IsIgnited ? IgniteIcon : "");
         }
 
         [ContextMenu("Take Test Hit")]

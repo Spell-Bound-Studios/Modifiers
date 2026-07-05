@@ -21,6 +21,13 @@ namespace Spellbound.Modifiers.Samples {
         public static readonly StatId IgniteDuration = StatId.From("sample_ignite_duration");
         public static readonly StatId ChaosDamage = StatId.From("sample_chaos_damage");
         public static readonly StatId ChaosBypassesShield = StatId.From("sample_chaos_bypasses_shield");
+        public static readonly StatId Mana = StatId.From("sample_mana");
+        public static readonly StatId ShieldRegen = StatId.From("sample_shield_regen");
+        public static readonly StatId ShieldRegenDelay = StatId.From("sample_shield_regen_delay");
+        public static readonly StatId SplitOnHit = StatId.From("sample_split_on_hit");
+        public static readonly StatId LifeSteal = StatId.From("sample_life_steal");
+        public static readonly StatId EmpowerOnKill = StatId.From("sample_empower_on_kill");
+        public static readonly StatId ProjectilePattern = StatId.From("sample_projectile_pattern");
     }
 
     /// <summary>

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e983ff537a889bd41bf3b036153e864e, type: 3}
+  m_Name: SampleModifierPool
+  m_EditorClassIdentifier: 
+  entries:
+  - candidate: {fileID: 11400000, guid: 2b84c7dd34ce1e90b4e066838a3249e9, type: 2}
+    weight: 10
+  - candidate: {fileID: 11400000, guid: 30400d8c942a12e1bac4982726b5845a, type: 2}
+    weight: 10
+  - candidate: {fileID: 11400000, guid: feb7f43409e856adb2b707ec0fa6c14a, type: 2}
+    weight: 6
+  - candidate: {fileID: 11400000, guid: 6e9f49e3863465b6126f1ea9f037016a, type: 2}
+    weight: 6

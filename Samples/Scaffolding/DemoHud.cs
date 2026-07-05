@@ -5,25 +5,30 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Spellbound.Modifiers.Samples {
-    /// <summary>
-    /// Sample HUD: a UI Toolkit control panel that equips fireball + enemy items and drives the scene.
-    /// Health bars and combat numbers are world-space, anchored to the entities — not part of this panel.
-    /// Needs a <see cref="UIDocument"/> with a Panel Settings asset; resolves its <see cref="CombatDemo"/> itself.
-    /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class DemoHud : MonoBehaviour {
         [SerializeField] private CombatDemo demo;
 
         private VisualElement _root;
         private VisualElement _leftPanel;
-        private VisualElement _enemyPanel;
+        private VisualElement _rightPanel;
         private Label _status;
+        private VisualElement _quadHost;
+        private VisualElement _buffQuadContent;
+        private bool _quadBuilt;
+        private string _lastLevelIcons;
+
+        public VisualElement CircuitHost { get; private set; }
 
         private ModifiableItem _flameHelmet;
         private ModifiableItem _fireDamage;
         private ModifiableItem _chaosDamage;
         private ModifiableItem _projectiles;
+        private ModifiableItem _circular;
         private ModifiableItem _ignite;
+        private ModifiableItem _split;
+        private ModifiableItem _empower;
+        private ModifiableItem _lifeSteal;
         private ModifiableItem _chaosNoBypass;
         private ModifiableItem _chaosHalfBypass;
         private ModifiableItem _fireResist;
@@ -31,10 +36,6 @@ namespace Spellbound.Modifiers.Samples {
         private ModifiableItem _lightningResist;
         private ModifiableItem _armor;
         private ModifiableItem _reflectFire;
-        private FireballItem _circular;
-        private FireballItem _split;
-        private FireballItem _empower;
-        private FireballItem _lifeSteal;
 
         private void OnEnable() {
             if (demo == null)
@@ -51,29 +52,34 @@ namespace Spellbound.Modifiers.Samples {
             }
 
             _root = GetComponent<UIDocument>().rootVisualElement;
-            BuildPanel();
-            BuildEnemyPanel();
+            BuildLeftPanel();
+            BuildRightPanel();
         }
 
-        private void LateUpdate() => _status.text = $"Enemies alive: {demo.AliveCount}";
+        private void LateUpdate() {
+            _status.text = $"Enemies alive: {demo.AliveCount}";
 
-        #region Panel
+            if (!_quadBuilt && demo.Pool != null) {
+                BuildQuad();
+                _quadBuilt = true;
+            }
 
-        private void BuildPanel() {
+            if (_quadBuilt && demo.Level != null && !ReferenceEquals(demo.Level.RolledIcons, _lastLevelIcons)) {
+                _lastLevelIcons = demo.Level.RolledIcons;
+                FillBuffQuad();
+            }
+        }
+
+        #region Panels
+
+        private void BuildLeftPanel() {
             _leftPanel?.RemoveFromHierarchy();
 
-            var panel = new VisualElement();
+            var panel = MakePanel();
             _leftPanel = panel;
-            panel.style.position = Position.Absolute;
             panel.style.left = 12;
             panel.style.top = 12;
             panel.style.width = 240;
-            panel.style.paddingLeft = 12;
-            panel.style.paddingRight = 12;
-            panel.style.paddingTop = 10;
-            panel.style.paddingBottom = 12;
-            panel.style.backgroundColor = new Color(0.06f, 0.06f, 0.09f, 0.92f);
-            Round(panel);
             _root.Add(panel);
 
             _status = new Label("Enemies alive: -");
@@ -97,6 +103,46 @@ namespace Spellbound.Modifiers.Samples {
             panel.Add(ToggleButton("Split On Hit", ToggleSplit));
             panel.Add(ToggleButton("Empower On Kill", ToggleEmpower));
             panel.Add(ToggleButton("Life Steal", ToggleLifeSteal));
+        }
+
+        private void BuildRightPanel() {
+            _rightPanel?.RemoveFromHierarchy();
+
+            var panel = MakePanel();
+            _rightPanel = panel;
+            panel.style.right = 12;
+            panel.style.top = 12;
+            panel.style.minWidth = 240;
+            panel.style.maxWidth = 560;
+            _root.Add(panel);
+
+            var title = new Label("ENEMIES");
+            title.style.color = Color.white;
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.style.marginBottom = 8;
+            panel.Add(title);
+
+            panel.Add(Section("DAMAGE CIRCUIT"));
+
+            CircuitHost = new VisualElement();
+            panel.Add(CircuitHost);
+
+            panel.Add(Section("LEVEL"));
+
+            _quadHost = new VisualElement();
+            _quadHost.style.marginBottom = 4;
+            panel.Add(_quadHost);
+
+            panel.Add(ActionButton("Reroll Level Modifiers", () => demo.RerollLevel()));
+
+            panel.Add(Section("ENEMY MODIFIERS"));
+            panel.Add(ToggleButton("+40 Fire Resistance", ToggleFireResist));
+            panel.Add(ToggleButton("+40 Cold Resistance", ToggleColdResist));
+            panel.Add(ToggleButton("+40 Lightning Resistance", ToggleLightningResist));
+            panel.Add(ToggleButton("+20 Armor", ToggleArmor));
+            panel.Add(ToggleButton("Reflect Fire (25%)", ToggleReflectFire));
+            panel.Add(ToggleButton("Chaos Cannot Bypass Shield", ToggleChaosNoBypass));
+            panel.Add(ToggleButton("-50% Chaos Shield Bypass", ToggleChaosHalfBypass));
 
             panel.Add(Section("SCENE"));
             panel.Add(LabeledSlider("Inner Ring", 1, 20, demo.InnerCount, v => demo.SetInnerCount((int)v)));
@@ -107,37 +153,17 @@ namespace Spellbound.Modifiers.Samples {
             panel.Add(LabeledToggle("Auto Respawn", demo.AutoRespawn, v => demo.AutoRespawn = v));
         }
 
-        private void BuildEnemyPanel() {
-            _enemyPanel?.RemoveFromHierarchy();
-
+        private static VisualElement MakePanel() {
             var panel = new VisualElement();
-            _enemyPanel = panel;
             panel.style.position = Position.Absolute;
-            panel.style.right = 12;
-            panel.style.top = 230;
-            panel.style.width = 220;
             panel.style.paddingLeft = 12;
             panel.style.paddingRight = 12;
             panel.style.paddingTop = 10;
             panel.style.paddingBottom = 12;
             panel.style.backgroundColor = new Color(0.06f, 0.06f, 0.09f, 0.92f);
             Round(panel);
-            _root.Add(panel);
 
-            var title = new Label("ENEMY");
-            title.style.color = Color.white;
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            title.style.marginBottom = 8;
-            panel.Add(title);
-
-            panel.Add(Section("MODIFIERS"));
-            panel.Add(ToggleButton("+40 Fire Resistance", ToggleFireResist));
-            panel.Add(ToggleButton("+40 Cold Resistance", ToggleColdResist));
-            panel.Add(ToggleButton("+40 Lightning Resistance", ToggleLightningResist));
-            panel.Add(ToggleButton("+20 Armor", ToggleArmor));
-            panel.Add(ToggleButton("Reflect Fire (25%)", ToggleReflectFire));
-            panel.Add(ToggleButton("Chaos Cannot Bypass Shield", ToggleChaosNoBypass));
-            panel.Add(ToggleButton("-50% Chaos Shield Bypass", ToggleChaosHalfBypass));
+            return panel;
         }
 
         private static Label Section(string text) {
@@ -206,7 +232,144 @@ namespace Spellbound.Modifiers.Samples {
             element.style.borderBottomRightRadius = 5;
         }
 
-        #endregion Panel
+        private void BuildQuad() {
+            _quadHost.Clear();
+
+            var topRow = QuadRow();
+            var bottomRow = QuadRow();
+            _quadHost.Add(topRow);
+            _quadHost.Add(bottomRow);
+
+            topRow.Add(QuadCell("II · BUFFS", "inherited from the level — top-left of the nameplate",
+                    out _buffQuadContent));
+
+            topRow.Add(QuadCell("I · MODIFIERS", "rolled per enemy at spawn — top-right of the nameplate",
+                    out var modifierContent));
+
+            foreach (var entry in demo.Pool.Entries) {
+                if (entry.candidate == null)
+                    continue;
+
+                modifierContent.Add(LegendRow(
+                    CombatColors.ForModifier(entry.candidate.Hash),
+                    entry.candidate.DisplayName,
+                    entry.candidate.Description));
+            }
+
+            bottomRow.Add(QuadCell("III · DEBUFFS", "harmful effects — bottom-left of the nameplate",
+                    out var debuffContent));
+            debuffContent.Add(LegendRow(CombatColors.Fire, "Ignited", "burning damage over time"));
+
+            bottomRow.Add(QuadCell("IV · RESERVED", "bottom-right of the nameplate", out var reservedContent));
+            var reserved = new Label("—");
+            reserved.style.color = new Color(0.4f, 0.44f, 0.52f);
+            reserved.style.fontSize = 10;
+            reservedContent.Add(reserved);
+
+            FillBuffQuad();
+        }
+
+        private void FillBuffQuad() {
+            if (_buffQuadContent == null)
+                return;
+
+            _buffQuadContent.Clear();
+
+            var rolled = demo.Level != null ? demo.Level.Rolled : null;
+
+            if (rolled == null || rolled.Count == 0) {
+                var none = new Label("—");
+                none.style.color = new Color(0.4f, 0.44f, 0.52f);
+                none.style.fontSize = 10;
+                _buffQuadContent.Add(none);
+
+                return;
+            }
+
+            for (var i = 0; i < rolled.Count; i++) {
+                var definition = ModifierRegistry.GetDefinition(rolled[i].modifierHash);
+
+                _buffQuadContent.Add(LegendRow(
+                    CombatColors.ForModifier(rolled[i].modifierHash),
+                    definition != null ? definition.DisplayName : $"#{rolled[i].modifierHash}",
+                    definition != null ? definition.Description : ""));
+            }
+        }
+
+        private static VisualElement QuadRow() {
+            var row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+
+            return row;
+        }
+
+        private static VisualElement QuadCell(string header, string description, out VisualElement content) {
+            var cell = new VisualElement();
+            cell.style.flexGrow = 1;
+            cell.style.flexBasis = 0;
+            cell.style.marginLeft = 2;
+            cell.style.marginRight = 2;
+            cell.style.marginBottom = 4;
+            cell.style.paddingLeft = 6;
+            cell.style.paddingRight = 6;
+            cell.style.paddingTop = 4;
+            cell.style.paddingBottom = 6;
+            cell.style.borderTopWidth = 1;
+            cell.style.borderBottomWidth = 1;
+            cell.style.borderLeftWidth = 1;
+            cell.style.borderRightWidth = 1;
+            var borderColor = new Color(0.3f, 0.34f, 0.42f);
+            cell.style.borderTopColor = borderColor;
+            cell.style.borderBottomColor = borderColor;
+            cell.style.borderLeftColor = borderColor;
+            cell.style.borderRightColor = borderColor;
+            Round(cell);
+
+            var headerLabel = new Label(header);
+            headerLabel.style.color = new Color(0.6f, 0.66f, 0.78f);
+            headerLabel.style.fontSize = 10;
+            headerLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            headerLabel.style.marginBottom = 2;
+            cell.Add(headerLabel);
+
+            var descriptionLabel = new Label(description);
+            descriptionLabel.style.color = new Color(0.45f, 0.5f, 0.6f);
+            descriptionLabel.style.fontSize = 9;
+            descriptionLabel.style.whiteSpace = WhiteSpace.Normal;
+            descriptionLabel.style.marginBottom = 4;
+            cell.Add(descriptionLabel);
+
+            content = new VisualElement();
+            cell.Add(content);
+
+            return cell;
+        }
+
+        private static VisualElement LegendRow(Color color, string name, string description) {
+            var row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.alignItems = Align.Center;
+            row.style.marginBottom = 2;
+
+            var square = new VisualElement();
+            square.style.width = 10;
+            square.style.height = 10;
+            square.style.marginRight = 6;
+            square.style.flexShrink = 0;
+            square.style.backgroundColor = color;
+            row.Add(square);
+
+            var label = new Label($"<b>{name}</b>  <color=#9AA0B0>{description}</color>");
+            label.style.color = Color.white;
+            label.style.fontSize = 10;
+            label.style.whiteSpace = WhiteSpace.Normal;
+            label.style.flexShrink = 1;
+            row.Add(label);
+
+            return row;
+        }
+
+        #endregion Panels
 
         #region Item toggles
 
@@ -224,18 +387,22 @@ namespace Spellbound.Modifiers.Samples {
         private bool ToggleProjectiles() =>
                 ToggleOnFireball(ref _projectiles, () => new StatItem((DemoStats.ProjectileCount, ContributionType.Flat, 2f)));
 
+        private bool ToggleCircular() =>
+                ToggleOnFireball(ref _circular, () => new StatItem((DemoStats.ProjectilePattern, ContributionType.Override, 1f)));
+
         private bool ToggleIgnite() =>
                 ToggleOnFireball(ref _ignite, () => new StatItem(
                     (DemoStats.IgniteChance, ContributionType.Flat, 1f),
                     (DemoStats.IgniteDuration, ContributionType.Flat, 3f)));
 
-        private bool ToggleCircular() => ToggleCapability(ref _circular, () => new CircularNovaItem());
+        private bool ToggleSplit() =>
+                ToggleOnFireball(ref _split, () => new StatItem((DemoStats.SplitOnHit, ContributionType.Flat, 1f)));
 
-        private bool ToggleSplit() => ToggleCapability(ref _split, () => new SplitOnHitItem());
+        private bool ToggleEmpower() =>
+                ToggleOnFireball(ref _empower, () => new StatItem((DemoStats.EmpowerOnKill, ContributionType.Flat, 1f)));
 
-        private bool ToggleEmpower() => ToggleCapability(ref _empower, () => new EmpowerOnKillItem());
-
-        private bool ToggleLifeSteal() => ToggleCapability(ref _lifeSteal, () => new LifeStealItem());
+        private bool ToggleLifeSteal() =>
+                ToggleOnFireball(ref _lifeSteal, () => new StatItem((DemoStats.LifeSteal, ContributionType.Flat, 0.3f)));
 
         private bool ToggleFireResist() =>
                 ToggleOnEnemies(ref _fireResist, () => new StatItem((DemoStats.FireResistance, ContributionType.Flat, 40f)));
@@ -271,19 +438,6 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private bool ToggleOnFireball(ref ModifiableItem item, Func<ModifiableItem> create) {
-            if (item == null) {
-                item = create();
-                item.Equip(demo.Player.Fireball);
-            }
-            else {
-                item.Unequip(demo.Player.Fireball);
-                item = null;
-            }
-
-            return item != null;
-        }
-
-        private bool ToggleCapability(ref FireballItem item, Func<FireballItem> create) {
             if (item == null) {
                 item = create();
                 item.Equip(demo.Player.Fireball);

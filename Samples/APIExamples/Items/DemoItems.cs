@@ -27,11 +27,4 @@ namespace Spellbound.Modifiers.Samples {
         protected abstract void OnEquip(Modifiable target);
     }
 
-    /// <summary>
-    /// An item that flips a capability on the fireball skill itself rather than contributing stats.
-    /// </summary>
-    public abstract class FireballItem : DemoItem {
-        public abstract void Equip(Fireball fireball);
-        public abstract void Unequip(Fireball fireball);
-    }
 }

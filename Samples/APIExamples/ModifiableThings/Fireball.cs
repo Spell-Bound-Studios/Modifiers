@@ -6,14 +6,6 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Spellbound.Modifiers.Samples {
-    /// <summary>
-    /// Sample skill: a <see cref="Modifiable"/> that is not a MonoBehaviour. Projectile count, speed, fire
-    /// damage, ignite chance/duration, and the kill-empowerment bank are all stats — "+2 projectiles" and
-    /// "ignite on hit" are each one item away. Each hit sends a caller-owned context at the target: the packet
-    /// comes back post-mitigation (life steal reads it), and outcomes come back on the consequence list
-    /// (empowerment banks killing blows, reflect returns to the caster). An empowered cast flies green and
-    /// hits double.
-    /// </summary>
     public sealed class Fireball : Modifiable {
         private static readonly Color FireColor = new(1f, 0.45f, 0.1f);
         private static readonly Color EmpoweredColor = new(0.3f, 1f, 0.4f);
@@ -22,30 +14,17 @@ namespace Spellbound.Modifiers.Samples {
         public PlayerController Caster { get; set; }
         public Action<float> OnLifeSteal { get; set; }
 
-        public bool SplitOnHit { get; set; }
-        public float LifeStealFraction { get; set; }
-        public Func<int, Vector3[]> DirectionOverride { get; set; }
-
-        private bool _empowermentEnabled;
         private readonly CircuitContext _hitContext = new();
         private readonly List<StatAndValue> _hitPacket = new(4);
         private readonly List<StatAndValue> _reflectPacket = new(1);
-
-        public bool EmpowermentEnabled {
-            get => _empowermentEnabled;
-            set {
-                _empowermentEnabled = value;
-
-                if (!value)
-                    Stats.SetBase(DemoStats.KillingBlow, 0f);
-            }
-        }
 
         public Fireball() {
             Stats.SetBase(DemoStats.ProjectileCount, 1f);
             Stats.SetBase(DemoStats.ProjectileSpeed, 14f);
             Stats.SetBase(DemoStats.FireDamage, 30f);
             Stats.SetBase(DemoStats.KillingBlow, 0f);
+
+            Stats.Changed += OnOwnStatChanged;
         }
 
         public int Count => Mathf.Max(1, (int)GetValue(DemoStats.ProjectileCount));
@@ -65,6 +44,11 @@ namespace Spellbound.Modifiers.Samples {
                 SpawnProjectile(origin, direction, damage, color, canSplit: true, excluded: null);
         }
 
+        private void OnOwnStatChanged(StatId stat) {
+            if (stat == DemoStats.EmpowerOnKill && GetValue(DemoStats.EmpowerOnKill) <= 0f)
+                Stats.SetBase(DemoStats.KillingBlow, 0f);
+        }
+
         private List<StatAndValue> BuildDamage(bool empowered) {
             var multiplier = empowered ? 2f : 1f;
             var damage = new List<StatAndValue> { new(DemoStats.FireDamage, FireDamage * multiplier) };
@@ -77,7 +61,7 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private bool TrySpendEmpowerment() {
-            if (!EmpowermentEnabled || Banked < 1f)
+            if (GetValue(DemoStats.EmpowerOnKill) <= 0f || Banked < 1f)
                 return false;
 
             Stats.SetBase(DemoStats.KillingBlow, Banked - 1f);
@@ -106,7 +90,7 @@ namespace Spellbound.Modifiers.Samples {
             TryIgnite(enemy);
             ReturnReflected(_hitContext.Consequence);
 
-            if (projectile.CanSplit && SplitOnHit) {
+            if (projectile.CanSplit && GetValue(DemoStats.SplitOnHit) > 0f) {
                 foreach (var direction in SplitDirections(projectile.Direction, 3, 30f))
                     SpawnProjectile(projectile.transform.position, direction, damage, projectile.Tint,
                             canSplit: false, excluded: enemy.gameObject);
@@ -114,7 +98,7 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private void Receive(List<StatAndValue> consequence) {
-            if (!EmpowermentEnabled || consequence == null)
+            if (consequence == null || GetValue(DemoStats.EmpowerOnKill) <= 0f)
                 return;
 
             foreach (var entry in consequence) {
@@ -124,7 +108,9 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private float ComputeHeal(List<StatAndValue> packet) {
-            if (LifeStealFraction <= 0f || packet == null)
+            var fraction = GetValue(DemoStats.LifeSteal);
+
+            if (fraction <= 0f || packet == null)
                 return 0f;
 
             var total = 0f;
@@ -132,7 +118,7 @@ namespace Spellbound.Modifiers.Samples {
             for (var i = 0; i < packet.Count; i++)
                 total += packet[i].amount;
 
-            return total * LifeStealFraction;
+            return total * fraction;
         }
 
         private void TryIgnite(EnemyController enemy) {
@@ -184,7 +170,8 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private Vector3[] WorldDirections(Vector3 forward, int count) {
-            var local = DirectionOverride != null ? DirectionOverride(count) : ForwardSpread(count);
+            var pattern = (int)GetValue(DemoStats.ProjectilePattern);
+            var local = pattern == 1 ? Circle(count) : ForwardSpread(count);
             var rotation = Quaternion.LookRotation(forward == Vector3.zero ? Vector3.forward : forward);
             var world = new Vector3[local.Length];
 
@@ -192,6 +179,15 @@ namespace Spellbound.Modifiers.Samples {
                 world[i] = rotation * local[i];
 
             return world;
+        }
+
+        private static Vector3[] Circle(int count) {
+            var directions = new Vector3[count];
+
+            for (var i = 0; i < count; i++)
+                directions[i] = Quaternion.AngleAxis(360f / count * i, Vector3.up) * Vector3.forward;
+
+            return directions;
         }
 
         private static Vector3[] ForwardSpread(int count) {

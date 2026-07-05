@@ -1,5 +1,7 @@
 // Copyright 2026 Spellbound Studio Inc.
 
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace Spellbound.Modifiers.Samples {
@@ -55,6 +57,23 @@ namespace Spellbound.Modifiers.Samples {
             return Color.white;
         }
 
+        public static Color ForModifier(uint modifierHash) =>
+                Color.HSVToRGB(modifierHash % 360u / 360f, 0.65f, 0.95f);
+
+        public static string ModifierIcons(IReadOnlyList<RolledModifier> rolled) {
+            if (rolled == null || rolled.Count == 0)
+                return "";
+
+            var sb = new StringBuilder(rolled.Count * 24);
+
+            for (var i = 0; i < rolled.Count; i++) {
+                var color = ForModifier(rolled[i].modifierHash);
+                sb.Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(color)).Append(">■</color>");
+            }
+
+            return sb.ToString();
+        }
+
         /// <summary>
         /// The palette color for a circuit node, keyed by its id.
         /// </summary>
@@ -65,6 +84,7 @@ namespace Spellbound.Modifiers.Samples {
             "lightning" => Lightning,
             "armor" => Physical,
             "deposit" => Deposit,
+            "killing-blow" => Deposit,
             "reflect-fire" => Fire,
             _ => Neutral
         };

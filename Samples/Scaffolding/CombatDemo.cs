@@ -13,6 +13,7 @@ namespace Spellbound.Modifiers.Samples {
     public sealed class CombatDemo : MonoBehaviour {
         [Header("Scene"), SerializeField] private PlayerController player;
         [SerializeField] private GameObject enemyPrefab;
+        [SerializeField] private ModifierPool modifierPool;
 
         [Header("Rings"), SerializeField] private float innerRingDistance = 5f;
         [SerializeField] private float outerRingDistance = 10f;
@@ -27,8 +28,11 @@ namespace Spellbound.Modifiers.Samples {
         private int _outerEnemyCount = 14;
         private float _radiusJitter;
         private bool _enemiesMove;
+        private readonly System.Random _rng = new(1337);
 
         public PlayerController Player => player;
+        public LevelController Level { get; private set; }
+        public ModifierPool Pool => modifierPool;
         public int InnerCount => _innerEnemyCount;
         public int OuterCount => _outerEnemyCount;
         public bool EnemiesMove { get => _enemiesMove; set => _enemiesMove = value; }
@@ -58,7 +62,17 @@ namespace Spellbound.Modifiers.Samples {
             }
         }
 
-        private void Start() => SpawnAllEnemies();
+        private void Awake() {
+            if (modifierPool == null)
+                modifierPool = Resources.Load<ModifierPool>("SampleModifierPool");
+        }
+
+        private void Start() {
+            Level = new GameObject("Level").AddComponent<LevelController>();
+            Level.Reroll(modifierPool, 1, _rng);
+
+            SpawnAllEnemies();
+        }
 
         private void Update() {
             if (_enemiesMove)
@@ -66,6 +80,8 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         public void Cast() => player.CastFireball();
+
+        public void RerollLevel() => Level.Reroll(modifierPool, 2, _rng);
 
         public void RespawnAll() {
             foreach (var enemy in _innerEnemies)
@@ -148,6 +164,7 @@ namespace Spellbound.Modifiers.Samples {
                     continue;
                 }
 
+                enemy.Configure(modifierPool, _rng, Level);
                 enemy.OnDeath += OnEnemyDeath;
                 enemies.Add(enemy);
             }

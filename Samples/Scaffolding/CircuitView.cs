@@ -6,15 +6,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Spellbound.Modifiers.Samples {
-    /// <summary>
-    /// Scaffolding: draws the live take-hit circuit of an enemy in UI Toolkit. The four stages are numbered
-    /// boxes (1..n) flowing left-to-right with arrows; each stage stacks its granted leaves in priority order,
-    /// read through <see cref="Stage.Children"/>. Leaf colors come from <see cref="CombatColors"/> so the
-    /// diagram and the floating numbers read together. Rebuilt only when the circuit's shape changes, so leaves
-    /// visibly appear and vanish as items are equipped. Needs a <see cref="UIDocument"/> + Panel Settings,
-    /// like the HUD.
-    /// </summary>
-    [RequireComponent(typeof(UIDocument))]
     public sealed class CircuitView : MonoBehaviour {
         private static readonly Dictionary<uint, string> StageLabels = new() {
             { DemoStages.Convert, "CONVERT" },
@@ -23,53 +14,27 @@ namespace Spellbound.Modifiers.Samples {
             { DemoStages.React, "REACT" }
         };
 
-        private VisualElement _panel;
-        private Label _title;
+        private Label _subtitle;
         private VisualElement _diagram;
         private EnemyController _enemy;
         private string _signature;
 
-        private void OnEnable() {
-            var root = GetComponent<UIDocument>().rootVisualElement;
-
-            _panel?.RemoveFromHierarchy();
-
-            _panel = new VisualElement();
-            _panel.style.position = Position.Absolute;
-            _panel.style.right = 12;
-            _panel.style.top = 12;
-            _panel.style.paddingLeft = 12;
-            _panel.style.paddingRight = 12;
-            _panel.style.paddingTop = 10;
-            _panel.style.paddingBottom = 12;
-            _panel.style.backgroundColor = new Color(0.05f, 0.05f, 0.08f, 0.9f);
-            Round(_panel, 6);
-            root.Add(_panel);
-
-            _title = new Label("DAMAGE CIRCUIT");
-            _title.style.color = Color.white;
-            _title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _title.style.fontSize = 12;
-            _title.style.marginBottom = 8;
-            _panel.Add(_title);
-
-            _diagram = new VisualElement();
-            _diagram.style.flexDirection = FlexDirection.Row;
-            _diagram.style.alignItems = Align.FlexStart;
-            _panel.Add(_diagram);
-        }
-
         private void LateUpdate() {
+            if (_diagram == null && !TryAttach())
+                return;
+
             var circuit = ResolveCircuit();
 
             if (circuit == null) {
-                _panel.style.display = DisplayStyle.None;
+                _subtitle.style.display = DisplayStyle.None;
+                _diagram.style.display = DisplayStyle.None;
 
                 return;
             }
 
-            _panel.style.display = DisplayStyle.Flex;
-            _title.text = $"DAMAGE CIRCUIT — {_enemy.name}";
+            _subtitle.style.display = DisplayStyle.Flex;
+            _diagram.style.display = DisplayStyle.Flex;
+            _subtitle.text = _enemy.name;
 
             var signature = Signature(circuit);
 
@@ -78,6 +43,28 @@ namespace Spellbound.Modifiers.Samples {
 
             _signature = signature;
             Rebuild(circuit);
+        }
+
+        private bool TryAttach() {
+            var hud = FindAnyObjectByType<DemoHud>();
+            var host = hud != null ? hud.CircuitHost : null;
+
+            if (host == null)
+                return false;
+
+            _subtitle = new Label("");
+            _subtitle.style.color = new Color(0.6f, 0.66f, 0.78f);
+            _subtitle.style.fontSize = 10;
+            _subtitle.style.marginBottom = 4;
+            host.Add(_subtitle);
+
+            _diagram = new VisualElement();
+            _diagram.style.flexDirection = FlexDirection.Row;
+            _diagram.style.flexWrap = Wrap.Wrap;
+            _diagram.style.alignItems = Align.FlexStart;
+            host.Add(_diagram);
+
+            return true;
         }
 
         private Circuit ResolveCircuit() {
@@ -111,6 +98,7 @@ namespace Spellbound.Modifiers.Samples {
             box.style.paddingRight = 6;
             box.style.paddingTop = 4;
             box.style.paddingBottom = 6;
+            box.style.marginBottom = 4;
             Border(box, new Color(0.4f, 0.45f, 0.55f));
             Round(box, 5);
 
@@ -177,7 +165,8 @@ namespace Spellbound.Modifiers.Samples {
             arrow.style.fontSize = 18;
             arrow.style.marginLeft = 4;
             arrow.style.marginRight = 4;
-            arrow.style.alignSelf = Align.Center;
+            arrow.style.alignSelf = Align.FlexStart;
+            arrow.style.marginTop = 6;
 
             return arrow;
         }

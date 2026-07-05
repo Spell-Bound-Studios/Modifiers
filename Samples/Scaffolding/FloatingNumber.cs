@@ -22,7 +22,7 @@ namespace Spellbound.Modifiers.Samples {
             _camera = Camera.main;
 
             _text = gameObject.AddComponent<TextMeshPro>();
-            _text.text = Mathf.RoundToInt(amount).ToString();
+            _text.text = amount.ToString("0.#");
             _text.fontSize = 5;
             _text.color = color;
             _text.alignment = TextAlignmentOptions.Center;
