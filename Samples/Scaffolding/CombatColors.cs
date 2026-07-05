@@ -66,12 +66,27 @@ namespace Spellbound.Modifiers.Samples {
 
             var sb = new StringBuilder(rolled.Count * 24);
 
-            for (var i = 0; i < rolled.Count; i++) {
-                var color = ForModifier(rolled[i].modifierHash);
-                sb.Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(color)).Append(">■</color>");
-            }
+            for (var i = 0; i < rolled.Count; i++)
+                AppendIcon(sb, rolled[i].modifierHash);
 
             return sb.ToString();
+        }
+
+        public static string ModifierIcons(IReadOnlyList<TimedModifier> timed) {
+            if (timed == null || timed.Count == 0)
+                return "";
+
+            var sb = new StringBuilder(timed.Count * 24);
+
+            for (var i = 0; i < timed.Count; i++)
+                AppendIcon(sb, timed[i].modifier.modifierHash);
+
+            return sb.ToString();
+        }
+
+        private static void AppendIcon(StringBuilder sb, uint modifierHash) {
+            var color = ForModifier(modifierHash);
+            sb.Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(color)).Append(">■</color>");
         }
 
         /// <summary>

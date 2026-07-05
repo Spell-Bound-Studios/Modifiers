@@ -258,7 +258,12 @@ namespace Spellbound.Modifiers.Samples {
 
             bottomRow.Add(QuadCell("III · DEBUFFS", "harmful effects — bottom-left of the nameplate",
                     out var debuffContent));
-            debuffContent.Add(LegendRow(CombatColors.Fire, "Ignited", "burning damage over time"));
+
+            var ignited = ModifierRegistry.GetDefinition("ignited");
+
+            if (ignited != null)
+                debuffContent.Add(LegendRow(CombatColors.ForModifier(ignited.Hash), ignited.DisplayName,
+                        ignited.Description));
 
             bottomRow.Add(QuadCell("IV · RESERVED", "bottom-right of the nameplate", out var reservedContent));
             var reserved = new Label("—");
@@ -277,22 +282,28 @@ namespace Spellbound.Modifiers.Samples {
 
             var rolled = demo.Level != null ? demo.Level.Rolled : null;
 
-            if (rolled == null || rolled.Count == 0) {
+            if (rolled != null) {
+                for (var i = 0; i < rolled.Count; i++) {
+                    var definition = ModifierRegistry.GetDefinition(rolled[i].modifierHash);
+
+                    _buffQuadContent.Add(LegendRow(
+                        CombatColors.ForModifier(rolled[i].modifierHash),
+                        definition != null ? definition.DisplayName : $"#{rolled[i].modifierHash}",
+                        definition != null ? definition.Description : ""));
+                }
+            }
+
+            var hardened = ModifierRegistry.GetDefinition("hardened");
+
+            if (hardened != null)
+                _buffQuadContent.Add(LegendRow(CombatColors.ForModifier(hardened.Hash), hardened.DisplayName,
+                        hardened.Description));
+
+            if (_buffQuadContent.childCount == 0) {
                 var none = new Label("—");
                 none.style.color = new Color(0.4f, 0.44f, 0.52f);
                 none.style.fontSize = 10;
                 _buffQuadContent.Add(none);
-
-                return;
-            }
-
-            for (var i = 0; i < rolled.Count; i++) {
-                var definition = ModifierRegistry.GetDefinition(rolled[i].modifierHash);
-
-                _buffQuadContent.Add(LegendRow(
-                    CombatColors.ForModifier(rolled[i].modifierHash),
-                    definition != null ? definition.DisplayName : $"#{rolled[i].modifierHash}",
-                    definition != null ? definition.Description : ""));
             }
         }
 

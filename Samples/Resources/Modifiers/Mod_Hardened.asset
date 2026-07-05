@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6d6311429f1fda449e97fb960ee9a47, type: 3}
+  m_Name: Mod_Hardened
+  m_EditorClassIdentifier: 
+  guid: fd632de0b8c332fbebe870e322431843
+  hash: 4235098478
+  modifierName: hardened
+  displayName: Hardened
+  description: +30 armor for 5 seconds when the shield breaks
+  icon: {fileID: 0}
+  contributions:
+  - stat: {fileID: 11400000, guid: f80ef36a323cc0543bf5907a02714355, type: 2}
+    type: 0
+    min: 30
+    max: 30
+    step: 0

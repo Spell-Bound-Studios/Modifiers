@@ -35,8 +35,19 @@ namespace Spellbound.Modifiers.Samples {
         public float MaxMana => Modifiable.GetValue(DemoStats.Mana);
         public float CurrentMana { get; private set; }
 
-        private static readonly string IgniteIcon =
-                $"<color=#{ColorUtility.ToHtmlStringRGB(CombatColors.Fire)}>■</color>";
+        private static ModifierDefinition _hardened;
+        private static ModifierDefinition Hardened => _hardened ??= ModifierRegistry.GetDefinition("hardened");
+
+        private static ModifierDefinition _ignited;
+        private static ModifierDefinition Ignited => _ignited ??= ModifierRegistry.GetDefinition("ignited");
+
+        private string _ownBuffIcons = "";
+        private string _debuffIcons = "";
+        private string _combinedBuffIcons = "";
+        private string _combinedLevelPart;
+
+        public TimedModifierSet Buffs { get; private set; }
+        public TimedModifierSet Debuffs { get; private set; }
 
         public bool IsDead => CurrentHealth <= 0f;
         public bool IsIgnited { get; private set; }
@@ -62,6 +73,11 @@ namespace Spellbound.Modifiers.Samples {
             circuit.TryGetStage(DemoStages.React, out var react);
             react.Add(new KillingBlowLeaf(() => IsDead));
 
+            Buffs = new TimedModifierSet(Modifiable);
+            Debuffs = new TimedModifierSet(Modifiable);
+            Buffs.Changed += OnBuffsChanged;
+            Debuffs.Changed += OnDebuffsChanged;
+
             CurrentHealth = MaxHealth;
             CurrentShield = MaxShield;
             CurrentMana = MaxMana;
@@ -80,6 +96,9 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private void Update() {
+            Buffs.Tick(Time.deltaTime);
+            Debuffs.Tick(Time.deltaTime);
+
             if (IsDead || CurrentShield >= MaxShield)
                 return;
 
@@ -125,7 +144,17 @@ namespace Spellbound.Modifiers.Samples {
             var taken = Mathf.Min(CurrentShield, amount);
             CurrentShield -= taken;
 
+            if (taken > 0f && CurrentShield <= 0f)
+                ApplyHardened();
+
             return taken;
+        }
+
+        private void ApplyHardened() {
+            if (_rng == null || Hardened == null)
+                return;
+
+            Buffs.Apply(Hardened.Roll(_rng, (uint)_rng.Next(1, int.MaxValue)), 5f);
         }
 
         public void ApplyIgnite(float damagePerSecond, float duration) {
@@ -137,6 +166,9 @@ namespace Spellbound.Modifiers.Samples {
 
             IsIgnited = true;
 
+            if (Ignited != null && _rng != null)
+                Debuffs.Apply(Ignited.Roll(_rng, (uint)_rng.Next(1, int.MaxValue)), duration);
+
             if (targetRenderer != null)
                 targetRenderer.material.color = ignitedColor;
 
@@ -145,6 +177,8 @@ namespace Spellbound.Modifiers.Samples {
 
         public void Respawn() {
             StopIgnite();
+            Buffs.Clear();
+            Debuffs.Clear();
             gameObject.SetActive(true);
             RollModifiers();
             CurrentHealth = MaxHealth;
@@ -211,11 +245,32 @@ namespace Spellbound.Modifiers.Samples {
         private void StopIgnite() {
             IsIgnited = false;
 
+            if (Ignited != null)
+                Debuffs.Dispel(Ignited.Hash);
+
             if (_igniteRoutine == null)
                 return;
 
             StopCoroutine(_igniteRoutine);
             _igniteRoutine = null;
+        }
+
+        private void OnBuffsChanged() {
+            _ownBuffIcons = CombatColors.ModifierIcons(Buffs.Active);
+            _combinedLevelPart = null;
+        }
+
+        private void OnDebuffsChanged() => _debuffIcons = CombatColors.ModifierIcons(Debuffs.Active);
+
+        private string BuffIcons() {
+            var level = _level != null ? _level.RolledIcons : "";
+
+            if (!ReferenceEquals(level, _combinedLevelPart)) {
+                _combinedLevelPart = level;
+                _combinedBuffIcons = level + _ownBuffIcons;
+            }
+
+            return _combinedBuffIcons;
         }
 
         private void OnStatChanged(StatId stat) {
@@ -251,8 +306,8 @@ namespace Spellbound.Modifiers.Samples {
             healthBar.BindMana(() => CurrentMana, () => MaxMana);
             healthBar.BindStatus(
                 () => ModifierIcons,
-                () => _level != null ? _level.RolledIcons : "",
-                () => IsIgnited ? IgniteIcon : "");
+                BuffIcons,
+                () => _debuffIcons);
         }
 
         [ContextMenu("Take Test Hit")]
