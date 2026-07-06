@@ -26,15 +26,17 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void ApplyTo_SkipsNullStats() {
-            var template = Definitions.CreateTemplate(new[] {
-                new BaseStat { stat = null, value = 5f },
-                Base("sample_armor", 10f)
-            });
+            using (new LogMute()) {
+                var template = Definitions.CreateTemplate(new[] {
+                    new BaseStat { stat = null, value = 5f },
+                    Base("sample_armor", 10f)
+                });
 
-            var target = new Modifiable();
+                var target = new Modifiable();
 
-            Assert.DoesNotThrow(() => template.ApplyTo(target));
-            Assert.AreEqual(10f, target.GetValue(Armor));
+                Assert.DoesNotThrow(() => template.ApplyTo(target));
+                Assert.AreEqual(10f, target.GetValue(Armor));
+            }
         }
 
         [Test]
@@ -54,10 +56,12 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void RollInnate_SkipsNullDefinitions() {
-            var template = Definitions.CreateTemplate(new BaseStat[0],
-                null, ModifierRegistry.GetDefinition("sample_thick_hide"));
+            using (new LogMute()) {
+                var template = Definitions.CreateTemplate(new BaseStat[0],
+                    null, ModifierRegistry.GetDefinition("sample_thick_hide"));
 
-            Assert.AreEqual(1, template.RollInnate(new System.Random(7)).Count);
+                Assert.AreEqual(1, template.RollInnate(new System.Random(7)).Count);
+            }
         }
 
         [Test]
