@@ -159,5 +159,64 @@ namespace Spellbound.Modifiers.Tests {
             Assert.IsNull(a.Parent);
             Assert.AreSame(a, b.Parent);
         }
+
+        [Test]
+        public void Changed_RaisesForOwnBlockWrites() {
+            var skill = new Modifiable();
+            var heard = default(StatId);
+            var count = 0;
+            skill.Changed += stat => { heard = stat; count++; };
+
+            skill.Stats.SetBase(Fire, 30f);
+
+            Assert.AreEqual(1, count);
+            Assert.AreEqual(Fire, heard);
+        }
+
+        [Test]
+        public void Changed_BubblesThroughAncestorChain() {
+            var level = new Modifiable();
+            var player = new Modifiable { Parent = level };
+            var skill = new Modifiable { Parent = player };
+            var heard = default(StatId);
+            var count = 0;
+            skill.Changed += stat => { heard = stat; count++; };
+
+            level.Stats.AddContribution(Fire, ContributionType.Flat, 10f, 5u);
+
+            Assert.AreEqual(1, count);
+            Assert.AreEqual(Fire, heard);
+        }
+
+        [Test]
+        public void Changed_ReparentRewires() {
+            var oldParent = new Modifiable();
+            var newParent = new Modifiable();
+            var skill = new Modifiable { Parent = oldParent };
+            var count = 0;
+            skill.Changed += _ => count++;
+
+            skill.Parent = newParent;
+            oldParent.Stats.SetBase(Fire, 10f);
+
+            Assert.AreEqual(0, count);
+
+            newParent.Stats.SetBase(Fire, 20f);
+
+            Assert.AreEqual(1, count);
+        }
+
+        [Test]
+        public void Changed_UnparentSilences() {
+            var parent = new Modifiable();
+            var skill = new Modifiable { Parent = parent };
+            var count = 0;
+            skill.Changed += _ => count++;
+
+            skill.Parent = null;
+            parent.Stats.SetBase(Fire, 10f);
+
+            Assert.AreEqual(0, count);
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Spellbound.Core.Logging;
 using UnityEngine;
 
 namespace Spellbound.Modifiers {
@@ -19,8 +20,11 @@ namespace Spellbound.Modifiers {
             for (var i = 0; i < baseStats.Count; i++) {
                 var entry = baseStats[i];
 
-                if (entry.stat == null)
+                if (entry.stat == null) {
+                    Log.Warn($"StatTemplate: baseStats[{i}] has no stat assigned; skipped.");
+
                     continue;
+                }
 
                 target.Stats.SetBase(new StatId(entry.stat.Hash), entry.value);
             }
@@ -30,8 +34,11 @@ namespace Spellbound.Modifiers {
             var result = new List<RolledModifier>(innateModifiers.Count);
 
             for (var i = 0; i < innateModifiers.Count; i++) {
-                if (innateModifiers[i] == null)
+                if (innateModifiers[i] == null) {
+                    Log.Warn($"StatTemplate: innateModifiers[{i}] has no definition assigned; skipped.");
+
                     continue;
+                }
 
                 result.Add(innateModifiers[i].Roll(rng, (uint)rng.Next(1, int.MaxValue)));
             }

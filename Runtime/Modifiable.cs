@@ -1,5 +1,6 @@
 // Copyright 2026 Spellbound Studio Inc.
 
+using System;
 using Spellbound.Core.Logging;
 
 namespace Spellbound.Modifiers {
@@ -7,6 +8,12 @@ namespace Spellbound.Modifiers {
         private readonly CircuitSet _circuits = new();
         private readonly CircuitContext _query = new();
         private Modifiable _parent;
+
+        public event Action<StatId> Changed;
+
+        public Modifiable() {
+            Stats.Changed += NotifyChanged;
+        }
 
         public StatBlock Stats { get; } = new();
 
@@ -22,7 +29,13 @@ namespace Spellbound.Modifiers {
                     return;
                 }
 
+                if (_parent != null)
+                    _parent.Changed -= NotifyChanged;
+
                 _parent = value;
+
+                if (_parent != null)
+                    _parent.Changed += NotifyChanged;
             }
         }
 
@@ -69,5 +82,7 @@ namespace Spellbound.Modifiers {
         }
 
         public int RemoveSource(uint sourceId) => Stats.RemoveBySource(sourceId) + _circuits.RemoveBySource(sourceId);
+
+        private void NotifyChanged(StatId stat) => Changed?.Invoke(stat);
     }
 }
