@@ -22,15 +22,8 @@ namespace Spellbound.Modifiers {
         public RolledModifier Roll(System.Random rng, uint sourceId) {
             var values = new float[contributions.Count];
 
-            for (var i = 0; i < contributions.Count; i++) {
-                var range = contributions[i];
-                var value = range.min + (float)rng.NextDouble() * (range.max - range.min);
-
-                if (range.step > 0f)
-                    value = range.min + Mathf.Round((value - range.min) / range.step) * range.step;
-
-                values[i] = Mathf.Clamp(value, range.min, range.max);
-            }
+            for (var i = 0; i < contributions.Count; i++)
+                values[i] = contributions[i].Roll(rng);
 
             return new RolledModifier { modifierHash = Hash, sourceId = sourceId, values = values };
         }
