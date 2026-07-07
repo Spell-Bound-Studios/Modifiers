@@ -37,6 +37,24 @@ namespace Spellbound.Modifiers.Tests {
             StatDefinition sourceStat = null) =>
                 new() { stat = stat, type = type, min = min, max = max, step = step, sourceStat = sourceStat };
 
+        public static ModifierGrant Grant(ModifierDefinition definition) {
+            var grant = new ModifierGrant();
+            typeof(ModifierGrant)
+                    .GetField("definition", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(grant, definition);
+
+            return grant;
+        }
+
+        public static ModifierGrant Grant(ContributionRange inline) {
+            var grant = new ModifierGrant();
+            typeof(ModifierGrant)
+                    .GetField("inline", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(grant, inline);
+
+            return grant;
+        }
+
         public static StatTemplate CreateTemplate(
             BaseStat[] bases, params ModifierDefinition[] innates) {
             var template = new StatTemplate();

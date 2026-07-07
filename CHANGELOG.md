@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.4] - 2026-07-07
+
+### Added
+- `ModifierGrant` — one authored unit that is either a named `ModifierDefinition` (Iron Will) or an inline `ContributionRange` (e.g. 1-3% life regen), rolling to an `IRolledModifier` either way. The reusable vocabulary for any modifier source: item implicits, drop pools, crafting. Roll a list of them, `SmartListToBytes` the result, done.
+
 ## [0.1.3] - 2026-07-07
 
 ### Added
