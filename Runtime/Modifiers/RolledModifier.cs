@@ -31,7 +31,12 @@ namespace Spellbound.Modifiers {
 
             for (var i = 0; i < count; i++) {
                 var range = contributions[i];
-                target.Stats.AddContribution(new StatId(range.stat.Hash), range.type, values[i], sourceId);
+                var stat = new StatId(range.stat.Hash);
+
+                if (range.sourceStat != null)
+                    target.Stats.AddDerived(stat, range.type, new StatId(range.sourceStat.Hash), values[i], sourceId);
+                else
+                    target.Stats.AddContribution(stat, range.type, values[i], sourceId);
             }
         }
 

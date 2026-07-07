@@ -21,3 +21,5 @@ MonoBehaviour:
     weight: 6
   - candidate: {fileID: 11400000, guid: 6e9f49e3863465b6126f1ea9f037016a, type: 2}
     weight: 6
+  - candidate: {fileID: 11400000, guid: 2b1a79781c29326be6d49b8213b49aaf, type: 2}
+    weight: 6

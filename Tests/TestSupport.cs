@@ -33,8 +33,9 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         public static ContributionRange Range(
-            StatDefinition stat, ContributionType type, float min, float max, float step = 0f) =>
-                new() { stat = stat, type = type, min = min, max = max, step = step };
+            StatDefinition stat, ContributionType type, float min, float max, float step = 0f,
+            StatDefinition sourceStat = null) =>
+                new() { stat = stat, type = type, min = min, max = max, step = step, sourceStat = sourceStat };
 
         public static StatTemplate CreateTemplate(
             BaseStat[] bases, params ModifierDefinition[] innates) {
