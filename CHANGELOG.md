@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.3] - 2026-07-07
+
+### Added
+- Inline modifiers: `RolledContribution` (a self-describing packable — carries its own `statHash`/`type`/`value`, so it applies and displays with no registry lookup and no schema) for item implicits authored inline, no ScriptableObject required.
+- `IRolledModifier` — the uniform face over named (`RolledModifier`) and inline (`RolledContribution`) modifiers: `TryApplyTo`/`RemoveFrom`/`SourceId`. Both are `ISmartPacker`, so a single mixed list (e.g. an item carrying Iron Will *and* an inline stat roll) packs polymorphically.
+- `ContributionRange.Roll(rng)` and `RollContribution(rng, sourceId)` — roll a single range to a value or a self-describing contribution; `ModifierDefinition.Roll` now reuses it.
+
+## [0.1.2] - 2026-07-06
+
+### Added
+- Derived contributions: `StatBlock.AddDerived(stat, type, sourceStat, ratioPerPoint, ...)` — read-time, chain-aware scaling (e.g. mana per intelligence). `ContributionRange.sourceStat` makes derivation authorable and rollable, so "gain X per point of Y" ships as ordinary modifier content.
+
+## [0.1.1] - 2026-07-06
+
+### Added
+- Chain-aware `Modifiable.Changed` event: raises for own-block writes and re-raises ancestor changes, so a child (skill) hears a parent (player) equip.
+- `StatTemplate.ApplyTo`/`RollInnate` log a warning on null rows instead of silently skipping.
+
 ## [0.1.0] - 2026-07-05
 
 Ground-up rewrite of the modifier system.

@@ -6,10 +6,17 @@ using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers {
     [Serializable]
-    public struct RolledModifier : IPacker {
+    [PackerId("rolled_modifier")]
+    public struct RolledModifier : IRolledModifier {
         public uint modifierHash;
         public uint sourceId;
         public float[] values;
+
+        public uint SourceId => sourceId;
+
+        public uint Hash => SmartPackerRegistry.GetHash(GetType());
+
+        public ISmartPacker CreateNewInstance() => new RolledModifier();
 
         public bool TryApplyTo(Modifiable target) {
             var definition = ModifierRegistry.GetDefinition(modifierHash);
