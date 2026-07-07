@@ -53,6 +53,40 @@ namespace Spellbound.Modifiers {
             MarkChanged(stat);
         }
 
+        public void AddDerived(
+            StatId stat, ContributionType type, StatId sourceStat, float ratioPerPoint,
+            uint sourceId = Contribution.Innate, Condition condition = null) {
+            if (sourceStat.Hash == 0) {
+                Log.Error($"AddDerived on '{stat}' requires a source stat; nothing added.");
+
+                return;
+            }
+
+            if (sourceStat.Hash == stat.Hash) {
+                Log.Error($"AddDerived on '{stat}' cannot derive from itself; nothing added.");
+
+                return;
+            }
+
+            if (!_mods.TryGetValue(stat, out var list)) {
+                list = new List<Contribution>();
+                _mods[stat] = list;
+            }
+
+            list.Add(Contribution.Derived(type, sourceStat, ratioPerPoint, sourceId, condition));
+
+            if (sourceId != Contribution.Innate) {
+                if (!_bySource.TryGetValue(sourceId, out var stats)) {
+                    stats = new HashSet<StatId>();
+                    _bySource[sourceId] = stats;
+                }
+
+                stats.Add(stat);
+            }
+
+            MarkChanged(stat);
+        }
+
         public int RemoveBySource(uint sourceId) {
             if (sourceId == Contribution.Innate) {
                 Log.Error("Attempting to remove innate contributions (source id 0).");
@@ -96,8 +130,8 @@ namespace Spellbound.Modifiers {
                 accumulator.Merge(cached);
 
             if (!_resolving.Add(stat)) {
-                Log.Error($"Stat condition cycle detected while resolving '{stat}'. " +
-                          "Conditional modifiers were skipped for this read.");
+                Log.Error($"Stat dependency cycle detected while resolving '{stat}'. " +
+                          "Conditional and derived modifiers were skipped for this read.");
 
                 return;
             }
@@ -107,8 +141,26 @@ namespace Spellbound.Modifiers {
                     for (var i = 0; i < list.Count; i++) {
                         var contribution = list[i];
 
-                        if (contribution.IsConditional && contribution.Condition.Met(ctx))
+                        if (!contribution.IsConditional && !contribution.IsDerived)
+                            continue;
+
+                        if (contribution.IsConditional && !contribution.Condition.Met(ctx))
+                            continue;
+
+                        if (!contribution.IsDerived) {
                             accumulator.Apply(contribution.Type, contribution.ValueInternal);
+
+                            continue;
+                        }
+
+                        var owner = ctx.Owner ?? ctx.Subject;
+
+                        if (owner == null)
+                            continue;
+
+                        var sourceValue = owner.GetValue(contribution.SourceStat, ctx);
+                        accumulator.Apply(contribution.Type,
+                                StatSettings.ToInternal(sourceValue * contribution.RatioPerPoint));
                     }
                 }
             }
@@ -131,7 +183,7 @@ namespace Spellbound.Modifiers {
             for (var i = 0; i < list.Count; i++) {
                 var contribution = list[i];
 
-                if (!contribution.IsConditional)
+                if (!contribution.IsConditional && !contribution.IsDerived)
                     accumulator.Apply(contribution.Type, contribution.ValueInternal);
             }
 
