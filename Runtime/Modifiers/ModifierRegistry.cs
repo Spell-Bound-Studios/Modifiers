@@ -112,14 +112,19 @@ namespace Spellbound.Modifiers {
                             "already registered by another ModifierDefinition. Modifier names must be unique — rename one.");
                     }
 
-                    var ranges = definition.Contributions;
+                    var specs = definition.Contributions;
+                    var rolledStats = new HashSet<uint>();
 
-                    for (var i = 0; i < ranges.Count; i++) {
-                        if (ranges[i].stat == null) {
+                    for (var i = 0; i < specs.Count; i++) {
+                        if (!specs[i].IsValid) {
                             throw new InvalidOperationException(
-                                $"Modifier '{definition.ModifierName}' (asset '{definition.name}') has no stat assigned " +
-                                $"on contribution {i}.");
+                                $"Modifier '{definition.ModifierName}' (asset '{definition.name}') has an invalid " +
+                                $"contribution at index {i}: stat and magnitude must be assigned (and paired magnitude " +
+                                "when a paired stat is set).");
                         }
+
+                        RejectDuplicateRolledStat(rolledStats, specs[i].Stat, specs[i].Magnitude, definition);
+                        RejectDuplicateRolledStat(rolledStats, specs[i].PairedStat, specs[i].PairedMagnitude, definition);
                     }
 
                     Registry.Add(definition);
@@ -133,6 +138,18 @@ namespace Spellbound.Modifiers {
             }
 
             _isLoaded = true;
+        }
+
+        private static void RejectDuplicateRolledStat(
+            HashSet<uint> seen, StatDefinition stat, Magnitude magnitude, ModifierDefinition definition) {
+            if (stat == null || magnitude == null || !magnitude.Rolls)
+                return;
+
+            if (!seen.Add(stat.Hash)) {
+                throw new InvalidOperationException(
+                    $"Modifier '{definition.ModifierName}' (asset '{definition.name}') has two rolled contributions on " +
+                    $"stat '{stat.StatName}'. Rolled values are keyed by stat and would collide — give each a distinct stat.");
+            }
         }
 
         #endregion

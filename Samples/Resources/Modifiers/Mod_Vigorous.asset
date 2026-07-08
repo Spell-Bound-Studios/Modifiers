@@ -21,6 +21,13 @@ MonoBehaviour:
   contributions:
   - stat: {fileID: 11400000, guid: 35fcaf30f687e2242b392f6161e59e3a, type: 2}
     type: 0
-    min: 30
-    max: 60
-    step: 5
+    magnitude: {rid: 1001}
+  references:
+    version: 2
+    RefIds:
+    - rid: 1001
+      type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        min: 30
+        max: 60
+        step: 5

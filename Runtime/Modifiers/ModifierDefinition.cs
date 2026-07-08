@@ -11,21 +11,39 @@ namespace Spellbound.Modifiers {
         [SerializeField] private string displayName;
         [SerializeField, TextArea] private string description;
         [SerializeField, SpritePreview] private Sprite icon;
-        [SerializeField] private List<ContributionRange> contributions = new();
+        [SerializeField] private List<ContributionSpecification> contributions = new();
 
         public string ModifierName => modifierName;
         public string DisplayName => string.IsNullOrEmpty(displayName) ? modifierName : displayName;
         public string Description => description;
         public Sprite Icon => icon;
-        public IReadOnlyList<ContributionRange> Contributions => contributions;
+        public IReadOnlyList<ContributionSpecification> Contributions => contributions;
 
         public RolledModifier Roll(System.Random rng, uint sourceId) {
-            var values = new float[contributions.Count];
+            var baked = new List<BakedRoll>();
 
-            for (var i = 0; i < contributions.Count; i++)
-                values[i] = contributions[i].Roll(rng);
+            for (var i = 0; i < contributions.Count; i++) {
+                var spec = contributions[i];
+                var low = 0f;
+                var lowBaked = false;
 
-            return new RolledModifier { modifierHash = Hash, sourceId = sourceId, values = values };
+                if (spec.Stat != null && spec.Magnitude != null && spec.Magnitude.Rolls) {
+                    low = spec.Magnitude.Bake(rng);
+                    baked.Add(new BakedRoll { statHash = spec.Stat.Hash, value = low });
+                    lowBaked = true;
+                }
+
+                if (spec.PairedStat != null && spec.PairedMagnitude != null && spec.PairedMagnitude.Rolls) {
+                    var high = spec.PairedMagnitude.Bake(rng);
+
+                    if (spec.LinkOrdered && lowBaked && high < low)
+                        high = low;
+
+                    baked.Add(new BakedRoll { statHash = spec.PairedStat.Hash, value = high });
+                }
+            }
+
+            return new RolledModifier { modifierHash = Hash, sourceId = sourceId, baked = baked.ToArray() };
         }
     }
 }

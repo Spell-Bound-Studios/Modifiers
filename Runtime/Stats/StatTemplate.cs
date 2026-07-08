@@ -40,7 +40,7 @@ namespace Spellbound.Modifiers {
                     continue;
                 }
 
-                result.Add(innateModifiers[i].Roll(rng, (uint)rng.Next(1, int.MaxValue)));
+                result.Add(innateModifiers[i].Roll(rng, ModifierSource.Next()));
             }
 
             return result;

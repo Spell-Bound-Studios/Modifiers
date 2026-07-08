@@ -21,7 +21,21 @@ MonoBehaviour:
   contributions:
   - stat: {fileID: 11400000, guid: f80ef36a323cc0543bf5907a02714355, type: 2}
     type: 0
-    sourceStat: {fileID: 11400000, guid: 35fcaf30f687e2242b392f6161e59e3a, type: 2}
-    min: 0.05
-    max: 0.1
-    step: 0.05
+    magnitude: {rid: 1001}
+  references:
+    version: 2
+    RefIds:
+    - rid: 1001
+      type: {class: DerivedMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        amount: {rid: 1002}
+        perPoints: 1
+        stepped: 0
+        source: {fileID: 11400000, guid: 35fcaf30f687e2242b392f6161e59e3a, type: 2}
+        perspective: 0
+    - rid: 1002
+      type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        min: 0.05
+        max: 0.1
+        step: 0.05

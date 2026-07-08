@@ -11,7 +11,7 @@ namespace Spellbound.Modifiers {
             var result = new List<RolledModifier>(definitions.Count);
 
             for (var i = 0; i < definitions.Count; i++)
-                result.Add(definitions[i].Roll(rng, (uint)rng.Next(1, int.MaxValue)));
+                result.Add(definitions[i].Roll(rng, ModifierSource.Next()));
 
             return result;
         }

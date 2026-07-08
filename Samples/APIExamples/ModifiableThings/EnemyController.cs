@@ -155,7 +155,7 @@ namespace Spellbound.Modifiers.Samples {
             if (_rng == null || Hardened == null)
                 return;
 
-            Buffs.Apply(Hardened.Roll(_rng, (uint)_rng.Next(1, int.MaxValue)), 5f);
+            Buffs.Apply(Hardened.Roll(_rng, ModifierSource.Next()), 5f);
         }
 
         public void ApplyIgnite(float damagePerSecond, float duration) {
@@ -168,7 +168,7 @@ namespace Spellbound.Modifiers.Samples {
             IsIgnited = true;
 
             if (Ignited != null && _rng != null)
-                Debuffs.Apply(Ignited.Roll(_rng, (uint)_rng.Next(1, int.MaxValue)), duration);
+                Debuffs.Apply(Ignited.Roll(_rng, ModifierSource.Next()), duration);
 
             if (targetRenderer != null)
                 targetRenderer.material.color = ignitedColor;

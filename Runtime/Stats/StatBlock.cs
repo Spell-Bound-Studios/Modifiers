@@ -54,8 +54,8 @@ namespace Spellbound.Modifiers {
         }
 
         public void AddDerived(
-            StatId stat, ContributionType type, StatId sourceStat, float ratioPerPoint,
-            uint sourceId = Contribution.Innate, Condition condition = null) {
+            StatId stat, ContributionType type, StatId sourceStat, float amount, int perPoints, bool stepped,
+            Perspective perspective, uint sourceId = Contribution.Innate, Condition condition = null) {
             if (sourceStat.Hash == 0) {
                 Log.Error($"AddDerived on '{stat}' requires a source stat; nothing added.");
 
@@ -73,7 +73,8 @@ namespace Spellbound.Modifiers {
                 _mods[stat] = list;
             }
 
-            list.Add(Contribution.Derived(type, sourceStat, ratioPerPoint, sourceId, condition));
+            list.Add(Contribution.Derived(type, sourceStat, amount, perPoints, stepped, perspective, sourceId,
+                    condition));
 
             if (sourceId != Contribution.Innate) {
                 if (!_bySource.TryGetValue(sourceId, out var stats)) {
@@ -153,14 +154,19 @@ namespace Spellbound.Modifiers {
                             continue;
                         }
 
-                        var owner = ctx.Owner ?? ctx.Subject;
+                        var entity = contribution.Perspective == Perspective.Subject
+                                ? ctx.Subject
+                                : ctx.Owner ?? ctx.Subject;
 
-                        if (owner == null)
+                        if (entity == null)
                             continue;
 
-                        var sourceValue = owner.GetValue(contribution.SourceStat, ctx);
-                        accumulator.Apply(contribution.Type,
-                                StatSettings.ToInternal(sourceValue * contribution.RatioPerPoint));
+                        var sourceValue = entity.GetValue(contribution.SourceStat, ctx);
+                        var perPoints = contribution.PerPoints <= 0 ? 1 : contribution.PerPoints;
+                        var coefficient = contribution.Stepped
+                                ? (float)System.Math.Floor(sourceValue / perPoints) * contribution.Amount
+                                : sourceValue * contribution.Amount / perPoints;
+                        accumulator.Apply(contribution.Type, StatSettings.ToInternal(coefficient));
                     }
                 }
             }

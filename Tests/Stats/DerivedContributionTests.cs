@@ -13,7 +13,7 @@ namespace Spellbound.Modifiers.Tests {
             m.Stats.SetBase(Armor, 10f);
             m.Stats.SetBase(Health, 100f);
 
-            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f);
+            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 1, false, Perspective.Owner);
 
             Assert.AreEqual(20f, m.GetValue(Armor));
         }
@@ -23,7 +23,7 @@ namespace Spellbound.Modifiers.Tests {
             var m = new Modifiable();
             m.Stats.SetBase(Armor, 10f);
             m.Stats.SetBase(Health, 100f);
-            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f);
+            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 1, false, Perspective.Owner);
 
             Assert.AreEqual(20f, m.GetValue(Armor));
 
@@ -38,7 +38,7 @@ namespace Spellbound.Modifiers.Tests {
             m.Stats.SetBase(Armor, 10f);
             m.Stats.SetBase(Health, 100f);
             m.Stats.AddContribution(Health, ContributionType.Increased, 1f);
-            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f);
+            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 1, false, Perspective.Owner);
 
             Assert.AreEqual(30f, m.GetValue(Armor));
         }
@@ -49,7 +49,7 @@ namespace Spellbound.Modifiers.Tests {
             m.Stats.SetBase(Armor, 100f);
             m.Stats.SetBase(Health, 200f);
 
-            m.Stats.AddDerived(Armor, ContributionType.Increased, Health, 0.001f);
+            m.Stats.AddDerived(Armor, ContributionType.Increased, Health, 0.001f, 1, false, Perspective.Owner);
 
             Assert.AreEqual(120f, m.GetValue(Armor));
         }
@@ -61,7 +61,7 @@ namespace Spellbound.Modifiers.Tests {
 
             var skill = new Modifiable { Parent = player };
             skill.Stats.SetBase(Armor, 10f);
-            skill.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f);
+            skill.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 1, false, Perspective.Owner);
 
             Assert.AreEqual(20f, skill.GetValue(Armor));
 
@@ -75,7 +75,7 @@ namespace Spellbound.Modifiers.Tests {
             var m = new Modifiable();
             m.Stats.SetBase(Armor, 10f);
             m.Stats.SetBase(Health, 100f);
-            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 7u);
+            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 1, false, Perspective.Owner, 7u);
 
             Assert.AreEqual(20f, m.GetValue(Armor));
 
@@ -90,7 +90,7 @@ namespace Spellbound.Modifiers.Tests {
             m.Stats.SetBase(Armor, 10f);
             m.Stats.SetBase(Health, 100f);
             var condition = new StubCondition { Result = false };
-            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 7u, condition);
+            m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 0.1f, 1, false, Perspective.Owner, 7u, condition);
 
             Assert.AreEqual(10f, m.GetValue(Armor));
 
@@ -105,8 +105,8 @@ namespace Spellbound.Modifiers.Tests {
                 var m = new Modifiable();
                 m.Stats.SetBase(Armor, 10f);
                 m.Stats.SetBase(Health, 100f);
-                m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 1f);
-                m.Stats.AddDerived(Health, ContributionType.Flat, Armor, 1f);
+                m.Stats.AddDerived(Armor, ContributionType.Flat, Health, 1f, 1, false, Perspective.Owner);
+                m.Stats.AddDerived(Health, ContributionType.Flat, Armor, 1f, 1, false, Perspective.Owner);
 
                 float armor = 0f, health = 0f;
 
@@ -122,7 +122,7 @@ namespace Spellbound.Modifiers.Tests {
             using (new LogMute()) {
                 var m = new Modifiable();
                 m.Stats.SetBase(Armor, 10f);
-                m.Stats.AddDerived(Armor, ContributionType.Flat, Armor, 1f);
+                m.Stats.AddDerived(Armor, ContributionType.Flat, Armor, 1f, 1, false, Perspective.Owner);
 
                 Assert.AreEqual(10f, m.GetValue(Armor));
             }
@@ -160,7 +160,7 @@ namespace Spellbound.Modifiers.Tests {
             var rolled = definition.Roll(new System.Random(7), 42u);
             buffs.Apply(rolled, 5f);
 
-            Assert.AreEqual(10f + rolled.values[0] * 200f, target.GetValue(Armor), 0.001f);
+            Assert.AreEqual(10f + rolled.baked[0].value * 200f, target.GetValue(Armor), 0.001f);
 
             buffs.Tick(5.1f);
 

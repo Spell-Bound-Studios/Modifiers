@@ -72,7 +72,7 @@ namespace Spellbound.Modifiers.Tests {
             var first = template.RollInnate(new System.Random(42));
             var second = template.RollInnate(new System.Random(42));
 
-            Assert.AreEqual(first[0].values[0], second[0].values[0]);
+            Assert.AreEqual(first[0].baked[0].value, second[0].baked[0].value);
             Assert.AreEqual(first[0].sourceId, second[0].sourceId);
         }
 
@@ -89,7 +89,7 @@ namespace Spellbound.Modifiers.Tests {
             foreach (var modifier in rolled)
                 modifier.TryApplyTo(target);
 
-            Assert.AreEqual(10f + rolled[0].values[0], target.GetValue(Armor), 0.001f);
+            Assert.AreEqual(10f + rolled[0].baked[0].value, target.GetValue(Armor), 0.001f);
 
             target.RemoveSource(rolled[0].sourceId);
 

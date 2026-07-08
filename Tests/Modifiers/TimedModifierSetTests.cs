@@ -20,7 +20,7 @@ namespace Spellbound.Modifiers.Tests {
             var rolled = Roll("sample_thick_hide", 11u);
             set.Apply(rolled, 5f);
 
-            Assert.AreEqual(100f + rolled.values[0], target.GetValue(Armor), 0.001f);
+            Assert.AreEqual(100f + rolled.baked[0].value, target.GetValue(Armor), 0.001f);
             Assert.AreEqual(1, set.Active.Count);
         }
 
@@ -54,7 +54,7 @@ namespace Spellbound.Modifiers.Tests {
             set.Apply(second, 5f);
 
             Assert.AreEqual(1, set.Active.Count);
-            Assert.AreEqual(100f + second.values[0], target.GetValue(Armor), 0.001f);
+            Assert.AreEqual(100f + second.baked[0].value, target.GetValue(Armor), 0.001f);
 
             set.Tick(4.9f);
 
@@ -135,7 +135,8 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void TimedModifier_PackUnpack_RoundTrips() {
             var entry = new TimedModifier {
-                modifier = new RolledModifier { modifierHash = 123u, sourceId = 77u, values = new[] { 12f } },
+                modifier = new RolledModifier
+                        { modifierHash = 123u, sourceId = 77u, baked = new[] { new BakedRoll { statHash = 1u, value = 12f } } },
                 duration = 5f,
                 remaining = 2.5f
             };
@@ -151,7 +152,7 @@ namespace Spellbound.Modifiers.Tests {
 
             Assert.AreEqual(123u, copy.modifier.modifierHash);
             Assert.AreEqual(77u, copy.modifier.sourceId);
-            CollectionAssert.AreEqual(entry.modifier.values, copy.modifier.values);
+            Assert.AreEqual(entry.modifier.baked[0].value, copy.modifier.baked[0].value);
             Assert.AreEqual(5f, copy.duration);
             Assert.AreEqual(2.5f, copy.remaining);
         }

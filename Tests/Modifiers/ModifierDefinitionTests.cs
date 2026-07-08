@@ -14,8 +14,8 @@ namespace Spellbound.Modifiers.Tests {
             for (var i = 0; i < 50; i++) {
                 var rolled = definition.Roll(rng, 1u);
 
-                Assert.GreaterOrEqual(rolled.values[0], 8f);
-                Assert.LessOrEqual(rolled.values[0], 15f);
+                Assert.GreaterOrEqual(rolled.baked[0].value, 8f);
+                Assert.LessOrEqual(rolled.baked[0].value, 15f);
             }
         }
 
@@ -26,7 +26,7 @@ namespace Spellbound.Modifiers.Tests {
             var rng = new System.Random(1234);
 
             for (var i = 0; i < 50; i++) {
-                var value = definition.Roll(rng, 1u).values[0];
+                var value = definition.Roll(rng, 1u).baked[0].value;
 
                 Assert.AreEqual(Mathf.Round(value), value);
                 Assert.GreaterOrEqual(value, 1f);
@@ -42,7 +42,7 @@ namespace Spellbound.Modifiers.Tests {
                 Definitions.Range(stat, ContributionType.Flat, 1f, 2f),
                 Definitions.Range(stat, ContributionType.Increased, 0.1f, 0.2f));
 
-            Assert.AreEqual(2, definition.Roll(new System.Random(1), 1u).values.Length);
+            Assert.AreEqual(2, definition.Roll(new System.Random(1), 1u).baked.Length);
         }
 
         [Test]

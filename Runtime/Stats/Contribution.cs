@@ -9,17 +9,24 @@ namespace Spellbound.Modifiers {
         public readonly uint SourceId;
         public readonly Condition Condition;
         public readonly StatId SourceStat;
-        public readonly float RatioPerPoint;
+        public readonly float Amount;
+        public readonly int PerPoints;
+        public readonly bool Stepped;
+        public readonly Perspective Perspective;
 
         public Contribution(
             ContributionType type, int valueInternal, uint sourceId, Condition condition,
-            StatId sourceStat = default, float ratioPerPoint = 0f) {
+            StatId sourceStat = default, float amount = 0f, int perPoints = 1, bool stepped = false,
+            Perspective perspective = Perspective.Owner) {
             Type = type;
             ValueInternal = valueInternal;
             SourceId = sourceId;
             Condition = condition;
             SourceStat = sourceStat;
-            RatioPerPoint = ratioPerPoint;
+            Amount = amount;
+            PerPoints = perPoints;
+            Stepped = stepped;
+            Perspective = perspective;
         }
 
         public bool IsConditional => Condition != null;
@@ -31,8 +38,8 @@ namespace Spellbound.Modifiers {
                 new(type, StatSettings.ToInternal(value), sourceId, condition);
 
         public static Contribution Derived(
-            ContributionType type, StatId sourceStat, float ratioPerPoint, uint sourceId = Innate,
-            Condition condition = null) =>
-                new(type, 0, sourceId, condition, sourceStat, ratioPerPoint);
+            ContributionType type, StatId sourceStat, float amount, int perPoints, bool stepped,
+            Perspective perspective, uint sourceId = Innate, Condition condition = null) =>
+                new(type, 0, sourceId, condition, sourceStat, amount, perPoints, stepped, perspective);
     }
 }

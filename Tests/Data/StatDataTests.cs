@@ -36,7 +36,7 @@ namespace Spellbound.Modifiers.Tests {
                 debuffs = new List<TimedModifier> {
                     new() {
                         modifier = new RolledModifier
-                                { modifierHash = 9u, sourceId = 3u, values = Array.Empty<float>() },
+                                { modifierHash = 9u, sourceId = 3u, baked = Array.Empty<BakedRoll>() },
                         duration = 3f, remaining = 1f
                     }
                 }
@@ -58,7 +58,7 @@ namespace Spellbound.Modifiers.Tests {
             Assert.AreEqual(1, copy.ModifierCount);
             Assert.AreEqual(rolled.modifierHash, copy.modifiers[0].modifierHash);
             Assert.AreEqual(rolled.sourceId, copy.modifiers[0].sourceId);
-            CollectionAssert.AreEqual(rolled.values, copy.modifiers[0].values);
+            Assert.AreEqual(rolled.baked.Length, copy.modifiers[0].baked.Length);
             Assert.AreEqual(1, copy.BuffCount);
             Assert.AreEqual(2.5f, copy.buffs[0].remaining);
             Assert.AreEqual(1, copy.DebuffCount);
@@ -74,7 +74,7 @@ namespace Spellbound.Modifiers.Tests {
             target.Stats.SetBase(Armor, 100f);
             data.ApplyTo(target);
 
-            Assert.AreEqual(100f + rolled.values[0], target.GetValue(Armor), 0.001f);
+            Assert.AreEqual(100f + rolled.baked[0].value, target.GetValue(Armor), 0.001f);
         }
 
         [Test]

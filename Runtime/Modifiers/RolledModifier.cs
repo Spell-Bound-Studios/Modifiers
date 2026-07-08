@@ -6,17 +6,10 @@ using Spellbound.Core.Packing;
 
 namespace Spellbound.Modifiers {
     [Serializable]
-    [PackerId("rolled_modifier")]
-    public struct RolledModifier : IRolledModifier {
+    public struct RolledModifier : IPacker {
         public uint modifierHash;
         public uint sourceId;
-        public float[] values;
-
-        public uint SourceId => sourceId;
-
-        public uint Hash => SmartPackerRegistry.GetHash(GetType());
-
-        public ISmartPacker CreateNewInstance() => new RolledModifier();
+        public BakedRoll[] baked;
 
         public bool TryApplyTo(Modifiable target) {
             var definition = ModifierRegistry.GetDefinition(modifierHash);
@@ -34,43 +27,56 @@ namespace Spellbound.Modifiers {
 
         public void ApplyTo(Modifiable target, ModifierDefinition definition) {
             var contributions = definition.Contributions;
-            var count = Math.Min(contributions.Count, values?.Length ?? 0);
 
-            for (var i = 0; i < count; i++) {
-                var range = contributions[i];
-                var stat = new StatId(range.stat.Hash);
+            for (var i = 0; i < contributions.Count; i++) {
+                var spec = contributions[i];
 
-                if (range.sourceStat != null)
-                    target.Stats.AddDerived(stat, range.type, new StatId(range.sourceStat.Hash), values[i], sourceId);
-                else
-                    target.Stats.AddContribution(stat, range.type, values[i], sourceId);
+                if (spec.Stat != null && spec.Magnitude != null)
+                    spec.Magnitude.ApplyTo(target.Stats, new StatId(spec.Stat.Hash), spec.Type, sourceId,
+                            BakedFor(spec.Stat.Hash));
+
+                if (spec.PairedStat != null && spec.PairedMagnitude != null)
+                    spec.PairedMagnitude.ApplyTo(target.Stats, new StatId(spec.PairedStat.Hash), spec.Type, sourceId,
+                            BakedFor(spec.PairedStat.Hash));
             }
+        }
+
+        private readonly float BakedFor(uint statHash) {
+            if (baked != null) {
+                for (var i = 0; i < baked.Length; i++) {
+                    if (baked[i].statHash == statHash)
+                        return baked[i].value;
+                }
+            }
+
+            return 0f;
         }
 
         public int RemoveFrom(Modifiable target) => target.RemoveSource(sourceId);
 
-        public int PackedSize => 2 * sizeof(uint) + sizeof(int) + (values?.Length ?? 0) * sizeof(float);
+        public int PackedSize =>
+                2 * sizeof(uint) + sizeof(int) + (baked?.Length ?? 0) * (sizeof(uint) + sizeof(float));
 
         public void Pack(ref Span<byte> buffer) {
             Packer.WriteUInt(ref buffer, modifierHash);
             Packer.WriteUInt(ref buffer, sourceId);
-            Packer.WriteInt(ref buffer, values?.Length ?? 0);
+            Packer.WriteInt(ref buffer, baked?.Length ?? 0);
 
-            if (values == null)
+            if (baked == null)
                 return;
 
-            for (var i = 0; i < values.Length; i++)
-                Packer.WriteFloat(ref buffer, values[i]);
+            for (var i = 0; i < baked.Length; i++)
+                baked[i].Pack(ref buffer);
         }
 
         public void Unpack(ref ReadOnlySpan<byte> buffer) {
             modifierHash = Packer.ReadUInt(ref buffer);
             sourceId = Packer.ReadUInt(ref buffer);
             var count = Packer.ReadInt(ref buffer);
-            values = new float[count];
+            baked = new BakedRoll[count];
 
             for (var i = 0; i < count; i++)
-                values[i] = Packer.ReadFloat(ref buffer);
+                baked[i].Unpack(ref buffer);
         }
 
         public override string ToString() =>

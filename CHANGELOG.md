@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.1.7] - 2026-07-08
+
+### Added
+- `ModifierSource.Next()` — a monotonic id allocator for rolled modifiers, independent of the roll rng. `ModifierPool.Roll` and `StatTemplate.RollInnate` use it instead of drawing source ids from the content rng (which coupled ids to the value stream and risked collisions).
+
+### Changed
+- Validation is now deep: `Magnitude.IsValid` (virtual) + `DerivedMagnitude.IsValid` (amount and source must be assigned); `ContributionSpecification.IsValid` checks the magnitude recursively and that a paired stat differs from the primary. A `DerivedMagnitude` missing its source or amount is a load-time error instead of a silent no-op.
+- `ModifierRegistry` rejects two rolled contributions on the same stat within one definition — their baked values are stat-keyed and would collide.
+
+## [0.1.6] - 2026-07-08
+
+Collapsed to a single modifier model: every modifier is a `ModifierDefinition`, every roll is a hash plus baked values.
+
+### Removed
+- `ContributionRange`, `RolledContribution`, `IRolledModifier`, `ModifierGrant` — the by-value / inline path. A modifier's identity (its definition hash) is what alt-hover roll-ranges, reroll, trade, and networking all key off; a by-value mod has discarded its identity, so it was incoherent with those mechanics. One rolled type, one apply path.
+- The 4-arg `AddDerived` shim (pre-divided ratio) — `DerivedMagnitude` uses the full `(amount, perPoints, stepped, perspective)` form.
+- `ISmartPacker` / `[PackerId]` on `RolledModifier` — a homogeneous `List<RolledModifier>` packs with plain `PackList`.
+
+### Changed
+- `ContributionSpec` renamed to `ContributionSpecification` (no abbreviations).
+- `RolledModifier` is `{ modifierHash, sourceId, baked[] }`, plain `IPacker`. Apply looks the definition up by hash and runs each `Magnitude` with the baked values.
+
+## [0.1.5] - 2026-07-07
+
+Redesign of the contribution model — separates structure (definition-owned, live) from rolled magnitude (baked per-instance).
+
+### Added
+- `Magnitude` (`[SerializeReference]`): `FixedMagnitude`, `RolledMagnitude`, `DerivedMagnitude`. Derived is `(amount, perPoints, stepped, perspective)` with a nested `ScalarMagnitude amount`, so "(1-2) per 10 Strength" composes a rolled coefficient with live per-attribute scaling. `perPoints` is authored legibly (the "per 20"), stepped gives breakpoints, perspective picks whose stat scales it.
+- `ContributionSpec` — a definition contribution: stat + type + magnitude, optionally a linked `pairedStat`/`pairedMagnitude` (damage bands, low <= high enforced on roll).
+- `StatBlock.AddDerived(stat, type, source, amount, perPoints, stepped, perspective, ...)`; the old `ratioPerPoint` overload remains as a continuous, owner-perspective shim.
+
+### Changed
+- `ModifierDefinition.contributions` is now `List<ContributionSpec>`; **existing modifier assets must be re-authored** in the inspector.
+- `RolledModifier` carries `BakedRoll[] baked` (stat-keyed) instead of positional `values[]`. Apply reads structure live from the definition and pulls only rolled endpoints from the baked artifact — so a definition rebalance (e.g. "per 10" -> "per 20") reaches existing rolled items on next apply, and reordering a definition can no longer misalign saved values.
+- `ModifierRegistry` load-time validation asserts each spec has a stat and magnitude assigned.
+
+### Editor
+- `MagnitudePropertyDrawer` (new `Spellbound.Modifiers.Editor` assembly): a type picker for the `[SerializeReference]` magnitude fields — pick `FixedMagnitude`/`RolledMagnitude`/`DerivedMagnitude` and its fields draw inline. Nested (a `DerivedMagnitude`'s `amount`) gets its own picker, filtered to `ScalarMagnitude`.
+
+### Notes
+- `ContributionRange` is retained for the simple inline path (`ModifierGrant`, `RolledContribution`); unifying it onto `Magnitude` is future work.
+
 ## [0.1.4] - 2026-07-07
 
 ### Added
