@@ -2,10 +2,8 @@
 
 ## [0.1.7] - 2026-07-08
 
-### Added
-- `ModifierSource.Next()` — a monotonic id allocator for rolled modifiers, independent of the roll rng. `ModifierPool.Roll` and `StatTemplate.RollInnate` use it instead of drawing source ids from the content rng (which coupled ids to the value stream and risked collisions).
-
 ### Changed
+- `ModifierPool.Roll` and `StatTemplate.RollInnate` take a `Func<uint>` source-id provider — the caller owns modifier identity. The library no longer mints source ids from the content rng (which coupled ids to the value stream and, via a session-scoped counter, collided with persisted ids on reload). A persisting caller supplies stable ids (e.g. hashed from the owning instance's GUID); a throwaway caller supplies a counter.
 - Validation is now deep: `Magnitude.IsValid` (virtual) + `DerivedMagnitude.IsValid` (amount and source must be assigned); `ContributionSpecification.IsValid` checks the magnitude recursively and that a paired stat differs from the primary. A `DerivedMagnitude` missing its source or amount is a load-time error instead of a silent no-op.
 - `ModifierRegistry` rejects two rolled contributions on the same stat within one definition — their baked values are stat-keyed and would collide.
 

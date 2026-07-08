@@ -17,6 +17,7 @@ namespace Spellbound.Modifiers.Samples {
         private readonly List<StatAndValue> _ignitePacket = new(1);
 
         private readonly List<RolledModifier> _rolled = new();
+        private uint _nextSourceId = 1;
         private ModifierPool _pool;
         private System.Random _rng;
         private LevelController _level;
@@ -155,7 +156,7 @@ namespace Spellbound.Modifiers.Samples {
             if (_rng == null || Hardened == null)
                 return;
 
-            Buffs.Apply(Hardened.Roll(_rng, ModifierSource.Next()), 5f);
+            Buffs.Apply(Hardened.Roll(_rng, _nextSourceId++), 5f);
         }
 
         public void ApplyIgnite(float damagePerSecond, float duration) {
@@ -168,7 +169,7 @@ namespace Spellbound.Modifiers.Samples {
             IsIgnited = true;
 
             if (Ignited != null && _rng != null)
-                Debuffs.Apply(Ignited.Roll(_rng, ModifierSource.Next()), duration);
+                Debuffs.Apply(Ignited.Roll(_rng, _nextSourceId++), duration);
 
             if (targetRenderer != null)
                 targetRenderer.material.color = ignitedColor;
@@ -200,7 +201,7 @@ namespace Spellbound.Modifiers.Samples {
             if (_pool != null && _rng != null) {
                 var starRoll = _rng.Next(100);
                 var stars = starRoll < 50 ? 0 : starRoll < 85 ? 1 : 2;
-                _rolled.AddRange(_pool.Roll(stars, _rng));
+                _rolled.AddRange(_pool.Roll(stars, _rng, () => _nextSourceId++));
 
                 foreach (var modifier in _rolled)
                     modifier.TryApplyTo(Modifiable);

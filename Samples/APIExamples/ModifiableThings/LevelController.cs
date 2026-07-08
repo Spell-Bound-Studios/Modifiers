@@ -6,6 +6,7 @@ using UnityEngine;
 namespace Spellbound.Modifiers.Samples {
     public sealed class LevelController : MonoBehaviour {
         private readonly List<RolledModifier> _rolled = new();
+        private uint _nextSourceId = 1;
 
         public Modifiable Modifiable { get; } = new();
         public string RolledIcons { get; private set; } = "";
@@ -18,7 +19,7 @@ namespace Spellbound.Modifiers.Samples {
             _rolled.Clear();
 
             if (pool != null)
-                _rolled.AddRange(pool.Roll(count, rng));
+                _rolled.AddRange(pool.Roll(count, rng, () => _nextSourceId++));
 
             foreach (var modifier in _rolled)
                 modifier.TryApplyTo(Modifiable);

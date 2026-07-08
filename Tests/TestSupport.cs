@@ -61,6 +61,12 @@ namespace Spellbound.Modifiers.Tests {
         private static void SetField(object target, string name, object value) =>
                 target.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(target, value);
 
+        public static System.Func<uint> Ids() {
+            uint next = 1;
+
+            return () => next++;
+        }
+
         public static ModifierPool CreatePool(params (ModifierDefinition candidate, int weight)[] entries) {
             var pool = ScriptableObject.CreateInstance<ModifierPool>();
             var list = new List<WeightedEntry<ModifierDefinition>>();

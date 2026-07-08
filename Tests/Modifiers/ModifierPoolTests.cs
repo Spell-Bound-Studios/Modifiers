@@ -68,7 +68,7 @@ namespace Spellbound.Modifiers.Tests {
             var pool = Definitions.CreatePool(
                 (Definitions.Create(), 1), (Definitions.Create(), 1), (Definitions.Create(), 1));
 
-            var rolled = pool.Roll(3, new System.Random(7));
+            var rolled = pool.Roll(3, new System.Random(7), Definitions.Ids());
 
             Assert.AreEqual(3, rolled.Count);
 

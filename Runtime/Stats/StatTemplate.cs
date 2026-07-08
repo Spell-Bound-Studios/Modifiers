@@ -30,7 +30,7 @@ namespace Spellbound.Modifiers {
             }
         }
 
-        public virtual List<RolledModifier> RollInnate(System.Random rng) {
+        public virtual List<RolledModifier> RollInnate(System.Random rng, System.Func<uint> nextSourceId) {
             var result = new List<RolledModifier>(innateModifiers.Count);
 
             for (var i = 0; i < innateModifiers.Count; i++) {
@@ -40,7 +40,7 @@ namespace Spellbound.Modifiers {
                     continue;
                 }
 
-                result.Add(innateModifiers[i].Roll(rng, ModifierSource.Next()));
+                result.Add(innateModifiers[i].Roll(rng, nextSourceId()));
             }
 
             return result;

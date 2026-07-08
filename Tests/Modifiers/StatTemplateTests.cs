@@ -45,7 +45,7 @@ namespace Spellbound.Modifiers.Tests {
             var vigorous = ModifierRegistry.GetDefinition("sample_vigorous");
             var template = Definitions.CreateTemplate(new BaseStat[0], thickHide, vigorous);
 
-            var rolled = template.RollInnate(new System.Random(7));
+            var rolled = template.RollInnate(new System.Random(7), Definitions.Ids());
 
             Assert.AreEqual(2, rolled.Count);
             Assert.AreEqual(thickHide.Hash, rolled[0].modifierHash);
@@ -60,7 +60,7 @@ namespace Spellbound.Modifiers.Tests {
                 var template = Definitions.CreateTemplate(new BaseStat[0],
                     null, ModifierRegistry.GetDefinition("sample_thick_hide"));
 
-                Assert.AreEqual(1, template.RollInnate(new System.Random(7)).Count);
+                Assert.AreEqual(1, template.RollInnate(new System.Random(7), Definitions.Ids()).Count);
             }
         }
 
@@ -69,11 +69,10 @@ namespace Spellbound.Modifiers.Tests {
             var template = Definitions.CreateTemplate(new BaseStat[0],
                 ModifierRegistry.GetDefinition("sample_thick_hide"));
 
-            var first = template.RollInnate(new System.Random(42));
-            var second = template.RollInnate(new System.Random(42));
+            var first = template.RollInnate(new System.Random(42), Definitions.Ids());
+            var second = template.RollInnate(new System.Random(42), Definitions.Ids());
 
             Assert.AreEqual(first[0].baked[0].value, second[0].baked[0].value);
-            Assert.AreEqual(first[0].sourceId, second[0].sourceId);
         }
 
         [Test]
@@ -84,7 +83,7 @@ namespace Spellbound.Modifiers.Tests {
             var target = new Modifiable();
             template.ApplyTo(target);
 
-            var rolled = template.RollInnate(new System.Random(7));
+            var rolled = template.RollInnate(new System.Random(7), Definitions.Ids());
 
             foreach (var modifier in rolled)
                 modifier.TryApplyTo(target);

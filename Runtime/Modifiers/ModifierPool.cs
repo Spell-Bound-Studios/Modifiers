@@ -6,12 +6,13 @@ using UnityEngine;
 namespace Spellbound.Modifiers {
     [CreateAssetMenu(menuName = "Spellbound/ModifierLib/Modifier Pool")]
     public sealed class ModifierPool : WeightedPool<ModifierDefinition> {
-        public List<RolledModifier> Roll(int count, System.Random rng, bool withReplacement = false) {
+        public List<RolledModifier> Roll(int count, System.Random rng, System.Func<uint> nextSourceId,
+            bool withReplacement = false) {
             var definitions = Sample(count, rng, withReplacement);
             var result = new List<RolledModifier>(definitions.Count);
 
             for (var i = 0; i < definitions.Count; i++)
-                result.Add(definitions[i].Roll(rng, ModifierSource.Next()));
+                result.Add(definitions[i].Roll(rng, nextSourceId()));
 
             return result;
         }
