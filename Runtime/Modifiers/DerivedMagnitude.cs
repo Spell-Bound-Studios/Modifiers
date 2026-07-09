@@ -22,6 +22,12 @@ namespace Spellbound.Modifiers {
         [SerializeField, Tooltip("Whose stat to read: Owner (this entity) or Subject (the querying skill/child).")]
         private Perspective perspective;
 
+        public ScalarMagnitude Amount => amount;
+        public int PerPoints => perPoints;
+        public bool Stepped => stepped;
+        public StatDefinition Source => source;
+        public Perspective Perspective => perspective;
+
         public override bool IsValid => amount != null && amount.IsValid && source != null;
 
         public override bool Rolls => amount != null && amount.Rolls;

@@ -45,10 +45,11 @@ namespace Spellbound.Modifiers {
             }
         }
 
-        public override IEnumerable<(StatDefinition stat, Magnitude amount)> Lines {
+        public override IEnumerable<(StatDefinition stat, ContributionType type, Magnitude amount)>
+                StatContributions {
             get {
                 for (var i = 0; i < stats.Count; i++)
-                    yield return (stats[i], amount);
+                    yield return (stats[i], contributionType, amount);
             }
         }
 

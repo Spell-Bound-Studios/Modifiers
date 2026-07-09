@@ -216,8 +216,19 @@ namespace Spellbound.Modifiers.Samples {
 
                     return withRanges ? WithRange(text, DescribeRange(multi.Amount)) : text;
                 }
-                default:
-                    return specification.ToString();
+                default: {
+                    var parts = new List<string>();
+
+                    foreach (var (stat, _, amount) in specification.StatContributions) {
+                        if (stat == null || amount == null)
+                            continue;
+
+                        var text = $"+{ResolveValue(amount, stat, baked):0.#} {stat.DisplayName}";
+                        parts.Add(withRanges ? WithRange(text, DescribeRange(amount)) : text);
+                    }
+
+                    return parts.Count > 0 ? string.Join("\n", parts) : specification.ToString();
+                }
             }
         }
 

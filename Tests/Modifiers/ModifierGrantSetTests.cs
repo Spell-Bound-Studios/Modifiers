@@ -406,6 +406,33 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
+        public void StatContributions_EnumerateEveryElementaryLine() {
+            var single = Definitions.Single(ArmorDef, ContributionType.More, Definitions.Fixed(1f));
+            var band = Definitions.Band(ArmorDef, Definitions.Fixed(1f), HealthDef, Definitions.Fixed(2f),
+                ContributionType.Increased);
+            var multi = Definitions.Multi(ContributionType.Flat, Definitions.Fixed(10f), ArmorDef, HealthDef);
+
+            var singleLines = new List<(StatDefinition stat, ContributionType type, Magnitude amount)>(
+                single.StatContributions);
+            var bandLines = new List<(StatDefinition stat, ContributionType type, Magnitude amount)>(
+                band.StatContributions);
+            var multiLines = new List<(StatDefinition stat, ContributionType type, Magnitude amount)>(
+                multi.StatContributions);
+
+            Assert.AreEqual(1, singleLines.Count);
+            Assert.AreEqual(ContributionType.More, singleLines[0].type);
+
+            Assert.AreEqual(2, bandLines.Count);
+            Assert.AreEqual(ArmorDef, bandLines[0].stat);
+            Assert.AreEqual(HealthDef, bandLines[1].stat);
+            Assert.AreEqual(ContributionType.Increased, bandLines[0].type);
+            Assert.AreEqual(ContributionType.Increased, bandLines[1].type);
+
+            Assert.AreEqual(2, multiLines.Count);
+            Assert.AreSame(multiLines[0].amount, multiLines[1].amount);
+        }
+
+        [Test]
         public void RolledGrants_PackUnpack_RoundTrips() {
             var rolled = new RolledGrants {
                 baked = new[] {

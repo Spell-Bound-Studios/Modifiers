@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2] - 2026-07-09
+
+### Added
+- `DerivedMagnitude` read accessors — `Amount`, `PerPoints`, `Stepped`, `Source`, `Perspective` — so a tooltip can format "per N points of X" lines (same category as 0.2.0's `RolledMagnitude.Min`/`Max`/`Step`).
+
+### Changed
+- `ContributionSpecification.Lines` renamed to `StatContributions` and each entry now carries the `ContributionType`: `(stat, type, amount)` — the elementary stat contributions a shape decomposes into, complete enough for shape-agnostic consumers. A tooltip can render any future shape as honest per-stat lines without a per-shape format case (the sample item card now does exactly that as its fallback); the registry validates through the same enumeration. Shape-idiomatic prose ("11-19 Fire Damage") remains a per-shape, game-side concern.
+
 ## [0.2.1] - 2026-07-09
 
 ### Fixed

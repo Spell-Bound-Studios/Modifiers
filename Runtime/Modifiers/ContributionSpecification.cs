@@ -14,10 +14,12 @@ namespace Spellbound.Modifiers {
     [Serializable]
     public abstract class ContributionSpecification : ModifierGrant {
         /// <summary>
-        /// Every (stat, amount) pair this line contributes; the registry validates rolled-stat uniqueness
-        /// through it.
+        /// The elementary stat contributions this shape decomposes into — stat, contribution type, amount.
+        /// The registry validates rolled-stat uniqueness through it, and shape-agnostic consumers (tooltips,
+        /// tooling) can render any shape from it without a per-shape case.
         /// </summary>
-        public abstract IEnumerable<(StatDefinition stat, Magnitude amount)> Lines { get; }
+        public abstract IEnumerable<(StatDefinition stat, ContributionType type, Magnitude amount)>
+                StatContributions { get; }
 
         public abstract void Bake(System.Random rng, List<BakedRoll> into);
 

@@ -23,8 +23,9 @@ namespace Spellbound.Modifiers {
 
         public override bool IsValid => stat != null && amount != null && amount.IsValid;
 
-        public override IEnumerable<(StatDefinition stat, Magnitude amount)> Lines {
-            get { yield return (stat, amount); }
+        public override IEnumerable<(StatDefinition stat, ContributionType type, Magnitude amount)>
+                StatContributions {
+            get { yield return (stat, contributionType, amount); }
         }
 
         public override void Bake(System.Random rng, List<BakedRoll> into) {

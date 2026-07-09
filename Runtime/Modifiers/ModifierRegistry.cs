@@ -122,7 +122,7 @@ namespace Spellbound.Modifiers {
                                 $"invalid contribution at index {i}.");
                         }
 
-                        foreach (var (stat, amount) in specs[i].Lines)
+                        foreach (var (stat, _, amount) in specs[i].StatContributions)
                             RejectDuplicateRolledStat(rolledStats, stat, amount, definition);
                     }
 
