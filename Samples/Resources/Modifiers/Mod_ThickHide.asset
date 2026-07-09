@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6d6311429f1fda449e97fb960ee9a47, type: 3}
   m_Name: Mod_ThickHide
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   guid: 2b84c7dd34ce1e90b4e066838a3249e9
   hash: 3009119414
   modifierName: sample_thick_hide
@@ -19,12 +19,16 @@ MonoBehaviour:
   description: +8-15 armor
   icon: {fileID: 0}
   contributions:
-  - stat: {fileID: 11400000, guid: f80ef36a323cc0543bf5907a02714355, type: 2}
-    type: 0
-    magnitude: {rid: 1001}
+  - rid: 1000
   references:
     version: 2
     RefIds:
+    - rid: 1000
+      type: {class: SingleStatContribution, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        stat: {fileID: 11400000, guid: f80ef36a323cc0543bf5907a02714355, type: 2}
+        contributionType: 0
+        amount: {rid: 1001}
     - rid: 1001
       type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
       data:

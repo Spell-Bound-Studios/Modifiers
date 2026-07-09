@@ -16,6 +16,10 @@ namespace Spellbound.Modifiers {
         [SerializeField, Tooltip("Snap the roll to multiples of this. 1 = whole numbers, 0.5 = halves, 0 = any value.")]
         private float step;
 
+        public float Min => min;
+        public float Max => max;
+        public float Step => step;
+
         public override bool Rolls => true;
 
         public override float Bake(System.Random rng) {

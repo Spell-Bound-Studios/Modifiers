@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6d6311429f1fda449e97fb960ee9a47, type: 3}
   m_Name: Mod_Vigorous
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   guid: 30400d8c942a12e1bac4982726b5845a
   hash: 3915479941
   modifierName: sample_vigorous
@@ -19,12 +19,16 @@ MonoBehaviour:
   description: +30-60 max health
   icon: {fileID: 0}
   contributions:
-  - stat: {fileID: 11400000, guid: 35fcaf30f687e2242b392f6161e59e3a, type: 2}
-    type: 0
-    magnitude: {rid: 1001}
+  - rid: 1000
   references:
     version: 2
     RefIds:
+    - rid: 1000
+      type: {class: SingleStatContribution, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        stat: {fileID: 11400000, guid: 35fcaf30f687e2242b392f6161e59e3a, type: 2}
+        contributionType: 0
+        amount: {rid: 1001}
     - rid: 1001
       type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
       data:

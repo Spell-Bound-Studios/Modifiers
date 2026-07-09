@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6d6311429f1fda449e97fb960ee9a47, type: 3}
+  m_Name: Mod_T1_FireDamage
+  m_EditorClassIdentifier:
+  guid: 5491ca903bb14de1a1db6b548806b176
+  hash: 555705774
+  modifierName: sample_t1_fire_damage
+  displayName: T1 Fire Damage
+  description: adds 1-3 to 3-5 fire damage
+  icon: {fileID: 0}
+  contributions:
+  - rid: 1000
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: StatBandContribution, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        lowStat: {fileID: 11400000, guid: d15e1b4b0cf74f0592bbdde08128f097, type: 2}
+        lowAmount: {rid: 1001}
+        highStat: {fileID: 11400000, guid: 2b0fd878ef9a427db14882f056de867d, type: 2}
+        highAmount: {rid: 1002}
+        contributionType: 0
+        keepOrdered: 1
+    - rid: 1001
+      type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        min: 1
+        max: 3
+        step: 1
+    - rid: 1002
+      type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        min: 3
+        max: 5
+        step: 1

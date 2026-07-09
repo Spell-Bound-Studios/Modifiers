@@ -15,11 +15,18 @@ namespace Spellbound.Modifiers.Tests {
             return definition;
         }
 
-        public static ContributionSet Set(params ContributionSpecification[] specifications) {
-            var set = new ContributionSet();
-            SetField(set, "contributions", new List<ContributionSpecification>(specifications));
+        public static ModifierGrantSet Grants(params ModifierGrant[] grants) {
+            var set = new ModifierGrantSet();
+            SetField(set, "grants", new List<ModifierGrant>(grants));
 
             return set;
+        }
+
+        public static NamedModifierGrant Named(ModifierDefinition definition) {
+            var grant = new NamedModifierGrant();
+            SetField(grant, "definition", definition);
+
+            return grant;
         }
 
         public static FixedMagnitude Fixed(float value) {
@@ -51,18 +58,37 @@ namespace Spellbound.Modifiers.Tests {
             return magnitude;
         }
 
-        public static ContributionSpecification Specification(
-            StatDefinition stat, ContributionType type, Magnitude magnitude, StatDefinition pairedStat = null,
-            Magnitude pairedMagnitude = null, bool linkOrdered = false) {
-            var specification = new ContributionSpecification();
-            SetField(specification, "stat", stat);
-            SetField(specification, "type", type);
-            SetField(specification, "magnitude", magnitude);
-            SetField(specification, "pairedStat", pairedStat);
-            SetField(specification, "pairedMagnitude", pairedMagnitude);
-            SetField(specification, "linkOrdered", linkOrdered);
+        public static SingleStatContribution Single(StatDefinition stat, ContributionType type, Magnitude amount) {
+            var contribution = new SingleStatContribution();
+            SetField(contribution, "stat", stat);
+            SetField(contribution, "contributionType", type);
+            SetField(contribution, "amount", amount);
 
-            return specification;
+            return contribution;
+        }
+
+        public static StatBandContribution Band(
+            StatDefinition lowStat, Magnitude lowAmount, StatDefinition highStat, Magnitude highAmount,
+            ContributionType type = ContributionType.Flat, bool keepOrdered = true) {
+            var contribution = new StatBandContribution();
+            SetField(contribution, "lowStat", lowStat);
+            SetField(contribution, "lowAmount", lowAmount);
+            SetField(contribution, "highStat", highStat);
+            SetField(contribution, "highAmount", highAmount);
+            SetField(contribution, "contributionType", type);
+            SetField(contribution, "keepOrdered", keepOrdered);
+
+            return contribution;
+        }
+
+        public static MultiStatContribution Multi(
+            ContributionType type, Magnitude amount, params StatDefinition[] stats) {
+            var contribution = new MultiStatContribution();
+            SetField(contribution, "stats", new List<StatDefinition>(stats));
+            SetField(contribution, "contributionType", type);
+            SetField(contribution, "amount", amount);
+
+            return contribution;
         }
 
         private static void SetField(object target, string name, object value) =>
@@ -88,7 +114,7 @@ namespace Spellbound.Modifiers.Tests {
             ScalarMagnitude scalar = min == max ? Fixed(min) : Rolled(min, max, step);
             Magnitude magnitude = sourceStat != null ? Derived(scalar, 1, sourceStat) : scalar;
 
-            return Specification(stat, type, magnitude);
+            return Single(stat, type, magnitude);
         }
 
         public static StatTemplate CreateTemplate(

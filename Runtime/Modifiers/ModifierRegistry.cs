@@ -116,15 +116,14 @@ namespace Spellbound.Modifiers {
                     var rolledStats = new HashSet<uint>();
 
                     for (var i = 0; i < specs.Count; i++) {
-                        if (!specs[i].IsValid) {
+                        if (specs[i] == null || !specs[i].IsValid) {
                             throw new InvalidOperationException(
-                                $"Modifier '{definition.ModifierName}' (asset '{definition.name}') has an invalid " +
-                                $"contribution at index {i}: stat and magnitude must be assigned (and paired magnitude " +
-                                "when a paired stat is set).");
+                                $"Modifier '{definition.ModifierName}' (asset '{definition.name}') has a missing or " +
+                                $"invalid contribution at index {i}.");
                         }
 
-                        RejectDuplicateRolledStat(rolledStats, specs[i].Stat, specs[i].Magnitude, definition);
-                        RejectDuplicateRolledStat(rolledStats, specs[i].PairedStat, specs[i].PairedMagnitude, definition);
+                        foreach (var (stat, amount) in specs[i].Lines)
+                            RejectDuplicateRolledStat(rolledStats, stat, amount, definition);
                     }
 
                     Registry.Add(definition);

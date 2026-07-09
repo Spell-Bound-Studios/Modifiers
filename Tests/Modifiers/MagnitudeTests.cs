@@ -13,7 +13,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void Fixed_AppliesConstant() {
             var def = Definitions.Create(
-                Definitions.Specification(ArmorDef, ContributionType.Flat, Definitions.Fixed(43f)));
+                Definitions.Single(ArmorDef, ContributionType.Flat, Definitions.Fixed(43f)));
             var target = new Modifiable();
             target.Stats.SetBase(Armor, 0f);
 
@@ -25,7 +25,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void Rolled_BakesInRange() {
             var def = Definitions.Create(
-                Definitions.Specification(ArmorDef, ContributionType.Flat, Definitions.Rolled(8f, 15f, 1f)));
+                Definitions.Single(ArmorDef, ContributionType.Flat, Definitions.Rolled(8f, 15f, 1f)));
 
             var rolled = def.Roll(new System.Random(7), 7u);
 
@@ -36,7 +36,7 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void Derived_FixedCoefficient_ScalesLiveWithSource() {
-            var def = Definitions.Create(Definitions.Specification(
+            var def = Definitions.Create(Definitions.Single(
                 ArmorDef, ContributionType.Flat, Definitions.Derived(Definitions.Fixed(1f), 10, HealthDef)));
             var target = new Modifiable();
             target.Stats.SetBase(Armor, 0f);
@@ -54,7 +54,7 @@ namespace Spellbound.Modifiers.Tests {
         [Test]
         public void Derived_DefinitionPatch_AffectsExistingRoll() {
             var magnitude = Definitions.Derived(Definitions.Fixed(1f), 10, HealthDef);
-            var def = Definitions.Create(Definitions.Specification(ArmorDef, ContributionType.Flat, magnitude));
+            var def = Definitions.Create(Definitions.Single(ArmorDef, ContributionType.Flat, magnitude));
             var rolled = def.Roll(new System.Random(7), 7u);
 
             var before = new Modifiable();
@@ -78,7 +78,7 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void Derived_RolledCoefficient_Composes() {
-            var def = Definitions.Create(Definitions.Specification(
+            var def = Definitions.Create(Definitions.Single(
                 ArmorDef, ContributionType.Flat, Definitions.Derived(Definitions.Rolled(1f, 2f, 1f), 10, HealthDef)));
 
             var rolled = def.Roll(new System.Random(7), 7u);
@@ -98,7 +98,7 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void Derived_Stepped_FloorsByBreakpoint() {
-            var def = Definitions.Create(Definitions.Specification(
+            var def = Definitions.Create(Definitions.Single(
                 ArmorDef, ContributionType.Flat, Definitions.Derived(Definitions.Fixed(1f), 20, HealthDef, true)));
             var target = new Modifiable();
             target.Stats.SetBase(Armor, 0f);
@@ -110,10 +110,10 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void Band_LinkOrdered_LowNeverExceedsHigh() {
-            var def = Definitions.Create(Definitions.Specification(
-                ArmorDef, ContributionType.Flat, Definitions.Rolled(1f, 10f, 1f),
-                HealthDef, Definitions.Rolled(1f, 10f, 1f), true));
+        public void Band_KeepOrdered_LowNeverExceedsHigh() {
+            var def = Definitions.Create(Definitions.Band(
+                ArmorDef, Definitions.Rolled(1f, 10f, 1f),
+                HealthDef, Definitions.Rolled(1f, 10f, 1f)));
 
             for (var seed = 0; seed < 50; seed++) {
                 var rolled = def.Roll(new System.Random(seed), 7u);
@@ -125,8 +125,8 @@ namespace Spellbound.Modifiers.Tests {
 
         [Test]
         public void Baked_KeyedToStat_SurvivesDefinitionReorder() {
-            var armorSpec = Definitions.Specification(ArmorDef, ContributionType.Flat, Definitions.Rolled(5f, 5f));
-            var healthSpec = Definitions.Specification(HealthDef, ContributionType.Flat, Definitions.Rolled(30f, 30f));
+            var armorSpec = Definitions.Single(ArmorDef, ContributionType.Flat, Definitions.Rolled(5f, 5f));
+            var healthSpec = Definitions.Single(HealthDef, ContributionType.Flat, Definitions.Rolled(30f, 30f));
             var rolled = Definitions.Create(armorSpec, healthSpec).Roll(new System.Random(7), 7u);
 
             var reordered = Definitions.Create(healthSpec, armorSpec);

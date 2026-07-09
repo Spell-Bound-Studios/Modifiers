@@ -9,6 +9,7 @@ using UnityEngine;
 namespace Spellbound.Modifiers.Editor {
     [CustomPropertyDrawer(typeof(Magnitude), true)]
     [CustomPropertyDrawer(typeof(Condition), true)]
+    [CustomPropertyDrawer(typeof(ModifierGrant), true)]
     public sealed class SerializeReferencePicker : PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             EditorGUI.BeginProperty(position, label, property);

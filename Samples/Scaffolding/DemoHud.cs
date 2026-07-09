@@ -17,6 +17,7 @@ namespace Spellbound.Modifiers.Samples {
         private VisualElement _buffQuadContent;
         private bool _quadBuilt;
         private string _lastLevelIcons;
+        private ItemPanel _itemPanel;
 
         public VisualElement CircuitHost { get; private set; }
 
@@ -56,6 +57,11 @@ namespace Spellbound.Modifiers.Samples {
             BuildRightPanel();
         }
 
+        private void OnDisable() {
+            _itemPanel?.Dispose();
+            _itemPanel = null;
+        }
+
         private void LateUpdate() {
             _status.text = $"Enemies alive: {demo.AliveCount}";
 
@@ -93,6 +99,13 @@ namespace Spellbound.Modifiers.Samples {
 
             panel.Add(Section("PLAYER EQUIPMENT"));
             panel.Add(ToggleButton("Flame Helmet (+5 Armor/Fire)", ToggleFlameHelmet));
+
+            if (demo.Player != null) {
+                panel.Add(Section("ITEM — STAFF"));
+                _itemPanel?.Dispose();
+                _itemPanel = new ItemPanel(demo.Player.Modifiable);
+                panel.Add(_itemPanel.Root);
+            }
 
             panel.Add(Section("FIREBALL MODIFIERS"));
             panel.Add(ToggleButton("+100% More Fire Damage", ToggleFireDamage));

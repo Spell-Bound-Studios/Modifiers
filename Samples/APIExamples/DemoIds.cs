@@ -12,6 +12,8 @@ namespace Spellbound.Modifiers.Samples {
         public static readonly StatId ColdResistance = StatId.From("sample_cold_resistance");
         public static readonly StatId LightningResistance = StatId.From("sample_lightning_resistance");
         public static readonly StatId PhysicalDamage = StatId.From("sample_physical_damage");
+        public static readonly StatId FireDamageMin = StatId.From("sample_fire_damage_min");
+        public static readonly StatId FireDamageMax = StatId.From("sample_fire_damage_max");
         public static readonly StatId FireDamage = StatId.From("sample_fire_damage");
         public static readonly StatId ColdDamage = StatId.From("sample_cold_damage");
         public static readonly StatId LightningDamage = StatId.From("sample_lightning_damage");

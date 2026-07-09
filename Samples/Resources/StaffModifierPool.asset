@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e983ff537a889bd41bf3b036153e864e, type: 3}
+  m_Name: StaffModifierPool
+  m_EditorClassIdentifier:
+  entries:
+  - candidate: {fileID: 11400000, guid: eb565a810db74283bc0c1f4d55370cc2, type: 2}
+    weight: 10
+  - candidate: {fileID: 11400000, guid: 8b0abb39cd7a48b99adf4159d88efc7c, type: 2}
+    weight: 10
+  - candidate: {fileID: 11400000, guid: 5b3d6e54c7a34ef586ebceab1cd1e3c3, type: 2}
+    weight: 10
+  - candidate: {fileID: 11400000, guid: d78a92c199b04d3bbe89e5268a879254, type: 2}
+    weight: 8
+  - candidate: {fileID: 11400000, guid: 35526ebef2ab469eaca3b2f58d210912, type: 2}
+    weight: 8
+  - candidate: {fileID: 11400000, guid: f45b0ecf15619de4bae5b1234e09bc82, type: 2}
+    weight: 8
+  - candidate: {fileID: 11400000, guid: 5491ca903bb14de1a1db6b548806b176, type: 2}
+    weight: 6
+  - candidate: {fileID: 11400000, guid: 031644bc84cb493aa3c9d7e47c79aa9b, type: 2}
+    weight: 6
+  - candidate: {fileID: 11400000, guid: 60a1cb6795d4461c8278f4f6db36dbc4, type: 2}
+    weight: 4

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6d6311429f1fda449e97fb960ee9a47, type: 3}
   m_Name: Mod_Hardened
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   guid: fd632de0b8c332fbebe870e322431843
   hash: 4235098478
   modifierName: sample_hardened
@@ -19,12 +19,16 @@ MonoBehaviour:
   description: +30 armor for 5 seconds when the shield breaks
   icon: {fileID: 0}
   contributions:
-  - stat: {fileID: 11400000, guid: f80ef36a323cc0543bf5907a02714355, type: 2}
-    type: 0
-    magnitude: {rid: 1001}
+  - rid: 1000
   references:
     version: 2
     RefIds:
+    - rid: 1000
+      type: {class: SingleStatContribution, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      data:
+        stat: {fileID: 11400000, guid: f80ef36a323cc0543bf5907a02714355, type: 2}
+        contributionType: 0
+        amount: {rid: 1001}
     - rid: 1001
       type: {class: FixedMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
       data:

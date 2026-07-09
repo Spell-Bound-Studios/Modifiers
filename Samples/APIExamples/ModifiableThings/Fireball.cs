@@ -51,13 +51,24 @@ namespace Spellbound.Modifiers.Samples {
 
         private List<StatAndValue> BuildDamage(bool empowered) {
             var multiplier = empowered ? 2f : 1f;
-            var damage = new List<StatAndValue> { new(DemoStats.FireDamage, FireDamage * multiplier) };
+            var fire = FireDamage + RollFireDamageRange();
+            var damage = new List<StatAndValue> { new(DemoStats.FireDamage, fire * multiplier) };
             var chaos = GetValue(DemoStats.ChaosDamage);
 
             if (chaos > 0f)
                 damage.Add(new StatAndValue(DemoStats.ChaosDamage, chaos * multiplier));
 
             return damage;
+        }
+
+        private float RollFireDamageRange() {
+            var low = GetValue(DemoStats.FireDamageMin);
+            var high = GetValue(DemoStats.FireDamageMax);
+
+            if (high <= low)
+                return low;
+
+            return UnityEngine.Random.Range(low, high);
         }
 
         private bool TrySpendEmpowerment() {

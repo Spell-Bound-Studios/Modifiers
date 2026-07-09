@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6d6311429f1fda449e97fb960ee9a47, type: 3}
-  m_Name: Mod_Warded
+  m_Name: Mod_T1_FireRes
   m_EditorClassIdentifier:
-  guid: feb7f43409e856adb2b707ec0fa6c14a
-  hash: 296000630
-  modifierName: sample_warded
-  displayName: Warded
-  description: +30-60% increased shield
+  guid: 8b0abb39cd7a48b99adf4159d88efc7c
+  hash: 3713825829
+  modifierName: sample_t1_fire_res
+  displayName: T1 Fire Resistance
+  description: +1-10 fire resistance
   icon: {fileID: 0}
   contributions:
   - rid: 1000
@@ -26,12 +26,12 @@ MonoBehaviour:
     - rid: 1000
       type: {class: SingleStatContribution, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
       data:
-        stat: {fileID: 11400000, guid: fad4ded0ff785e34498dacc21ae4cb45, type: 2}
-        contributionType: 1
+        stat: {fileID: 11400000, guid: b888e3a5adc5a9b41857c78d6aae0aa4, type: 2}
+        contributionType: 0
         amount: {rid: 1001}
     - rid: 1001
       type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
       data:
-        min: 0.3
-        max: 0.6
-        step: 0
+        min: 1
+        max: 10
+        step: 1

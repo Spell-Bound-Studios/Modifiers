@@ -11,7 +11,7 @@ namespace Spellbound.Modifiers {
         [SerializeField] private string displayName;
         [SerializeField, TextArea] private string description;
         [SerializeField, SpritePreview] private Sprite icon;
-        [SerializeField] private List<ContributionSpecification> contributions = new();
+        [SerializeReference] private List<ContributionSpecification> contributions = new();
 
         public string ModifierName => modifierName;
         public string DisplayName => string.IsNullOrEmpty(displayName) ? modifierName : displayName;

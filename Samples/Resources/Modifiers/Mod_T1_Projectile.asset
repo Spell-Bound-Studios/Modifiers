@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6d6311429f1fda449e97fb960ee9a47, type: 3}
-  m_Name: Mod_Warded
+  m_Name: Mod_T1_Projectile
   m_EditorClassIdentifier:
-  guid: feb7f43409e856adb2b707ec0fa6c14a
-  hash: 296000630
-  modifierName: sample_warded
-  displayName: Warded
-  description: +30-60% increased shield
+  guid: 60a1cb6795d4461c8278f4f6db36dbc4
+  hash: 189550558
+  modifierName: sample_t1_projectile
+  displayName: T1 Projectile
+  description: +1 projectile
   icon: {fileID: 0}
   contributions:
   - rid: 1000
@@ -26,12 +26,10 @@ MonoBehaviour:
     - rid: 1000
       type: {class: SingleStatContribution, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
       data:
-        stat: {fileID: 11400000, guid: fad4ded0ff785e34498dacc21ae4cb45, type: 2}
-        contributionType: 1
+        stat: {fileID: 11400000, guid: 6841ac427ba39e1438e3e477c440c6bb, type: 2}
+        contributionType: 0
         amount: {rid: 1001}
     - rid: 1001
-      type: {class: RolledMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
+      type: {class: FixedMagnitude, ns: Spellbound.Modifiers, asm: Spellbound.Modifiers}
       data:
-        min: 0.3
-        max: 0.6
-        step: 0
+        value: 1

@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0] - 2026-07-09
+
+One authored list for putting modifiers on a thing — named or inline per entry, same pathways underneath.
+
+### Added
+- `ModifierGrant` / `ModifierGrantSet` / `RolledGrants` — a `[SerializeReference]` list where each inspector entry is a `NamedModifierGrant` (a `ModifierDefinition` reference, hash-traceable) or a contribution line authored in place (no asset, no hash — its route back is the owning thing). `Roll(rng, sourceId)` at the owning instance's creation returns a packable `RolledGrants` (stat-keyed baked rolls + rolled named modifiers); `Apply` hydrates it back; everything lands under one source id, so `RemoveSource` strips the set.
+- Contribution shapes, chosen per entry by the type picker: `SingleStatContribution` (stat + type + amount), `StatBandContribution` (low/high ends across two stats, any magnitude per end — "adds 1-3 to 3-5 fire damage", "5 to 10 per 25 strength"), `MultiStatContribution` (one amount rolled ONCE, shared by every listed stat — "+10-20 to all resistances"). New shapes are added by subclassing `ContributionSpecification`; the picker lists them automatically.
+- `RolledMagnitude.Min` / `Max` / `Step` read accessors (tooltip roll-range display).
+- Item sample: `ItemDefinition` (implicits as one grant list + a `ModifierPool`) and `ItemInstance` (construction = the drop moment; implicits roll once and belong to the instance), with a HUD item card — drop/equip/craft buttons, implicit lines shown without ranges, named lines with them. Staff item, T1 modifier pool, fire damage min/max stats; the fireball samples the range per cast.
+
+### Changed
+- `ContributionSpecification` is abstract and extends `ModifierGrant` — contribution lines are granted directly. `ModifierDefinition.contributions` is `[SerializeReference]`; **modifier assets re-authored** (all samples included). Registry validation walks each spec's `Lines`.
+- `linkOrdered` → `keepOrdered`, now honest: the clamp engages against fixed ends too, adjusts whichever end rolled (never re-rolls), and `IsValid` rejects ordered bands with derived ends or statically inverted fixed pairs.
+
+### Removed
+- `ContributionSet` — superseded by `ModifierGrantSet`, whose `Roll`/`Apply` are the bake/hydrate verbs it lacked; an all-inline grant set is the same thing with a wire story.
+- The `ContributionSpecification` foldout drawer — the generic `SerializeReferencePicker` covers grants, contribution shapes, and magnitudes; the paired-stat foldout (and its mistaken "re-rolls" tooltip) is gone.
+
 ## [0.1.9] - 2026-07-08
 
 ### Added
