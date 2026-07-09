@@ -32,7 +32,7 @@ namespace Spellbound.Modifiers {
         #region Modifiers
 
         public void AddContribution(
-            StatId stat, ContributionType type, float value, uint sourceId = Contribution.Innate,
+            StatId stat, ContributionType type, float value, uint sourceId = Contribution.None,
             Condition condition = null) {
             if (!_mods.TryGetValue(stat, out var list)) {
                 list = new List<Contribution>();
@@ -41,7 +41,7 @@ namespace Spellbound.Modifiers {
 
             list.Add(Contribution.Of(type, value, sourceId, condition));
 
-            if (sourceId != Contribution.Innate) {
+            if (sourceId != Contribution.None) {
                 if (!_bySource.TryGetValue(sourceId, out var stats)) {
                     stats = new HashSet<StatId>();
                     _bySource[sourceId] = stats;
@@ -55,7 +55,7 @@ namespace Spellbound.Modifiers {
 
         public void AddDerived(
             StatId stat, ContributionType type, StatId sourceStat, float amount, int perPoints, bool stepped,
-            Perspective perspective, uint sourceId = Contribution.Innate, Condition condition = null) {
+            Perspective perspective, uint sourceId = Contribution.None, Condition condition = null) {
             if (sourceStat.Hash == 0) {
                 Log.Error($"AddDerived on '{stat}' requires a source stat; nothing added.");
 
@@ -76,7 +76,7 @@ namespace Spellbound.Modifiers {
             list.Add(Contribution.Derived(type, sourceStat, amount, perPoints, stepped, perspective, sourceId,
                     condition));
 
-            if (sourceId != Contribution.Innate) {
+            if (sourceId != Contribution.None) {
                 if (!_bySource.TryGetValue(sourceId, out var stats)) {
                     stats = new HashSet<StatId>();
                     _bySource[sourceId] = stats;
@@ -89,8 +89,8 @@ namespace Spellbound.Modifiers {
         }
 
         public int RemoveBySource(uint sourceId) {
-            if (sourceId == Contribution.Innate) {
-                Log.Error("Attempting to remove innate contributions (source id 0).");
+            if (sourceId == Contribution.None) {
+                Log.Error("Attempting to remove permanent contributions (source id 0).");
 
                 return 0;
             }

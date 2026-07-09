@@ -86,11 +86,11 @@ namespace Spellbound.Modifiers.Tests {
                 Assert.AreEqual(0, new StatBlock().RemoveBySource(123u));
 
         [Test]
-        public void RemoveBySource_Innate_ReturnsZero() {
+        public void RemoveBySource_None_ReturnsZero() {
             var block = new StatBlock();
             block.AddContribution(Armor, ContributionType.Flat, 10f);
 
-            using (new LogMute()) Assert.AreEqual(0, block.RemoveBySource(Contribution.Innate));
+            using (new LogMute()) Assert.AreEqual(0, block.RemoveBySource(Contribution.None));
         }
 
         [Test]

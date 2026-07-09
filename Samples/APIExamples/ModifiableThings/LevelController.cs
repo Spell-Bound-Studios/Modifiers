@@ -18,8 +18,10 @@ namespace Spellbound.Modifiers.Samples {
 
             _rolled.Clear();
 
-            if (pool != null)
-                _rolled.AddRange(pool.Roll(count, rng, () => _nextSourceId++));
+            if (pool != null) {
+                foreach (var definition in pool.Sample(count, rng))
+                    _rolled.Add(definition.Roll(rng, _nextSourceId++));
+            }
 
             foreach (var modifier in _rolled)
                 modifier.TryApplyTo(Modifiable);

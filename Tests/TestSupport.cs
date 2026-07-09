@@ -15,6 +15,13 @@ namespace Spellbound.Modifiers.Tests {
             return definition;
         }
 
+        public static ContributionSet Set(params ContributionSpecification[] specifications) {
+            var set = new ContributionSet();
+            SetField(set, "contributions", new List<ContributionSpecification>(specifications));
+
+            return set;
+        }
+
         public static FixedMagnitude Fixed(float value) {
             var magnitude = new FixedMagnitude();
             SetField(magnitude, "value", value);
@@ -61,12 +68,6 @@ namespace Spellbound.Modifiers.Tests {
         private static void SetField(object target, string name, object value) =>
                 target.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(target, value);
 
-        public static System.Func<uint> Ids() {
-            uint next = 1;
-
-            return () => next++;
-        }
-
         public static ModifierPool CreatePool(params (ModifierDefinition candidate, int weight)[] entries) {
             var pool = ScriptableObject.CreateInstance<ModifierPool>();
             var list = new List<WeightedEntry<ModifierDefinition>>();
@@ -99,7 +100,7 @@ namespace Spellbound.Modifiers.Tests {
                     .SetValue(template, new List<BaseStat>(bases));
 
             typeof(StatTemplate)
-                    .GetField("innateModifiers", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetField("modifiers", BindingFlags.NonPublic | BindingFlags.Instance)
                     .SetValue(template, new List<ModifierDefinition>(innates));
 
             return template;

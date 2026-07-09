@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.9] - 2026-07-08
+
+### Added
+- `ContributionSet` — a serializable bundle of `ContributionSpecification`s a consumer embeds on its own type to author inline stat lines (fixed / rolled / derived / paired min-max) with no ScriptableObject per value. `RollAndApply(target, rng, sourceId)` rolls and applies them under a caller-supplied source id — the owning instance's hash for removal via `Modifiable.RemoveSource`, or `Contribution.None` for permanent. It has no wire format; the inline value is recoverable from the owning thing. Invalid specs are warned and skipped.
+- Shared per-spec logic lifted onto `ContributionSpecification`: `Bake` (rolled endpoints + linkOrdered clamp), `ApplyBaked`, and `RollAndApply`. `ModifierDefinition.Roll` and `RolledModifier.ApplyTo` now delegate to these — one implementation for the named and inline paths, byte-identical results.
+
+## [0.1.8] - 2026-07-08
+
+One modifier concept, no categories, no batch rollers.
+
+### Removed
+- `ModifierPool.Roll` and `StatTemplate.RollInnate` — batch rollers that existed only to loop-and-stamp source ids, which is the sole reason the `Func` id-provider existed. Rolling is `definition.Roll(rng, sourceId)`; a caller loops over `pool.Sample(count, rng)` or `template.Modifiers` and chooses each id inline. No `Func`.
+
+### Changed
+- `StatTemplate.innateModifiers` / `InnateModifiers` → `modifiers` / `Modifiers`. "Innate" was never a modifier category — just the list of modifiers a template happens to hold.
+- `Contribution.Innate` → `Contribution.None` — the reserved source id 0 meaning "no removable source," not a kind of modifier.
+
 ## [0.1.7] - 2026-07-08
 
 ### Changed

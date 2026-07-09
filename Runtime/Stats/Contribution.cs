@@ -2,7 +2,7 @@
 
 namespace Spellbound.Modifiers {
     public readonly struct Contribution {
-        public const uint Innate = 0;
+        public const uint None = 0;
 
         public readonly ContributionType Type;
         public readonly int ValueInternal;
@@ -34,12 +34,12 @@ namespace Spellbound.Modifiers {
         public bool IsDerived => SourceStat.Hash != 0;
 
         public static Contribution Of(
-            ContributionType type, float value, uint sourceId = Innate, Condition condition = null) =>
+            ContributionType type, float value, uint sourceId = None, Condition condition = null) =>
                 new(type, StatSettings.ToInternal(value), sourceId, condition);
 
         public static Contribution Derived(
             ContributionType type, StatId sourceStat, float amount, int perPoints, bool stepped,
-            Perspective perspective, uint sourceId = Innate, Condition condition = null) =>
+            Perspective perspective, uint sourceId = None, Condition condition = null) =>
                 new(type, 0, sourceId, condition, sourceStat, amount, perPoints, stepped, perspective);
     }
 }

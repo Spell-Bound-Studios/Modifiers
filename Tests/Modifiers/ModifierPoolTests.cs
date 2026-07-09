@@ -63,17 +63,5 @@ namespace Spellbound.Modifiers.Tests {
             CollectionAssert.AreEqual(first, second);
         }
 
-        [Test]
-        public void Roll_AssignsNonZeroSourceIds() {
-            var pool = Definitions.CreatePool(
-                (Definitions.Create(), 1), (Definitions.Create(), 1), (Definitions.Create(), 1));
-
-            var rolled = pool.Roll(3, new System.Random(7), Definitions.Ids());
-
-            Assert.AreEqual(3, rolled.Count);
-
-            foreach (var modifier in rolled)
-                Assert.AreNotEqual(0u, modifier.sourceId);
-        }
     }
 }

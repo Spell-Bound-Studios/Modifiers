@@ -201,7 +201,8 @@ namespace Spellbound.Modifiers.Samples {
             if (_pool != null && _rng != null) {
                 var starRoll = _rng.Next(100);
                 var stars = starRoll < 50 ? 0 : starRoll < 85 ? 1 : 2;
-                _rolled.AddRange(_pool.Roll(stars, _rng, () => _nextSourceId++));
+                foreach (var definition in _pool.Sample(stars, _rng))
+                    _rolled.Add(definition.Roll(_rng, _nextSourceId++));
 
                 foreach (var modifier in _rolled)
                     modifier.TryApplyTo(Modifiable);

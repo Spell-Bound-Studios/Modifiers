@@ -22,26 +22,8 @@ namespace Spellbound.Modifiers {
         public RolledModifier Roll(System.Random rng, uint sourceId) {
             var baked = new List<BakedRoll>();
 
-            for (var i = 0; i < contributions.Count; i++) {
-                var spec = contributions[i];
-                var low = 0f;
-                var lowBaked = false;
-
-                if (spec.Stat != null && spec.Magnitude != null && spec.Magnitude.Rolls) {
-                    low = spec.Magnitude.Bake(rng);
-                    baked.Add(new BakedRoll { statHash = spec.Stat.Hash, value = low });
-                    lowBaked = true;
-                }
-
-                if (spec.PairedStat != null && spec.PairedMagnitude != null && spec.PairedMagnitude.Rolls) {
-                    var high = spec.PairedMagnitude.Bake(rng);
-
-                    if (spec.LinkOrdered && lowBaked && high < low)
-                        high = low;
-
-                    baked.Add(new BakedRoll { statHash = spec.PairedStat.Hash, value = high });
-                }
-            }
+            for (var i = 0; i < contributions.Count; i++)
+                contributions[i].Bake(rng, baked);
 
             return new RolledModifier { modifierHash = Hash, sourceId = sourceId, baked = baked.ToArray() };
         }

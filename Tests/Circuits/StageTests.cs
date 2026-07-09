@@ -48,12 +48,12 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void RemoveBySource_InnateId_RemovesNothing() {
+        public void RemoveBySource_NoneId_RemovesNothing() {
             var stage = new Stage(1u);
             var innate = new RecordingLeaf();
             stage.Add(innate);
 
-            Assert.AreEqual(0, stage.RemoveBySource(Contribution.Innate));
+            Assert.AreEqual(0, stage.RemoveBySource(Contribution.None));
 
             stage.Process(new CircuitContext());
 

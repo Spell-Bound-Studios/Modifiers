@@ -32,13 +32,13 @@ namespace Spellbound.Modifiers {
             }
         }
 
-        public void Add(Node node, int priority = 0, uint sourceId = Contribution.Innate) {
+        public void Add(Node node, int priority = 0, uint sourceId = Contribution.None) {
             _grants.Add(new Grant(node, priority, sourceId, _sequence++));
             _dirty = true;
         }
 
         public int RemoveBySource(uint sourceId) {
-            if (sourceId == Contribution.Innate)
+            if (sourceId == Contribution.None)
                 return 0;
 
             var removed = _grants.RemoveAll(g => g.SourceId == sourceId);

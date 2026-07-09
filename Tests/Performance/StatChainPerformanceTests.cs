@@ -102,9 +102,10 @@ namespace Spellbound.Modifiers.Tests.Performance {
         [Test]
         public void Read_HotPath_DoesNotAllocate() {
             var skill = _skills[0];
-            skill.GetValue(Fire);
+            TestDelegate read = () => { skill.GetValue(Fire); };
+            read();
 
-            Assert.That(() => { skill.GetValue(Fire); }, Is.Not.AllocatingGCMemory());
+            Assert.That(read, Is.Not.AllocatingGCMemory());
         }
     }
 }

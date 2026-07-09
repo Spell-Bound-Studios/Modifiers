@@ -28,28 +28,8 @@ namespace Spellbound.Modifiers {
         public void ApplyTo(Modifiable target, ModifierDefinition definition) {
             var contributions = definition.Contributions;
 
-            for (var i = 0; i < contributions.Count; i++) {
-                var spec = contributions[i];
-
-                if (spec.Stat != null && spec.Magnitude != null)
-                    spec.Magnitude.ApplyTo(target.Stats, new StatId(spec.Stat.Hash), spec.Type, sourceId,
-                            BakedFor(spec.Stat.Hash));
-
-                if (spec.PairedStat != null && spec.PairedMagnitude != null)
-                    spec.PairedMagnitude.ApplyTo(target.Stats, new StatId(spec.PairedStat.Hash), spec.Type, sourceId,
-                            BakedFor(spec.PairedStat.Hash));
-            }
-        }
-
-        private readonly float BakedFor(uint statHash) {
-            if (baked != null) {
-                for (var i = 0; i < baked.Length; i++) {
-                    if (baked[i].statHash == statHash)
-                        return baked[i].value;
-                }
-            }
-
-            return 0f;
+            for (var i = 0; i < contributions.Count; i++)
+                contributions[i].ApplyBaked(target.Stats, sourceId, baked);
         }
 
         public int RemoveFrom(Modifiable target) => target.RemoveSource(sourceId);

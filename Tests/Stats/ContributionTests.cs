@@ -13,10 +13,10 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void Of_Defaults_AreInnateAndUnconditional() {
+        public void Of_Defaults_AreNoneAndUnconditional() {
             var contribution = Contribution.Of(ContributionType.Flat, 1f);
 
-            Assert.AreEqual(Contribution.Innate, contribution.SourceId);
+            Assert.AreEqual(Contribution.None, contribution.SourceId);
             Assert.IsFalse(contribution.IsConditional);
         }
 

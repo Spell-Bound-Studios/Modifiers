@@ -40,57 +40,30 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
-        public void RollInnate_RollsEachDefinition() {
+        public void Modifiers_ExposesAuthoredDefinitions() {
             var thickHide = ModifierRegistry.GetDefinition("sample_thick_hide");
             var vigorous = ModifierRegistry.GetDefinition("sample_vigorous");
             var template = Definitions.CreateTemplate(new BaseStat[0], thickHide, vigorous);
 
-            var rolled = template.RollInnate(new System.Random(7), Definitions.Ids());
-
-            Assert.AreEqual(2, rolled.Count);
-            Assert.AreEqual(thickHide.Hash, rolled[0].modifierHash);
-            Assert.AreEqual(vigorous.Hash, rolled[1].modifierHash);
-            Assert.AreNotEqual(0u, rolled[0].sourceId);
-            Assert.AreNotEqual(0u, rolled[1].sourceId);
+            Assert.AreEqual(2, template.Modifiers.Count);
+            Assert.AreEqual(thickHide, template.Modifiers[0]);
+            Assert.AreEqual(vigorous, template.Modifiers[1]);
         }
 
         [Test]
-        public void RollInnate_SkipsNullDefinitions() {
-            using (new LogMute()) {
-                var template = Definitions.CreateTemplate(new BaseStat[0],
-                    null, ModifierRegistry.GetDefinition("sample_thick_hide"));
-
-                Assert.AreEqual(1, template.RollInnate(new System.Random(7), Definitions.Ids()).Count);
-            }
-        }
-
-        [Test]
-        public void RollInnate_SameSeed_SameRolls() {
-            var template = Definitions.CreateTemplate(new BaseStat[0],
-                ModifierRegistry.GetDefinition("sample_thick_hide"));
-
-            var first = template.RollInnate(new System.Random(42), Definitions.Ids());
-            var second = template.RollInnate(new System.Random(42), Definitions.Ids());
-
-            Assert.AreEqual(first[0].baked[0].value, second[0].baked[0].value);
-        }
-
-        [Test]
-        public void SpawnFlow_BasesPlusInnates_Compose() {
+        public void SpawnFlow_BasesPlusModifiers_Compose() {
             var template = Definitions.CreateTemplate(new[] { Base("sample_armor", 10f) },
                 ModifierRegistry.GetDefinition("sample_thick_hide"));
 
             var target = new Modifiable();
             template.ApplyTo(target);
 
-            var rolled = template.RollInnate(new System.Random(7), Definitions.Ids());
+            var rolled = template.Modifiers[0].Roll(new System.Random(7), 7u);
+            rolled.TryApplyTo(target);
 
-            foreach (var modifier in rolled)
-                modifier.TryApplyTo(target);
+            Assert.AreEqual(10f + rolled.baked[0].value, target.GetValue(Armor), 0.001f);
 
-            Assert.AreEqual(10f + rolled[0].baked[0].value, target.GetValue(Armor), 0.001f);
-
-            target.RemoveSource(rolled[0].sourceId);
+            target.RemoveSource(7u);
 
             Assert.AreEqual(10f, target.GetValue(Armor), 0.001f);
         }

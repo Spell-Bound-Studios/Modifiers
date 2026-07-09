@@ -10,11 +10,11 @@ namespace Spellbound.Modifiers {
     public class StatTemplate {
         [SerializeField] private List<BaseStat> baseStats = new();
         [SerializeField] private List<ResourcePoolStat> resourcePools = new();
-        [SerializeField] private List<ModifierDefinition> innateModifiers = new();
+        [SerializeField] private List<ModifierDefinition> modifiers = new();
 
         public IReadOnlyList<BaseStat> BaseStats => baseStats;
         public IReadOnlyList<ResourcePoolStat> ResourcePools => resourcePools;
-        public IReadOnlyList<ModifierDefinition> InnateModifiers => innateModifiers;
+        public IReadOnlyList<ModifierDefinition> Modifiers => modifiers;
 
         public virtual void ApplyTo(Modifiable target) {
             for (var i = 0; i < baseStats.Count; i++) {
@@ -28,22 +28,6 @@ namespace Spellbound.Modifiers {
 
                 target.Stats.SetBase(new StatId(entry.stat.Hash), entry.value);
             }
-        }
-
-        public virtual List<RolledModifier> RollInnate(System.Random rng, System.Func<uint> nextSourceId) {
-            var result = new List<RolledModifier>(innateModifiers.Count);
-
-            for (var i = 0; i < innateModifiers.Count; i++) {
-                if (innateModifiers[i] == null) {
-                    Log.Warn($"StatTemplate: innateModifiers[{i}] has no definition assigned; skipped.");
-
-                    continue;
-                }
-
-                result.Add(innateModifiers[i].Roll(rng, nextSourceId()));
-            }
-
-            return result;
         }
     }
 }
