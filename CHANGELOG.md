@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2026-07-09
+
+### Fixed
+- `ModifierGrantSet.Apply` now applies named grants under the `sourceId` parameter, re-keying each rolled record to it (the persisted record is untouched). Previously named lines applied under their roll-time stamped id while inline lines obeyed the parameter — so rolling at drop and applying at equip under a slot id split the set across two ids, and a roll-time id of `Contribution.None` produced permanent, unremovable contributions that stacked on every re-equip. Records remain self-keyed in standalone flows (`StatData`, `TimedModifierSet`, `TryApplyTo`/`RemoveFrom`); the grant set is set-keyed.
+
 ## [0.2.0] - 2026-07-09
 
 One authored list for putting modifiers on a thing — named or inline per entry, same pathways underneath.

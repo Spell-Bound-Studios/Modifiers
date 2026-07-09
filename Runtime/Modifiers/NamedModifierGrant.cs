@@ -26,7 +26,9 @@ namespace Spellbound.Modifiers {
                     if (rolled.modifiers[i].modifierHash != definition.Hash)
                         continue;
 
-                    rolled.modifiers[i].ApplyTo(target, definition);
+                    var record = rolled.modifiers[i];
+                    record.sourceId = sourceId;
+                    record.ApplyTo(target, definition);
 
                     return;
                 }

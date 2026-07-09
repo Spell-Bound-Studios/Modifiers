@@ -12,6 +12,8 @@ namespace Spellbound.Modifiers {
     /// <see cref="Roll"/> once at the owning instance's creation, persist the <see cref="RolledGrants"/> with
     /// that instance, and hydrate back through <see cref="Apply"/>; or <see cref="RollAndApply"/> for
     /// fire-and-forget. Everything lands under one source id, so RemoveSource strips the whole set.
+    /// Apply's sourceId is authoritative: named records are re-keyed to it before applying; a record's
+    /// packed id matters only when applied standalone (StatData, TimedModifierSet).
     /// </summary>
     [Serializable]
     public sealed class ModifierGrantSet {

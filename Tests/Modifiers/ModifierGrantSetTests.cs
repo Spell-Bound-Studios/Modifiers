@@ -382,6 +382,30 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
+        public void Apply_UnderNewSourceId_RekeysNamedRecords() {
+            var definition = Definitions.Create(
+                Definitions.Single(HealthDef, ContributionType.Flat, Definitions.Fixed(20f)));
+            var set = Definitions.Grants(
+                Definitions.Single(ArmorDef, ContributionType.Flat, Definitions.Fixed(13f)),
+                Definitions.Named(definition));
+            var target = new Modifiable();
+            target.Stats.SetBase(Armor, 100f);
+            target.Stats.SetBase(Health, 100f);
+            var rolled = set.Roll(new System.Random(1), Contribution.None);
+
+            set.Apply(target, 42u, rolled);
+
+            Assert.AreEqual(113f, target.GetValue(Armor));
+            Assert.AreEqual(120f, target.GetValue(Health));
+            Assert.AreEqual(Contribution.None, rolled.modifiers[0].sourceId);
+
+            target.RemoveSource(42u);
+
+            Assert.AreEqual(100f, target.GetValue(Armor));
+            Assert.AreEqual(100f, target.GetValue(Health));
+        }
+
+        [Test]
         public void RolledGrants_PackUnpack_RoundTrips() {
             var rolled = new RolledGrants {
                 baked = new[] {
