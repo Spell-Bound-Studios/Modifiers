@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.3] - 2026-07-26
+
+### Changed
+- Package `displayName` is `Spellbound.Modifiers`, matching the other Spellbound packages in the Package Manager list.
+
 ## [0.2.2] - 2026-07-09
 
 ### Added

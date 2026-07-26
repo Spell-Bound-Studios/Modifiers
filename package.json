@@ -1,7 +1,7 @@
 {
   "name": "com.spellboundstudios.modifiers",
-  "version": "0.2.2",
-  "displayName": "SpellBound.modifiers",
+  "version": "0.2.3",
+  "displayName": "Spellbound.Modifiers",
   "description": "Spellbound Modifier system.",
   "unity": "6000.0",
   "author": {
@@ -12,7 +12,8 @@
   "dependencies": {},
   "keywords": [
     "modifiers",
-    "modular",
-    "stats"
+    "stats",
+    "affixes",
+    "rolls"
   ]
 }
