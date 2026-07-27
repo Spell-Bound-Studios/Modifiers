@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4] - 2026-07-27
+
+### Added
+- `StatBlock.AddToBase(stat, delta)`: accumulates onto a base value in place and returns the new total, saturating loudly at the fixed-point range instead of wrapping. The verb for running counters (experience, banked charges) that were previously read-modify-write.
+- `ProgressionCurve`: a hashed asset mapping a running total to a step index through authored per-step costs. `StepFor(total)`, `ThresholdFor(step)`, `CostFor(step)`, and `Define(costs)` for code-generated tables. Deliberately axis-neutral: the game names the axis (level, rank, mastery, reputation); the library ships the monotone table.
+- `StatComparison` with `ComparisonOperator`: compares one stat against another, each side read through its own `Perspective`, plus a flat offset. `StatAtLeast` remains the stat-versus-constant case.
+
 ## [0.2.3] - 2026-07-26
 
 ### Changed

@@ -30,6 +30,46 @@ namespace Spellbound.Modifiers.Tests {
         }
 
         [Test]
+        public void AddToBase_AccumulatesFromUnset() {
+            var block = new StatBlock();
+
+            Assert.AreEqual(10f, block.AddToBase(Armor, 10f), 0.0001f);
+            Assert.AreEqual(35f, block.AddToBase(Armor, 25f), 0.0001f);
+            Assert.AreEqual(35f, block.GetBase(Armor), 0.0001f);
+        }
+
+        [Test]
+        public void AddToBase_OntoExistingBase() {
+            var block = new StatBlock();
+            block.SetBase(Armor, 100f);
+
+            Assert.AreEqual(90f, block.AddToBase(Armor, -10f), 0.0001f);
+        }
+
+        [Test]
+        public void AddToBase_FiresChanged() {
+            var block = new StatBlock();
+            var received = new List<StatId>();
+            block.Changed += received.Add;
+
+            block.AddToBase(Armor, 1f);
+
+            CollectionAssert.AreEqual(new[] { Armor }, received);
+        }
+
+        [Test]
+        public void AddToBase_SaturatesAtFixedPointRange() {
+            var block = new StatBlock();
+            block.SetBase(Armor, 214000f);
+
+            using (new LogMute()) {
+                Assert.AreEqual(StatSettings.ToExternal(int.MaxValue), block.AddToBase(Armor, 214000f));
+            }
+
+            Assert.AreEqual(StatSettings.ToExternal(int.MaxValue), block.GetBase(Armor));
+        }
+
+        [Test]
         public void GetValue_BaseOnly() {
             var block = new StatBlock();
             block.SetBase(Armor, 100f);

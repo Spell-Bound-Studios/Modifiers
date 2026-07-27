@@ -22,6 +22,24 @@ namespace Spellbound.Modifiers {
             MarkChanged(stat);
         }
 
+        /// <summary>
+        /// Mutates the base stat forever. This was implemented as a solution for experience gain.
+        /// </summary>
+        public float AddToBase(StatId stat, float delta) {
+            _base.TryGetValue(stat, out var current);
+            var next = (long)current + StatSettings.ToInternal(delta);
+
+            if (next > int.MaxValue || next < int.MinValue) {
+                Log.Error($"AddToBase on '{stat}' exceeded the fixed-point range; the value was clamped.");
+                next = next > int.MaxValue ? int.MaxValue : int.MinValue;
+            }
+
+            _base[stat] = (int)next;
+            MarkChanged(stat);
+
+            return StatSettings.ToExternal((int)next);
+        }
+
         public float GetBase(StatId stat) =>
                 _base.TryGetValue(stat, out var value) ? StatSettings.ToExternal(value) : 0f;
 
