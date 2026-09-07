@@ -57,7 +57,7 @@ namespace Spellbound.Modifiers.Samples {
             if (_ringSourceId != 0)
                 return;
 
-            _ringSourceId = StableHash.Fnv1A32($"sapphire_ring_{GetInstanceID()}");
+            _ringSourceId = StableHash.Fnv1A32($"sapphire_ring_{GetEntityId()}");
             _modifiable.Stats.AddContribution(DemoStats.ColdResistance, ContributionType.Flat, 30f, _ringSourceId);
             _modifiable.Stats.AddContribution(DemoStats.Health, ContributionType.Increased, 0.2f, _ringSourceId);
         }

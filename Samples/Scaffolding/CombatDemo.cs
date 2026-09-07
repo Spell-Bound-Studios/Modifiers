@@ -13,7 +13,7 @@ namespace Spellbound.Modifiers.Samples {
     public sealed class CombatDemo : MonoBehaviour {
         [Header("Scene"), SerializeField] private PlayerController player;
         [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private ModifierPool modifierPool;
+        [SerializeField] private ModifierTable modifierTable;
 
         [Header("Rings"), SerializeField] private float innerRingDistance = 5f;
         [SerializeField] private float outerRingDistance = 10f;
@@ -32,7 +32,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public PlayerController Player => player;
         public LevelController Level { get; private set; }
-        public ModifierPool Pool => modifierPool;
+        public ModifierTable Table => modifierTable;
         public int InnerCount => _innerEnemyCount;
         public int OuterCount => _outerEnemyCount;
 
@@ -74,13 +74,13 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         private void Awake() {
-            if (modifierPool == null)
-                modifierPool = Resources.Load<ModifierPool>("SampleModifierPool");
+            if (modifierTable == null)
+                modifierTable = Resources.Load<ModifierTable>("SampleModifierTable");
         }
 
         private void Start() {
             Level = new GameObject("Level").AddComponent<LevelController>();
-            Level.Reroll(modifierPool, 1, _rng);
+            Level.Reroll(modifierTable, 1, _rng);
 
             SpawnAllEnemies();
         }
@@ -92,7 +92,7 @@ namespace Spellbound.Modifiers.Samples {
 
         public void Cast() => player.CastFireball();
 
-        public void RerollLevel() => Level.Reroll(modifierPool, 2, _rng);
+        public void RerollLevel() => Level.Reroll(modifierTable, 2, _rng);
 
         public void RespawnAll() {
             foreach (var enemy in _innerEnemies) {
@@ -177,7 +177,7 @@ namespace Spellbound.Modifiers.Samples {
                     continue;
                 }
 
-                enemy.Configure(modifierPool, _rng, Level);
+                enemy.Configure(modifierTable, _rng, Level);
                 enemy.OnDeath += OnEnemyDeath;
                 enemies.Add(enemy);
             }

@@ -18,7 +18,7 @@ namespace Spellbound.Modifiers.Samples {
 
         private readonly List<RolledModifier> _rolled = new();
         private uint _nextSourceId = 1;
-        private ModifierPool _pool;
+        private ModifierTable _table;
         private System.Random _rng;
         private LevelController _level;
         private float _lastDamageTime;
@@ -111,8 +111,8 @@ namespace Spellbound.Modifiers.Samples {
                 CurrentShield + Modifiable.GetValue(DemoStats.ShieldRegen) * Time.deltaTime);
         }
 
-        public void Configure(ModifierPool pool, System.Random rng, LevelController level) {
-            _pool = pool;
+        public void Configure(ModifierTable table, System.Random rng, LevelController level) {
+            _table = table;
             _rng = rng;
             _level = level;
             Modifiable.Parent = level != null ? level.Modifiable : null;
@@ -198,10 +198,10 @@ namespace Spellbound.Modifiers.Samples {
 
             _rolled.Clear();
 
-            if (_pool != null && _rng != null) {
+            if (_table != null && _rng != null) {
                 var starRoll = _rng.Next(100);
                 var stars = starRoll < 50 ? 0 : starRoll < 85 ? 1 : 2;
-                foreach (var definition in _pool.Sample(stars, _rng))
+                foreach (var definition in _table.Sample(stars, _rng))
                     _rolled.Add(definition.Roll(_rng, _nextSourceId++));
 
                 foreach (var modifier in _rolled)

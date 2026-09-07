@@ -12,14 +12,14 @@ namespace Spellbound.Modifiers.Samples {
         public string RolledIcons { get; private set; } = "";
         public IReadOnlyList<RolledModifier> Rolled => _rolled;
 
-        public void Reroll(ModifierPool pool, int count, System.Random rng) {
+        public void Reroll(ModifierTable table, int count, System.Random rng) {
             foreach (var modifier in _rolled)
                 modifier.RemoveFrom(Modifiable);
 
             _rolled.Clear();
 
-            if (pool != null) {
-                foreach (var definition in pool.Sample(count, rng))
+            if (table != null) {
+                foreach (var definition in table.Sample(count, rng))
                     _rolled.Add(definition.Roll(rng, _nextSourceId++));
             }
 

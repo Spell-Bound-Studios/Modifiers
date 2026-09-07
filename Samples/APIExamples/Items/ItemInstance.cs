@@ -54,10 +54,10 @@ namespace Spellbound.Modifiers.Samples {
         }
 
         public bool AddRandomModifier(System.Random rng) {
-            if (Definition.Pool == null)
+            if (Definition.Table == null)
                 return false;
 
-            var picks = Definition.Pool.Sample(1, rng);
+            var picks = Definition.Table.Sample(1, rng);
 
             if (picks.Count == 0)
                 return false;

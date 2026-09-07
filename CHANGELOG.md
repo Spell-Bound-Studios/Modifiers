@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.5] - 2026-09-07
+
+### Changed
+- `ModifierPool` renamed to `ModifierTable`, now built on `WeightedTableAsset<ModifierDefinition>` from Core 1.1.8. The weighted roll, the nothing slot and `Define` for code-built tables live in Core; `Sample(count, rng, withReplacement)` and the new `TryPick(rng, out definition)` forward to it. Existing table assets need their `entries` nested under `table` (the two sample assets are updated).
+
+### Removed
+- `WeightedPool<T>` and `WeightedEntry<T>` from this package. Use `Spellbound.Core.Sampling`.
+
 ## [0.2.4] - 2026-07-27
 
 ### Added

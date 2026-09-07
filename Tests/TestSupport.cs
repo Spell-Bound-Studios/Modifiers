@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Spellbound.Core.Sampling;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -94,18 +95,20 @@ namespace Spellbound.Modifiers.Tests {
         private static void SetField(object target, string name, object value) =>
                 target.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(target, value);
 
-        public static ModifierPool CreatePool(params (ModifierDefinition candidate, int weight)[] entries) {
-            var pool = ScriptableObject.CreateInstance<ModifierPool>();
+        public static ModifierTable CreateTable(params (ModifierDefinition candidate, int weight)[] entries) =>
+                CreateTable(0, entries);
+
+        public static ModifierTable CreateTable(int nothingWeight,
+            params (ModifierDefinition candidate, int weight)[] entries) {
+            var table = ScriptableObject.CreateInstance<ModifierTable>();
             var list = new List<WeightedEntry<ModifierDefinition>>();
 
             foreach (var (candidate, weight) in entries)
                 list.Add(new WeightedEntry<ModifierDefinition> { candidate = candidate, weight = weight });
 
-            typeof(WeightedPool<ModifierDefinition>)
-                    .GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .SetValue(pool, list);
+            table.Table.Define(list, nothingWeight);
 
-            return pool;
+            return table;
         }
 
         public static ContributionSpecification Range(
@@ -195,4 +198,4 @@ namespace Spellbound.Modifiers.Tests {
             _log?.Add(_name);
         }
     }
-}
+}

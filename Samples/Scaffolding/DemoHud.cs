@@ -65,7 +65,7 @@ namespace Spellbound.Modifiers.Samples {
         private void LateUpdate() {
             _status.text = $"Enemies alive: {demo.AliveCount}";
 
-            if (!_quadBuilt && demo.Pool != null) {
+            if (!_quadBuilt && demo.Table != null) {
                 BuildQuad();
                 _quadBuilt = true;
             }
@@ -259,7 +259,7 @@ namespace Spellbound.Modifiers.Samples {
             topRow.Add(QuadCell("I · MODIFIERS", "rolled per enemy at spawn — top-right of the nameplate",
                 out var modifierContent));
 
-            foreach (var entry in demo.Pool.Entries) {
+            foreach (var entry in demo.Table.Table.Entries) {
                 if (entry.candidate == null)
                     continue;
 
